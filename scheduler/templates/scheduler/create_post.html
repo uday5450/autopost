@@ -1,0 +1,232 @@
+{% extends 'scheduler/base.html' %}
+
+{% block title %}Create Post — AutoPost{% endblock %}
+{% block nav_create %}active{% endblock %}
+{% block page_title %}Create Post{% endblock %}
+
+{% block content %}
+<div class="form-page">
+    <div class="card form-card">
+        <div class="card-header">
+            <h2 class="card-title">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+                </svg>
+                Let's schedule something new
+            </h2>
+        </div>
+        <div class="card-body">
+            {% if not accounts %}
+            <div class="empty-state">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.3">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+                </svg>
+                <p>Before we can schedule anything, we need somewhere to post it to. Let's add your first Instagram account!</p>
+                <a href="{% url 'account_add' %}" class="btn btn-primary">Connect your Account</a>
+            </div>
+            {% else %}
+            <form method="post" enctype="multipart/form-data" id="createPostForm">
+                {% csrf_token %}
+                
+                {% if form.non_field_errors %}
+                <div class="form-errors">
+                    {% for error in form.non_field_errors %}
+                    <div class="alert alert-error">{{ error }}</div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                
+                <!-- Account Selection -->
+                <div class="form-group">
+                    <label for="id_account" class="form-label">Which account should post this?</label>
+                    {{ form.account }}
+                    {% if form.account.errors %}
+                    <span class="form-error">{{ form.account.errors.0 }}</span>
+                    {% endif %}
+                </div>
+
+                <!-- Post Type -->
+                <div class="form-group">
+                    <label class="form-label">What kind of post is it?</label>
+                    <div class="type-selector">
+                        <label class="type-option" id="type-image-label">
+                            <input type="radio" name="post_type" value="IMAGE" {% if form.post_type.value == 'IMAGE' or not form.post_type.value %}checked{% endif %}>
+                            <div class="type-card">
+                                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                                    <circle cx="8.5" cy="8.5" r="1.5"/>
+                                    <polyline points="21 15 16 10 5 21"/>
+                                </svg>
+                                <span>Image</span>
+                            </div>
+                        </label>
+                        <label class="type-option" id="type-reel-label">
+                            <input type="radio" name="post_type" value="REEL" {% if form.post_type.value == 'REEL' %}checked{% endif %}>
+                            <div class="type-card">
+                                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                    <polygon points="23 7 16 12 23 17 23 7"/>
+                                    <rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>
+                                </svg>
+                                <span>Reel</span>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Media Upload -->
+                <div class="form-section">
+                    <h3 class="form-section-title">Media</h3>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Upload File</label>
+                        <div class="file-upload-area" id="mediaDropZone">
+                            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.4">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                <polyline points="17 8 12 3 7 8"/>
+                                <line x1="12" y1="3" x2="12" y2="15"/>
+                            </svg>
+                            <p>Drag & drop or click to upload</p>
+                            <span class="file-hint" id="mediaHint">JPEG images for Image posts • MP4/MOV for Reels</span>
+                            {{ form.media_file }}
+                            <span class="file-name" id="mediaFileName"></span>
+                        </div>
+                        {% if form.media_file.errors %}
+                        <span class="form-error">{{ form.media_file.errors.0 }}</span>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-divider">
+                        <span>OR</span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="id_media_url" class="form-label">Media URL</label>
+                        {{ form.media_url }}
+                        <span class="form-hint">Publicly accessible URL to your image or video</span>
+                        {% if form.media_url.errors %}
+                        <span class="form-error">{{ form.media_url.errors.0 }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Thumbnail (Reels only) -->
+                <div class="form-section" id="thumbnailSection" style="display: none;">
+                    <h3 class="form-section-title">Reel Thumbnail / Cover</h3>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Upload Thumbnail</label>
+                        <div class="file-upload-area" id="thumbDropZone">
+                            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.4">
+                                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                                <circle cx="8.5" cy="8.5" r="1.5"/>
+                                <polyline points="21 15 16 10 5 21"/>
+                            </svg>
+                            <p>Upload cover image (JPEG)</p>
+                            {{ form.thumbnail_file }}
+                            <span class="file-name" id="thumbFileName"></span>
+                        </div>
+                    </div>
+
+                    <div class="form-divider"><span>OR</span></div>
+
+                    <div class="form-group">
+                        <label for="id_thumbnail_url" class="form-label">Thumbnail URL</label>
+                        {{ form.thumbnail_url }}
+                        <span class="form-hint">Publicly accessible URL to the cover image</span>
+                    </div>
+                </div>
+
+                <!-- Caption -->
+                <div class="form-group">
+                    <label for="id_caption" class="form-label">What do you want to say in your caption?</label>
+                    {{ form.caption }}
+                    <div class="caption-counter">
+                        <span id="captionCount">0</span> / 2,200 characters
+                    </div>
+                    {% if form.caption.errors %}
+                    <span class="form-error">{{ form.caption.errors.0 }}</span>
+                    {% endif %}
+                </div>
+
+                <!-- Schedule Time -->
+                <div class="form-group">
+                    <label for="id_scheduled_time" class="form-label">When should we post it?</label>
+                    {{ form.scheduled_time }}
+                    <span class="form-hint">Choose the exact local date and time. Leave empty to post right now.</span>
+                    {% if form.scheduled_time.errors %}
+                    <span class="form-error">{{ form.scheduled_time.errors.0 }}</span>
+                    {% endif %}
+                </div>
+
+                <!-- Submit -->
+                <div class="form-actions">
+                    <a href="{% url 'post_list' %}" class="btn btn-ghost">Cancel</a>
+                    <button type="submit" class="btn btn-primary btn-lg">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+                        </svg>
+                        Schedule Post
+                    </button>
+                </div>
+            </form>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Post type toggle
+    const typeRadios = document.querySelectorAll('input[name="post_type"]');
+    const thumbnailSection = document.getElementById('thumbnailSection');
+    const mediaHint = document.getElementById('mediaHint');
+    
+    function updatePostType() {
+        const selected = document.querySelector('input[name="post_type"]:checked');
+        if (selected && selected.value === 'REEL') {
+            thumbnailSection.style.display = 'block';
+            mediaHint.textContent = 'MP4 or MOV video files for Reels';
+        } else {
+            thumbnailSection.style.display = 'none';
+            mediaHint.textContent = 'JPEG images only';
+        }
+    }
+    
+    typeRadios.forEach(r => r.addEventListener('change', updatePostType));
+    updatePostType();
+
+    // Caption counter
+    const captionInput = document.getElementById('id_caption');
+    const captionCount = document.getElementById('captionCount');
+    if (captionInput && captionCount) {
+        function updateCount() {
+            captionCount.textContent = captionInput.value.length;
+        }
+        captionInput.addEventListener('input', updateCount);
+        updateCount();
+    }
+
+    // File upload display
+    function setupFileInput(inputSelector, displayId) {
+        const container = document.querySelector(inputSelector);
+        if (!container) return;
+        const input = container.querySelector('input[type="file"]');
+        const display = document.getElementById(displayId);
+        if (input && display) {
+            input.addEventListener('change', function() {
+                if (this.files.length > 0) {
+                    display.textContent = this.files[0].name;
+                    display.style.display = 'block';
+                }
+            });
+        }
+    }
+    
+    setupFileInput('#mediaDropZone', 'mediaFileName');
+    setupFileInput('#thumbDropZone', 'thumbFileName');
+});
+</script>
+{% endblock %}

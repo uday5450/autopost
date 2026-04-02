@@ -1,0 +1,132 @@
+{% extends 'scheduler/base.html' %}
+
+{% block title %}{% if is_edit %}Edit{% else %}Add{% endif %} Account — AutoPost{% endblock %}
+{% block nav_accounts %}active{% endblock %}
+{% block page_title %}{% if is_edit %}Edit Account{% else %}Add Account{% endif %}{% endblock %}
+
+{% block content %}
+<div class="form-page">
+    <div class="card form-card">
+        <div class="card-header">
+            <h2 class="card-title">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+                </svg>
+                {% if is_edit %}Edit "{{ account.name }}"{% else %}Add Instagram Account{% endif %}
+            </h2>
+        </div>
+        <div class="card-body">
+            <form method="post" id="accountForm">
+                {% csrf_token %}
+                
+                {% if form.non_field_errors %}
+                <div class="form-errors">
+                    {% for error in form.non_field_errors %}
+                    <div class="alert alert-error">{{ error }}</div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                <div class="form-group">
+                    <label for="id_name" class="form-label">Account Name</label>
+                    {{ form.name }}
+                    <span class="form-hint">A friendly name to identify this account</span>
+                    {% if form.name.errors %}<span class="form-error">{{ form.name.errors.0 }}</span>{% endif %}
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="id_app_id" class="form-label">Meta App ID</label>
+                        {{ form.app_id }}
+                        {% if form.app_id.errors %}<span class="form-error">{{ form.app_id.errors.0 }}</span>{% endif %}
+                    </div>
+                    <div class="form-group">
+                        <label for="id_client_secret" class="form-label">Client Secret</label>
+                        {{ form.client_secret }}
+                        {% if form.client_secret.errors %}<span class="form-error">{{ form.client_secret.errors.0 }}</span>{% endif %}
+                    </div>
+                </div>
+
+                <!-- Token Exchange Section -->
+                <div class="form-section">
+                    <h3 class="form-section-title">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                        </svg>
+                        Access Token
+                    </h3>
+                    
+                    {% if is_edit and account.access_token %}
+                    <div class="token-current-status">
+                        <div class="token-status-badge status-{{ account.token_status }}">
+                            <span class="status-dot"></span>
+                            {% if account.token_status == 'valid' %}Token Valid ({{ account.token_days_remaining }} days remaining)
+                            {% elif account.token_status == 'expiring' %}Token Expiring Soon ({{ account.token_days_remaining }} days)
+                            {% elif account.token_status == 'expired' %}Token Expired
+                            {% else %}Unknown Status
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <div class="form-group">
+                        <label for="id_short_lived_token" class="form-label">Access Token</label>
+                        <textarea name="short_lived_token" rows="3" class="form-input" 
+                                  placeholder="Paste your access token here... (Instagram User ID will be auto-detected)"></textarea>
+                        <span class="form-hint">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2" style="vertical-align: middle; margin-right: 3px;">
+                                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
+                            </svg>
+                            <strong>Auto-detect:</strong> Your Instagram User ID and username will be automatically detected from this token.
+                            {% if is_edit %} Leave empty to keep the current token.{% endif %}
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Instagram User ID (auto-detected, can be manually overridden) -->
+                <div class="form-group" id="igUserIdGroup">
+                    <label for="id_instagram_user_id" class="form-label">
+                        Instagram User ID
+                        <span class="auto-badge">Auto-detected</span>
+                    </label>
+                    {{ form.instagram_user_id }}
+                    <span class="form-hint">
+                        This will be automatically filled when you provide a token. You can also enter it manually.
+                    </span>
+                    {% if form.instagram_user_id.errors %}<span class="form-error">{{ form.instagram_user_id.errors.0 }}</span>{% endif %}
+                </div>
+
+                <div class="form-actions">
+                    <a href="{% url 'account_list' %}" class="btn btn-ghost">Cancel</a>
+                    <button type="submit" class="btn btn-primary btn-lg">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+                            <polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/>
+                        </svg>
+                        {% if is_edit %}Save Changes{% else %}Add Account{% endif %}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_head %}
+<style>
+.auto-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 100px;
+    background: rgba(16, 185, 129, 0.12);
+    color: var(--green-light);
+    margin-left: 8px;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+}
+</style>
+{% endblock %}

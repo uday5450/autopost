@@ -1,0 +1,4 @@
+django>=4.2,<5.0
+requests>=2.31.0
+django-apscheduler>=0.6.2
+Pillow>=10.0.0
