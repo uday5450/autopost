@@ -38,7 +38,7 @@ def get_user_info(access_token):
     try:
         url = f"{GRAPH_API_BASE}/me"
         params = {
-            'fields': 'user_id,username,name,account_type',
+            'fields': 'user_id,username,name,account_type,profile_picture_url',
             'access_token': access_token,
         }
         response = requests.get(url, params=params, timeout=15)
@@ -51,6 +51,7 @@ def get_user_info(access_token):
                 'username': data.get('username', ''),
                 'name': data.get('name', ''),
                 'account_type': data.get('account_type', ''),
+                'profile_picture_url': data.get('profile_picture_url', ''),
             }
         
         # Some tokens return 'id' instead of 'user_id'
@@ -61,6 +62,7 @@ def get_user_info(access_token):
                 'username': data.get('username', ''),
                 'name': data.get('name', ''),
                 'account_type': data.get('account_type', ''),
+                'profile_picture_url': data.get('profile_picture_url', ''),
             }
     except Exception as e:
         logger.debug(f"Instagram /me endpoint failed: {e}")
@@ -90,10 +92,10 @@ def get_user_info(access_token):
                 if 'instagram_business_account' in ig_data:
                     ig_account_id = ig_data['instagram_business_account']['id']
                     
-                    # Get username
+                    # Get username and profile picture
                     username_url = f"{GRAPH_FB_API_BASE}/{ig_account_id}"
                     username_params = {
-                        'fields': 'username,name',
+                        'fields': 'username,name,profile_picture_url',
                         'access_token': access_token,
                     }
                     username_response = requests.get(username_url, params=username_params, timeout=15)
@@ -105,6 +107,7 @@ def get_user_info(access_token):
                         'username': username_data.get('username', ''),
                         'name': username_data.get('name', ''),
                         'account_type': 'BUSINESS',
+                        'profile_picture_url': username_data.get('profile_picture_url', ''),
                     }
     except Exception as e:
         logger.debug(f"Facebook Graph API failed: {e}")
@@ -228,6 +231,9 @@ def exchange_and_store(account, short_lived_token):
         # Auto-fill name if empty
         if not account.name and user_info.get('username'):
             account.name = user_info['username']
+        # Extract profile picture URL
+        if user_info.get('profile_picture_url'):
+            account.profile_picture_url = user_info['profile_picture_url']
     
     account.save()
     

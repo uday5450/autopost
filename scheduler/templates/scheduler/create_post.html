@@ -49,7 +49,13 @@
                                 <input type="checkbox" name="ig_accounts" value="{{ acct.pk }}"
                                     {% if form_data %}{% for v in form_data.ig_accounts %}{% if v == acct.pk|stringformat:"d" %}checked{% endif %}{% endfor %}{% endif %}>
                                 <div class="account-check-card">
-                                    <div class="account-avatar-sm">{{ acct.name|first|upper }}</div>
+                                    <div class="account-avatar-sm">
+                                        {% if acct.profile_picture_url %}
+                                        <img src="{{ acct.profile_picture_url }}" alt="{{ acct.name }}" style="width:100%;height:100%;border-radius:inherit;object-fit:cover;">
+                                        {% else %}
+                                        {{ acct.name|first|upper }}
+                                        {% endif %}
+                                    </div>
                                     <div class="account-check-info">
                                         <span class="account-check-name">{{ acct.name }}</span>
                                         <span class="account-check-id">@{{ acct.instagram_user_id|default:"not set" }}</span>

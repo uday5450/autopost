@@ -14,6 +14,12 @@ class InstagramAccount(models.Model):
     )
     app_id = models.CharField(max_length=255, help_text="Meta App ID")
     client_secret = models.CharField(max_length=255, help_text="Meta App Secret")
+    profile_picture_url = models.URLField(
+        max_length=500, 
+        blank=True, 
+        default='',
+        help_text="Instagram Profile Picture URL"
+    )
     access_token = models.TextField(
         blank=True, 
         default='',
