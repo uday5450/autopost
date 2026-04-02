@@ -16,41 +16,96 @@
             </h2>
         </div>
         <div class="card-body">
-            {% if not accounts %}
+            {% if not accounts and not youtube_accounts %}
             <div class="empty-state">
                 <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.3">
                     <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
                 </svg>
-                <p>Before we can schedule anything, we need somewhere to post it to. Let's add your first Instagram account!</p>
-                <a href="{% url 'account_add' %}" class="btn btn-primary">Connect your Account</a>
+                <p>Before we can schedule anything, we need somewhere to post it to. Let's add your first account!</p>
+                <a href="{% url 'account_list' %}" class="btn btn-primary">Connect an Account</a>
             </div>
             {% else %}
             <form method="post" enctype="multipart/form-data" id="createPostForm">
                 {% csrf_token %}
-                
-                {% if form.non_field_errors %}
-                <div class="form-errors">
-                    {% for error in form.non_field_errors %}
-                    <div class="alert alert-error">{{ error }}</div>
-                    {% endfor %}
-                </div>
-                {% endif %}
-                
-                <!-- Account Selection -->
-                <div class="form-group">
-                    <label for="id_account" class="form-label">Which account should post this?</label>
-                    {{ form.account }}
-                    {% if form.account.errors %}
-                    <span class="form-error">{{ form.account.errors.0 }}</span>
+
+                <!-- ═══ Select Accounts (Multi-Select Checkboxes) ═══ -->
+                <div class="form-section">
+                    <h3 class="form-section-title">Where should we post?</h3>
+                    <p class="form-hint" style="margin-bottom: 1rem;">Select one or more accounts. The same content will be posted to all selected accounts.</p>
+
+                    {% if accounts %}
+                    <div class="account-check-group">
+                        <span class="check-group-label">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
+                                <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/>
+                                <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/>
+                            </svg>
+                            Instagram
+                        </span>
+                        <div class="account-check-list">
+                            {% for acct in accounts %}
+                            <label class="account-check-item">
+                                <input type="checkbox" name="ig_accounts" value="{{ acct.pk }}"
+                                    {% if form_data %}{% for v in form_data.ig_accounts %}{% if v == acct.pk|stringformat:"d" %}checked{% endif %}{% endfor %}{% endif %}>
+                                <div class="account-check-card">
+                                    <div class="account-avatar-sm">{{ acct.name|first|upper }}</div>
+                                    <div class="account-check-info">
+                                        <span class="account-check-name">{{ acct.name }}</span>
+                                        <span class="account-check-id">@{{ acct.instagram_user_id|default:"not set" }}</span>
+                                    </div>
+                                    <div class="check-indicator">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                                            <polyline points="20 6 9 17 4 12"/>
+                                        </svg>
+                                    </div>
+                                </div>
+                            </label>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    {% if youtube_accounts %}
+                    <div class="account-check-group" style="margin-top: 1rem;">
+                        <span class="check-group-label" style="color: #ff6b6b;">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19.13C5.12 19.56 12 19.56 12 19.56s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.43z"/>
+                                <polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02"/>
+                            </svg>
+                            YouTube
+                        </span>
+                        <div class="account-check-list">
+                            {% for yt in youtube_accounts %}
+                            <label class="account-check-item">
+                                <input type="checkbox" name="yt_accounts" value="{{ yt.pk }}"
+                                    {% if form_data %}{% for v in form_data.yt_accounts %}{% if v == yt.pk|stringformat:"d" %}checked{% endif %}{% endfor %}{% endif %}>
+                                <div class="account-check-card yt">
+                                    <div class="account-avatar-sm" style="background: linear-gradient(135deg, #ff0000, #cc0000); font-size: 0.55rem;">YT</div>
+                                    <div class="account-check-info">
+                                        <span class="account-check-name">{{ yt.name }}</span>
+                                        <span class="account-check-id">{{ yt.channel_id|truncatechars:24 }}</span>
+                                    </div>
+                                    <div class="check-indicator">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                                            <polyline points="20 6 9 17 4 12"/>
+                                        </svg>
+                                    </div>
+                                </div>
+                            </label>
+                            {% endfor %}
+                        </div>
+                    </div>
                     {% endif %}
                 </div>
 
-                <!-- Post Type -->
-                <div class="form-group">
-                    <label class="form-label">What kind of post is it?</label>
+                <!-- ═══ Post Type (Instagram only) ═══ -->
+                <div class="form-group" id="postTypeSection">
+                    <label class="form-label">What kind of Instagram post?</label>
                     <div class="type-selector">
                         <label class="type-option" id="type-image-label">
-                            <input type="radio" name="post_type" value="IMAGE" {% if form.post_type.value == 'IMAGE' or not form.post_type.value %}checked{% endif %}>
+                            <input type="radio" name="post_type" value="IMAGE"
+                                {% if form_data.post_type == 'IMAGE' or not form_data %}checked{% endif %}>
                             <div class="type-card">
                                 <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
                                     <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
@@ -61,7 +116,8 @@
                             </div>
                         </label>
                         <label class="type-option" id="type-reel-label">
-                            <input type="radio" name="post_type" value="REEL" {% if form.post_type.value == 'REEL' %}checked{% endif %}>
+                            <input type="radio" name="post_type" value="REEL"
+                                {% if form_data.post_type == 'REEL' %}checked{% endif %}>
                             <div class="type-card">
                                 <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
                                     <polygon points="23 7 16 12 23 17 23 7"/>
@@ -71,9 +127,19 @@
                             </div>
                         </label>
                     </div>
+                    <span class="form-hint" id="postTypeHint" style="margin-top: 0.5rem; display: block;"></span>
                 </div>
 
-                <!-- Media Upload -->
+                <!-- ═══ YouTube Title ═══ -->
+                <div class="form-group" id="titleSection" style="display: none;">
+                    <label for="id_title" class="form-label">Video Title</label>
+                    <input type="text" name="title" id="id_title" class="form-input" maxlength="100"
+                        placeholder="Enter the video title (required for YouTube)"
+                        value="{{ form_data.title|default:'' }}">
+                    <span class="form-hint">Required for YouTube — max 100 characters</span>
+                </div>
+
+                <!-- ═══ Media Upload ═══ -->
                 <div class="form-section">
                     <h3 class="form-section-title">Media</h3>
                     
@@ -86,30 +152,27 @@
                                 <line x1="12" y1="3" x2="12" y2="15"/>
                             </svg>
                             <p>Drag & drop or click to upload</p>
-                            <span class="file-hint" id="mediaHint">JPEG images for Image posts • MP4/MOV for Reels</span>
-                            {{ form.media_file }}
+                            <span class="file-hint" id="mediaHint">JPEG images for Image posts • MP4/MOV for Reels & YouTube</span>
+                            <input type="file" name="media_file" class="form-input file-input"
+                                accept="image/jpeg,video/mp4,video/quicktime">
                             <span class="file-name" id="mediaFileName"></span>
                         </div>
-                        {% if form.media_file.errors %}
-                        <span class="form-error">{{ form.media_file.errors.0 }}</span>
-                        {% endif %}
                     </div>
 
-                    <div class="form-divider">
+                    <div class="form-divider" id="mediaUrlDivider">
                         <span>OR</span>
                     </div>
 
-                    <div class="form-group">
+                    <div class="form-group" id="mediaUrlSection">
                         <label for="id_media_url" class="form-label">Media URL</label>
-                        {{ form.media_url }}
+                        <input type="url" name="media_url" id="id_media_url" class="form-input"
+                            placeholder="https://example.com/media/photo.jpg"
+                            value="{{ form_data.media_url|default:'' }}">
                         <span class="form-hint">Publicly accessible URL to your image or video</span>
-                        {% if form.media_url.errors %}
-                        <span class="form-error">{{ form.media_url.errors.0 }}</span>
-                        {% endif %}
                     </div>
                 </div>
 
-                <!-- Thumbnail (Reels only) -->
+                <!-- ═══ Thumbnail (Reels only) ═══ -->
                 <div class="form-section" id="thumbnailSection" style="display: none;">
                     <h3 class="form-section-title">Reel Thumbnail / Cover</h3>
                     
@@ -122,7 +185,7 @@
                                 <polyline points="21 15 16 10 5 21"/>
                             </svg>
                             <p>Upload cover image (JPEG)</p>
-                            {{ form.thumbnail_file }}
+                            <input type="file" name="thumbnail_file" class="form-input file-input" accept="image/jpeg">
                             <span class="file-name" id="thumbFileName"></span>
                         </div>
                     </div>
@@ -131,34 +194,101 @@
 
                     <div class="form-group">
                         <label for="id_thumbnail_url" class="form-label">Thumbnail URL</label>
-                        {{ form.thumbnail_url }}
+                        <input type="url" name="thumbnail_url" id="id_thumbnail_url" class="form-input"
+                            placeholder="https://example.com/media/thumbnail.jpg"
+                            value="{{ form_data.thumbnail_url|default:'' }}">
                         <span class="form-hint">Publicly accessible URL to the cover image</span>
                     </div>
                 </div>
 
-                <!-- Caption -->
+                <!-- ═══ Caption ═══ -->
                 <div class="form-group">
-                    <label for="id_caption" class="form-label">What do you want to say in your caption?</label>
-                    {{ form.caption }}
+                    <label for="id_caption" class="form-label" id="captionLabel">Caption / Description</label>
+                    <textarea name="caption" id="id_caption" class="form-input" rows="5"
+                        placeholder="Write your post caption here...&#10;&#10;Use hashtags for reach #instagram #post">{{ form_data.caption|default:'' }}</textarea>
                     <div class="caption-counter">
                         <span id="captionCount">0</span> / 2,200 characters
                     </div>
-                    {% if form.caption.errors %}
-                    <span class="form-error">{{ form.caption.errors.0 }}</span>
-                    {% endif %}
                 </div>
 
-                <!-- Schedule Time -->
+                <!-- ═══ YouTube Advanced Settings ═══ -->
+                <div class="form-section yt-advanced-card" id="ytAdvancedSection" style="display: none; background: linear-gradient(145deg, rgba(30, 30, 40, 0.6), rgba(20, 20, 25, 0.8)); border: 1px solid rgba(255, 68, 68, 0.2); box-shadow: 0 4px 20px rgba(255, 68, 68, 0.05); padding: 1.5rem; border-radius: 12px; margin-bottom: 1.5rem; position: relative; overflow: hidden;">
+                    <!-- Decorative subtle glow -->
+                    <div style="position: absolute; top: -50px; right: -50px; width: 100px; height: 100px; background: rgba(255, 68, 68, 0.2); filter: blur(50px); border-radius: 50%;"></div>
+                    
+                    <h3 class="form-section-title" style="color: #fff; margin-top: 0; font-size: 1.1rem; display: flex; align-items: center; gap: 0.5rem; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 1rem; margin-bottom: 1.2rem;">
+                        <span style="display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; background: rgba(255, 68, 68, 0.15); color: #ff4444; border-radius: 8px;">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19.13C5.12 19.56 12 19.56 12 19.56s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.43z"/>
+                                <polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02"/>
+                            </svg>
+                        </span>
+                        YouTube Studio Settings
+                    </h3>
+                    
+                    <div class="form-group" style="position: relative; z-index: 1;">
+                        <label for="id_yt_tags" class="form-label" style="color: #cbd5e1;">Video Tags</label>
+                        <input type="text" name="yt_tags" id="id_yt_tags" class="form-input" 
+                            style="background: rgba(0,0,0,0.2); border-color: rgba(255,255,255,0.1);"
+                            placeholder="e.g. podcast, technology, vlog..."
+                            value="{{ form_data.yt_tags|default:'' }}">
+                        <span class="form-hint" style="color: #94a3b8;">Separate keywords with commas to help viewers discover your video.</span>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; position: relative; z-index: 1;">
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label for="id_yt_privacy_status" class="form-label" style="color: #cbd5e1;">Visibility</label>
+                            <select name="yt_privacy_status" id="id_yt_privacy_status" class="form-input" style="background: rgba(0,0,0,0.2); border-color: rgba(255,255,255,0.1);">
+                                <option value="public" {% if form_data.yt_privacy_status == 'public' or not form_data %}selected{% endif %}>🌎 Public (Everyone can see)</option>
+                                <option value="private" {% if form_data.yt_privacy_status == 'private' %}selected{% endif %}>🔒 Private (Only you)</option>
+                                <option value="unlisted" {% if form_data.yt_privacy_status == 'unlisted' %}selected{% endif %}>🔗 Unlisted (Anyone with link)</option>
+                            </select>
+                            <span class="form-hint" style="color: #94a3b8;">Schedules force videos to start as Private.</span>
+                        </div>
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label for="id_yt_category_id" class="form-label" style="color: #cbd5e1;">Category</label>
+                            <select name="yt_category_id" id="id_yt_category_id" class="form-input" style="background: rgba(0,0,0,0.2); border-color: rgba(255,255,255,0.1);">
+                                <option value="1" {% if form_data.yt_category_id == '1' %}selected{% endif %}>🎬 Film & Animation</option>
+                                <option value="2" {% if form_data.yt_category_id == '2' %}selected{% endif %}>🚗 Autos & Vehicles</option>
+                                <option value="10" {% if form_data.yt_category_id == '10' %}selected{% endif %}>🎵 Music</option>
+                                <option value="15" {% if form_data.yt_category_id == '15' %}selected{% endif %}>🐾 Pets & Animals</option>
+                                <option value="17" {% if form_data.yt_category_id == '17' %}selected{% endif %}>⚽ Sports</option>
+                                <option value="19" {% if form_data.yt_category_id == '19' %}selected{% endif %}>✈️ Travel & Events</option>
+                                <option value="20" {% if form_data.yt_category_id == '20' %}selected{% endif %}>🎮 Gaming</option>
+                                <option value="22" {% if form_data.yt_category_id == '22' or not form_data %}selected{% endif %}>👥 People & Blogs</option>
+                                <option value="23" {% if form_data.yt_category_id == '23' %}selected{% endif %}>😂 Comedy</option>
+                                <option value="24" {% if form_data.yt_category_id == '24' %}selected{% endif %}>🎭 Entertainment</option>
+                                <option value="25" {% if form_data.yt_category_id == '25' %}selected{% endif %}>📰 News & Politics</option>
+                                <option value="26" {% if form_data.yt_category_id == '26' %}selected{% endif %}>💡 Howto & Style</option>
+                                <option value="27" {% if form_data.yt_category_id == '27' %}selected{% endif %}>📚 Education</option>
+                                <option value="28" {% if form_data.yt_category_id == '28' %}selected{% endif %}>🔬 Science & Tech</option>
+                                <option value="29" {% if form_data.yt_category_id == '29' %}selected{% endif %}>🤝 Nonprofits</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="margin-top: 1.5rem; margin-bottom: 0; background: rgba(0,0,0,0.15); padding: 1rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.03); position: relative; z-index: 1;">
+                        <label class="form-label" style="display: flex; align-items: flex-start; gap: 0.8rem; cursor: pointer; margin: 0;">
+                            <input type="checkbox" name="yt_made_for_kids" id="id_yt_made_for_kids" 
+                                {% if form_data.yt_made_for_kids == 'on' %}checked{% endif %}
+                                style="width: 20px; height: 20px; accent-color: #ff4444; margin-top: 2px;">
+                            <div>
+                                <div style="color: #e2e8f0; font-weight: 600; margin-bottom: 0.2rem;">Yes, it's made for kids</div>
+                                <div style="font-size: 0.75rem; color: #94a3b8; font-weight: 400; line-height: 1.4;">Regardless of your location, you're legally required to comply with COPPA. Select this if kids are your primary audience.</div>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- ═══ Schedule Time ═══ -->
                 <div class="form-group">
                     <label for="id_scheduled_time" class="form-label">When should we post it?</label>
-                    {{ form.scheduled_time }}
-                    <span class="form-hint">Choose the exact local date and time. Leave empty to post right now.</span>
-                    {% if form.scheduled_time.errors %}
-                    <span class="form-error">{{ form.scheduled_time.errors.0 }}</span>
-                    {% endif %}
+                    <input type="datetime-local" name="scheduled_time" id="id_scheduled_time" class="form-input"
+                        value="{{ form_data.scheduled_time|default:'' }}">
+                    <span class="form-hint">Choose the exact local date and time.</span>
                 </div>
 
-                <!-- Submit -->
+                <!-- ═══ Submit ═══ -->
                 <div class="form-actions">
                     <a href="{% url 'post_list' %}" class="btn btn-ghost">Cancel</a>
                     <button type="submit" class="btn btn-primary btn-lg">
@@ -173,30 +303,88 @@
         </div>
     </div>
 </div>
-
 {% endblock %}
 
 {% block extra_js %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Post type toggle
-    const typeRadios = document.querySelectorAll('input[name="post_type"]');
+    const igCheckboxes = document.querySelectorAll('input[name="ig_accounts"]');
+    const ytCheckboxes = document.querySelectorAll('input[name="yt_accounts"]');
+    const postTypeSection = document.getElementById('postTypeSection');
+    const titleSection = document.getElementById('titleSection');
     const thumbnailSection = document.getElementById('thumbnailSection');
     const mediaHint = document.getElementById('mediaHint');
-    
+    const postTypeHint = document.getElementById('postTypeHint');
+    const typeRadios = document.querySelectorAll('input[name="post_type"]');
+
+    function hasIgSelected() {
+        return Array.from(igCheckboxes).some(cb => cb.checked);
+    }
+    function hasYtSelected() {
+        return Array.from(ytCheckboxes).some(cb => cb.checked);
+    }
+
+    function updateFormState() {
+        const igSelected = hasIgSelected();
+        const ytSelected = hasYtSelected();
+
+        // Show title and Advanced Settings if any YT account is selected
+        titleSection.style.display = ytSelected ? 'block' : 'none';
+        const ytAdvancedSection = document.getElementById('ytAdvancedSection');
+        if (ytAdvancedSection) {
+            ytAdvancedSection.style.display = ytSelected ? 'block' : 'none';
+        }
+
+        // Show post type only if IG is selected (and not exclusively YT)
+        if (igSelected) {
+            postTypeSection.style.display = 'block';
+            if (ytSelected) {
+                postTypeHint.textContent = '💡 YouTube always receives the video. This only affects Instagram.';
+            } else {
+                postTypeHint.textContent = '';
+            }
+        } else {
+            postTypeSection.style.display = ytSelected ? 'none' : 'block';
+            postTypeHint.textContent = '';
+        }
+
+        // Media hint
+        if (ytSelected && !igSelected) {
+            mediaHint.textContent = 'MP4 or MOV video files for YouTube';
+        } else if (igSelected && ytSelected) {
+            mediaHint.textContent = 'MP4/MOV video — will be posted as Reel on Instagram + Video on YouTube';
+        } else {
+            updatePostType();
+            return; // updatePostType handles the rest
+        }
+
+        // For cross-platform or YT-only, show thumbnail section
+        if (ytSelected || (igSelected && document.querySelector('input[name="post_type"]:checked')?.value === 'REEL')) {
+            thumbnailSection.style.display = 'block';
+        } else {
+            thumbnailSection.style.display = 'none';
+        }
+    }
+
     function updatePostType() {
         const selected = document.querySelector('input[name="post_type"]:checked');
         if (selected && selected.value === 'REEL') {
             thumbnailSection.style.display = 'block';
             mediaHint.textContent = 'MP4 or MOV video files for Reels';
         } else {
-            thumbnailSection.style.display = 'none';
+            if (!hasYtSelected()) {
+                thumbnailSection.style.display = 'none';
+            }
             mediaHint.textContent = 'JPEG images only';
         }
     }
-    
-    typeRadios.forEach(r => r.addEventListener('change', updatePostType));
-    updatePostType();
+
+    igCheckboxes.forEach(cb => cb.addEventListener('change', updateFormState));
+    ytCheckboxes.forEach(cb => cb.addEventListener('change', updateFormState));
+    typeRadios.forEach(r => r.addEventListener('change', updateFormState));
+
+    // Initial state
+    updateFormState();
 
     // Caption counter
     const captionInput = document.getElementById('id_caption');
@@ -210,8 +398,8 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // File upload display
-    function setupFileInput(inputSelector, displayId) {
-        const container = document.querySelector(inputSelector);
+    function setupFileInput(containerId, displayId) {
+        const container = document.getElementById(containerId);
         if (!container) return;
         const input = container.querySelector('input[type="file"]');
         const display = document.getElementById(displayId);
@@ -225,8 +413,8 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    setupFileInput('#mediaDropZone', 'mediaFileName');
-    setupFileInput('#thumbDropZone', 'thumbFileName');
+    setupFileInput('mediaDropZone', 'mediaFileName');
+    setupFileInput('thumbDropZone', 'thumbFileName');
 });
 </script>
 {% endblock %}

@@ -105,10 +105,21 @@
                     <div class="timeline-dot {{ post.post_type|lower }}"></div>
                     <div class="timeline-content">
                         <div class="timeline-header">
+                            {% if post.platform == 'YOUTUBE' %}
+                            <span class="badge badge-youtube">YouTube</span>
+                            <span class="timeline-account">{{ post.youtube_account.name }}</span>
+                            {% else %}
                             <span class="badge badge-{{ post.post_type|lower }}">{{ post.get_post_type_display }}</span>
                             <span class="timeline-account">{{ post.account.name }}</span>
+                            {% endif %}
                         </div>
-                        <p class="timeline-caption">{{ post.caption|truncatechars:80 }}</p>
+                        <p class="timeline-caption">
+                            {% if post.platform == 'YOUTUBE' and post.title %}
+                                {{ post.title|truncatechars:80 }}
+                            {% else %}
+                                {{ post.caption|truncatechars:80 }}
+                            {% endif %}
+                        </p>
                         <span class="timeline-time">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
@@ -143,8 +154,24 @@
             <a href="{% url 'account_list' %}" class="card-link">Manage</a>
         </div>
         <div class="card-body">
-            {% if accounts %}
+            {% if accounts or youtube_accounts %}
             <div class="account-list-mini">
+                {% for yt in youtube_accounts %}
+                <div class="account-item-mini">
+                    <div class="account-avatar" style="background: linear-gradient(135deg, #ff0000, #cc0000); font-size: 0.7rem;">YT</div>
+                    <div class="account-info-mini">
+                        <span class="account-name-mini">{{ yt.name }}</span>
+                        <span class="account-id-mini">Channel: {{ yt.channel_id|truncatechars:20 }}</span>
+                    </div>
+                    <div class="token-status-badge status-{{ yt.token_status }}">
+                        <span class="status-dot"></span>
+                        {% if yt.token_status == 'valid' %}Connected
+                        {% elif yt.token_status == 'expired' %}Expired
+                        {% else %}Not Set
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
                 {% for account in accounts %}
                 <div class="account-item-mini">
                     <div class="account-avatar">{{ account.name|first|upper }}</div>
@@ -171,8 +198,8 @@
                 <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.3">
                     <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
                 </svg>
-                <p>You haven't linked any Instagram accounts yet.</p>
-                <a href="{% url 'account_add' %}" class="btn btn-primary btn-sm">Connect an Account</a>
+                <p>You haven't linked any accounts yet.</p>
+                <a href="{% url 'account_list' %}" class="btn btn-primary btn-sm">Connect an Account</a>
             </div>
             {% endif %}
         </div>
@@ -197,7 +224,7 @@
             <table class="data-table">
                 <thead>
                     <tr>
-                        <th>Type</th>
+                        <th>Platform</th>
                         <th>Account</th>
                         <th>Caption</th>
                         <th>Scheduled</th>
@@ -207,9 +234,27 @@
                 <tbody>
                     {% for post in recent_posts %}
                     <tr>
-                        <td><span class="badge badge-{{ post.post_type|lower }}">{{ post.get_post_type_display }}</span></td>
-                        <td>{{ post.account.name }}</td>
-                        <td class="caption-cell">{{ post.caption|truncatechars:50 }}</td>
+                        <td>
+                            {% if post.platform == 'YOUTUBE' %}
+                            <span class="badge badge-youtube">YouTube</span>
+                            {% else %}
+                            <span class="badge badge-{{ post.post_type|lower }}">{{ post.get_post_type_display }}</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if post.platform == 'YOUTUBE' %}
+                                {{ post.youtube_account.name|default:"—" }}
+                            {% else %}
+                                {{ post.account.name|default:"—" }}
+                            {% endif %}
+                        </td>
+                        <td class="caption-cell">
+                            {% if post.platform == 'YOUTUBE' and post.title %}
+                                {{ post.title|truncatechars:50 }}
+                            {% else %}
+                                {{ post.caption|truncatechars:50 }}
+                            {% endif %}
+                        </td>
                         <td>{{ post.scheduled_time|naturaltime }}</td>
                         <td><span class="status-pill status-{{ post.status|lower }}">{{ post.get_status_display }}</span></td>
                     </tr>

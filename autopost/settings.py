@@ -10,10 +10,15 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
+import os
 from pathlib import Path
+from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Load .env file
+load_dotenv(BASE_DIR / '.env')
 
 
 # Quick-start development settings - unsuitable for production
@@ -121,7 +126,6 @@ USE_TZ = True
 STATIC_URL = 'static/'
 
 # Media files (uploads)
-import os
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
@@ -137,3 +141,8 @@ APSCHEDULER_RUN_NOW_TIMEOUT = 25  # seconds
 # Instagram API
 INSTAGRAM_GRAPH_API_BASE = 'https://graph.instagram.com'
 INSTAGRAM_GRAPH_FB_API_BASE = 'https://graph.facebook.com/v21.0'
+
+# Google / YouTube OAuth 2.0
+GOOGLE_OAUTH2_CLIENT_ID = os.environ.get('GOOGLE_OAUTH2_CLIENT_ID', '')
+GOOGLE_OAUTH2_CLIENT_SECRET = os.environ.get('GOOGLE_OAUTH2_CLIENT_SECRET', '')
+GOOGLE_OAUTH2_REDIRECT_URI = 'http://localhost:8000/accounts/youtube/callback/'

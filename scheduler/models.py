@@ -65,8 +65,76 @@ class InstagramAccount(models.Model):
         return max(0, delta.days)
 
 
+class YouTubeAccount(models.Model):
+    """Stores connected YouTube channel details and OAuth tokens."""
+    
+    name = models.CharField(max_length=255, help_text="YouTube Channel Name")
+    channel_id = models.CharField(
+        max_length=100,
+        unique=True,
+        help_text="YouTube Channel ID"
+    )
+    access_token = models.TextField(
+        blank=True,
+        default='',
+        help_text="Current OAuth2 access token"
+    )
+    refresh_token = models.TextField(
+        blank=True,
+        default='',
+        help_text="OAuth2 refresh token (long-lived)"
+    )
+    token_expires_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text="When the access token expires"
+    )
+    thumbnail_url = models.URLField(
+        max_length=500,
+        blank=True,
+        default='',
+        help_text="Channel thumbnail / avatar URL"
+    )
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = "YouTube Account"
+        verbose_name_plural = "YouTube Accounts"
+
+    def __str__(self):
+        return f"{self.name} ({self.channel_id})"
+
+    @property
+    def token_status(self):
+        """Returns the current token status.
+        
+        If a refresh_token is present, we can always auto-refresh,
+        so the account is considered 'valid' even if the short-lived
+        access_token has expired.
+        """
+        if not self.access_token and not self.refresh_token:
+            return 'missing'
+        # Has a refresh token → can always get a new access token
+        if self.refresh_token:
+            return 'valid'
+        if not self.token_expires_at:
+            return 'unknown'
+        now = timezone.now()
+        if self.token_expires_at <= now:
+            return 'expired'
+        return 'valid'
+
+
 class ScheduledPost(models.Model):
-    """Represents a scheduled Instagram post (Image or Reel)."""
+    """Represents a scheduled post (Instagram Image/Reel or YouTube Video)."""
+    
+    PLATFORM_CHOICES = [
+        ('INSTAGRAM', 'Instagram'),
+        ('YOUTUBE', 'YouTube'),
+    ]
     
     POST_TYPE_CHOICES = [
         ('IMAGE', 'Image'),
@@ -81,16 +149,73 @@ class ScheduledPost(models.Model):
         ('CANCELLED', 'Cancelled'),
     ]
 
+    platform = models.CharField(
+        max_length=15,
+        choices=PLATFORM_CHOICES,
+        default='INSTAGRAM',
+        help_text="Target platform for this post"
+    )
+
+    # Instagram account — optional (only for Instagram posts)
     account = models.ForeignKey(
         InstagramAccount, 
         on_delete=models.CASCADE,
-        related_name='posts'
+        related_name='posts',
+        null=True,
+        blank=True,
     )
+    
+    # YouTube account — optional (only for YouTube posts)
+    youtube_account = models.ForeignKey(
+        YouTubeAccount,
+        on_delete=models.CASCADE,
+        related_name='posts',
+        null=True,
+        blank=True,
+    )
+
+    # YouTube Advanced Settings
+    YT_PRIVACY_CHOICES = [
+        ('public', 'Public'),
+        ('private', 'Private'),
+        ('unlisted', 'Unlisted'),
+    ]
+
+    yt_privacy_status = models.CharField(
+        max_length=10,
+        choices=YT_PRIVACY_CHOICES,
+        default='public',
+        help_text="Privacy status for YouTube"
+    )
+    yt_tags = models.CharField(
+        max_length=500,
+        blank=True,
+        default='',
+        help_text="Comma-separated tags for YouTube"
+    )
+    yt_category_id = models.CharField(
+        max_length=10,
+        default='22',
+        help_text="YouTube Category ID (e.g. 22 for People & Blogs)"
+    )
+    yt_made_for_kids = models.BooleanField(
+        default=False,
+        help_text="Is this video made for kids?"
+    )
+
     post_type = models.CharField(
         max_length=10, 
         choices=POST_TYPE_CHOICES, 
         default='IMAGE'
     )
+    
+    title = models.CharField(
+        max_length=100,
+        blank=True,
+        default='',
+        help_text="Video title (required for YouTube)"
+    )
+    
     caption = models.TextField(
         blank=True, 
         default='',
@@ -148,6 +273,12 @@ class ScheduledPost(models.Model):
         default='',
         help_text="Published Instagram media ID"
     )
+    yt_video_id = models.CharField(
+        max_length=100,
+        blank=True,
+        default='',
+        help_text="Uploaded YouTube video ID"
+    )
     error_message = models.TextField(
         blank=True, 
         default='',
@@ -163,7 +294,12 @@ class ScheduledPost(models.Model):
         verbose_name_plural = "Scheduled Posts"
 
     def __str__(self):
-        return f"{self.get_post_type_display()} - {self.account.name} - {self.scheduled_time}"
+        platform_str = self.get_platform_display()
+        if self.platform == 'YOUTUBE':
+            acct_name = self.youtube_account.name if self.youtube_account else 'No Account'
+            return f"YouTube - {acct_name} - {self.scheduled_time}"
+        acct_name = self.account.name if self.account else 'No Account'
+        return f"{self.get_post_type_display()} - {acct_name} - {self.scheduled_time}"
 
     def get_effective_media_url(self, request=None):
         """Returns the media URL to use - either the provided URL or built from the file."""

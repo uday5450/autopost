@@ -44,8 +44,14 @@
     
     --pink: #ec4899;
     --pink-glow: rgba(236, 72, 153, 0.3);
-    
-    /* Spacing */
+
+    /* 3D Shadows & Borders (Dark Mode default) */
+    --shadow-sm: 0 2px 4px rgba(0,0,0,0.2), inset 0 1px 1px rgba(255,255,255,0.05);
+    --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.3), 0 2px 4px -1px rgba(0,0,0,0.2), inset 0 1px 1px rgba(255,255,255,0.08);
+    --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.4), 0 4px 6px -2px rgba(0,0,0,0.2), inset 0 1px 1px rgba(255,255,255,0.08);
+    --shadow-3d: 0 6px 12px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.05), inset 0 2px 1px rgba(255,255,255,0.1), inset 0 -2px 2px rgba(0,0,0,0.5);
+    --shadow-3d-active: 0 2px 4px rgba(0,0,0,0.4), inset 0 3px 5px rgba(0,0,0,0.6), inset 0 -1px 1px rgba(255,255,255,0.05);
+    /* Spacing & Utilities */
     --sidebar-width: 260px;
     --topbar-height: 64px;
     --radius-sm: 6px;
@@ -57,6 +63,42 @@
     --transition-fast: 150ms ease;
     --transition: 250ms ease;
     --transition-slow: 400ms ease;
+}
+
+[data-theme="light"] {
+    --bg-primary: #f8fafc;
+    --bg-secondary: #f1f5f9;
+    --bg-card: #ffffff;
+    --bg-card-hover: #f8fafc;
+    --bg-glass: rgba(255, 255, 255, 0.8);
+    --bg-input: #ffffff;
+    
+    --border-color: #e2e8f0;
+    --border-hover: #cbd5e1;
+    
+    --text-primary: #0f172a;
+    --text-secondary: #475569;
+    --text-muted: #64748b;
+    --text-dim: #94a3b8;
+
+    --purple: #6d28d9;
+    --purple-light: #8b5cf6;
+    --purple-dark: #5b21b6;
+    --purple-glow: rgba(109, 40, 217, 0.2);
+
+    --blue: #2563eb;
+    --blue-glow: rgba(37, 99, 235, 0.2);
+    --green: #059669;
+    --green-glow: rgba(5, 150, 105, 0.2);
+    --red: #dc2626;
+    --red-glow: rgba(220, 38, 38, 0.2);
+
+    /* 3D Shadows & Borders (Light Mode) */
+    --shadow-sm: 0 2px 4px rgba(148,163,184,0.1), inset 0 1px 1px #ffffff;
+    --shadow-md: 0 4px 6px -1px rgba(148,163,184,0.2), 0 2px 4px -1px rgba(148,163,184,0.1), inset 0 1px 1px #ffffff;
+    --shadow-lg: 0 10px 15px -3px rgba(148,163,184,0.25), 0 4px 6px -2px rgba(148,163,184,0.15), inset 0 1px 1px #ffffff;
+    --shadow-3d: 0 6px 12px rgba(148,163,184,0.25), 0 0 0 1px rgba(255,255,255,0.5), inset 0 2px 1px rgba(255,255,255,1), inset 0 -2px 2px rgba(148,163,184,0.15);
+    --shadow-3d-active: 0 1px 2px rgba(148,163,184,0.2), inset 0 3px 5px rgba(148,163,184,0.3), inset 0 -1px 1px rgba(255,255,255,0.8);
 }
 
 /* Reset & Base */
@@ -330,11 +372,13 @@ a:hover {
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
     overflow: hidden;
-    transition: border-color var(--transition);
+    transition: border-color var(--transition), box-shadow var(--transition);
+    box-shadow: var(--shadow-md);
 }
 
 .card:hover {
     border-color: var(--border-hover);
+    box-shadow: var(--shadow-lg);
 }
 
 .card-header {
@@ -392,6 +436,7 @@ a:hover {
     gap: 1rem;
     transition: all var(--transition);
     backdrop-filter: blur(20px);
+    box-shadow: var(--shadow-sm);
 }
 
 .stat-card:hover {
@@ -522,6 +567,7 @@ a:hover {
 
 .badge-image { background: rgba(59, 130, 246, 0.15); color: var(--blue-light); }
 .badge-reel { background: rgba(236, 72, 153, 0.15); color: var(--pink); }
+.badge-youtube { background: rgba(255, 0, 0, 0.15); color: #ff6b6b; }
 
 .status-pill {
     display: inline-flex;
@@ -683,26 +729,38 @@ a:hover {
 .btn-primary {
     background: linear-gradient(135deg, var(--purple), var(--purple-dark));
     color: white;
-    box-shadow: 0 4px 15px var(--purple-glow);
+    box-shadow: var(--shadow-3d);
+}
+
+.btn-primary:active {
+    box-shadow: var(--shadow-3d-active);
+    transform: translateY(1px);
 }
 
 .btn-primary:hover {
     background: linear-gradient(135deg, var(--purple-light), var(--purple));
-    box-shadow: 0 6px 25px var(--purple-glow);
+    box-shadow: var(--shadow-lg), 0 0 15px var(--purple-glow);
     transform: translateY(-1px);
     color: white;
 }
 
 .btn-outline {
-    background: transparent;
+    background: var(--bg-card);
     border: 1px solid var(--border-color);
     color: var(--text-secondary);
+    box-shadow: var(--shadow-sm);
+}
+
+.btn-outline:active {
+    box-shadow: var(--shadow-3d-active);
+    transform: translateY(1px);
 }
 
 .btn-outline:hover {
-    border-color: var(--purple);
+    border-color: var(--purple-light);
     color: var(--purple-light);
-    background: rgba(124, 58, 237, 0.05);
+    background: var(--bg-glass);
+    box-shadow: var(--shadow-md);
 }
 
 .btn-ghost {
@@ -795,6 +853,114 @@ a:hover {
 }
 
 /* ========================================
+   Account Selector Checkboxes
+   ======================================== */
+.account-check-group {
+    margin-bottom: 0.5rem;
+}
+
+.check-group-label {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-muted);
+    margin-bottom: 0.6rem;
+}
+
+.account-check-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+}
+
+.account-check-item {
+    cursor: pointer;
+}
+
+.account-check-item input[type="checkbox"] {
+    display: none;
+}
+
+.account-check-card {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    padding: 0.6rem 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    background: var(--bg-glass);
+    transition: all var(--transition-fast);
+    min-width: 180px;
+}
+
+.account-check-card:hover {
+    border-color: var(--border-hover);
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.account-check-item input:checked + .account-check-card {
+    border-color: var(--purple);
+    background: rgba(124, 58, 237, 0.1);
+    box-shadow: 0 0 12px var(--purple-glow);
+}
+
+.account-check-item input:checked + .account-check-card.yt {
+    border-color: #ff4444;
+    background: rgba(255, 0, 0, 0.08);
+    box-shadow: 0 0 12px rgba(255, 0, 0, 0.2);
+}
+
+.account-check-info {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 0;
+}
+
+.account-check-name {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.account-check-id {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+}
+
+.check-indicator {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    border: 2px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: all var(--transition-fast);
+    color: transparent;
+}
+
+.account-check-item input:checked + .account-check-card .check-indicator {
+    border-color: var(--purple);
+    background: var(--purple);
+    color: white;
+}
+
+.account-check-item input:checked + .account-check-card.yt .check-indicator {
+    border-color: #ff4444;
+    background: #ff4444;
+    color: white;
+}
+
+/* ========================================
    Forms
    ======================================== */
 .form-page {
@@ -832,6 +998,7 @@ select.form-input {
     font-family: inherit;
     font-size: 0.9rem;
     transition: all var(--transition-fast);
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
 }
 
 .form-input:focus,
