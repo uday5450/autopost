@@ -83,31 +83,40 @@ def create_post(request):
         thumbnail_file = request.FILES.get('thumbnail_file')
         thumbnail_url = request.POST.get('thumbnail_url', '').strip()
 
+        post_immediately = request.POST.get('post_immediately') == 'on'
+
         if not media_file and not media_url:
             errors.append('Please provide a media file or URL.')
 
         if selected_yt_ids and not title:
             errors.append('Title is required for YouTube videos.')
 
-        if not scheduled_time:
-            errors.append('Please select a scheduled time.')
+        from django.utils import timezone as tz
+        from datetime import timedelta
+        
+        parsed_time = None
+        if post_immediately:
+            # Set to 1 minute in the past so the scheduler picks it up instantly
+            parsed_time = tz.now() - timedelta(minutes=1)
         else:
-            from django.utils.dateparse import parse_datetime
-            parsed_time = parse_datetime(scheduled_time)
-            if not parsed_time:
-                errors.append('Invalid date/time format.')
+            if not scheduled_time:
+                errors.append('Please select a scheduled time or check "Post Immediately".')
             else:
-                from django.utils import timezone as tz
-                if tz.is_naive(parsed_time):
-                    import pytz
-                    from django.conf import settings as s
-                    try:
-                        local_tz = pytz.timezone(s.TIME_ZONE)
-                        parsed_time = local_tz.localize(parsed_time)
-                    except Exception:
-                        parsed_time = tz.make_aware(parsed_time)
-                if parsed_time <= tz.now():
-                    errors.append('Scheduled time must be in the future.')
+                from django.utils.dateparse import parse_datetime
+                parsed_time = parse_datetime(scheduled_time)
+                if not parsed_time:
+                    errors.append('Invalid date/time format.')
+                else:
+                    if tz.is_naive(parsed_time):
+                        import pytz
+                        from django.conf import settings as s
+                        try:
+                            local_tz = pytz.timezone(s.TIME_ZONE)
+                            parsed_time = local_tz.localize(parsed_time)
+                        except Exception:
+                            parsed_time = tz.make_aware(parsed_time)
+                    if parsed_time <= tz.now():
+                        errors.append('Scheduled time must be in the future.')
 
         if errors:
             for err in errors:

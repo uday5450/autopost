@@ -287,11 +287,23 @@
                 </div>
 
                 <!-- ═══ Schedule Time ═══ -->
-                <div class="form-group">
-                    <label for="id_scheduled_time" class="form-label">When should we post it?</label>
-                    <input type="datetime-local" name="scheduled_time" id="id_scheduled_time" class="form-input"
-                        value="{{ form_data.scheduled_time|default:'' }}">
-                    <span class="form-hint">Choose the exact local date and time.</span>
+                <div class="form-section">
+                    <div class="form-group" style="margin-bottom: 1rem;">
+                        <label class="form-label" style="display: flex; align-items: center; gap: 0.8rem; cursor: pointer; margin: 0; padding: 1rem; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-md); box-shadow: var(--shadow-sm);">
+                            <input type="checkbox" name="post_immediately" id="id_post_immediately" style="width: 20px; height: 20px; accent-color: var(--purple-light);">
+                            <div>
+                                <div style="color: var(--text-primary); font-weight: 600;">Post Immediately 🚀</div>
+                                <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 400;">Skip scheduling and publish this as soon as possible.</div>
+                            </div>
+                        </label>
+                    </div>
+
+                    <div class="form-group" id="scheduledTimeGroup">
+                        <label for="id_scheduled_time" class="form-label">When should we post it?</label>
+                        <input type="datetime-local" name="scheduled_time" id="id_scheduled_time" class="form-input"
+                            value="{{ form_data.scheduled_time|default:'' }}">
+                        <span class="form-hint">Choose the exact local date and time.</span>
+                    </div>
                 </div>
 
                 <!-- ═══ Submit ═══ -->
@@ -421,6 +433,30 @@ document.addEventListener('DOMContentLoaded', function() {
     
     setupFileInput('mediaDropZone', 'mediaFileName');
     setupFileInput('thumbDropZone', 'thumbFileName');
+
+    // Post Immediately Toggle Logic
+    const postImmediatelyCheckbox = document.getElementById('id_post_immediately');
+    const scheduledTimeGroup = document.getElementById('scheduledTimeGroup');
+    const scheduledTimeInput = document.getElementById('id_scheduled_time');
+    
+    if (postImmediatelyCheckbox && scheduledTimeGroup) {
+        function toggleScheduledTime() {
+            if (postImmediatelyCheckbox.checked) {
+                scheduledTimeGroup.style.opacity = '0.4';
+                scheduledTimeGroup.style.pointerEvents = 'none';
+                scheduledTimeInput.disabled = true;
+                scheduledTimeInput.required = false;
+            } else {
+                scheduledTimeGroup.style.opacity = '1';
+                scheduledTimeGroup.style.pointerEvents = 'auto';
+                scheduledTimeInput.disabled = false;
+                scheduledTimeInput.required = true;
+            }
+        }
+        
+        postImmediatelyCheckbox.addEventListener('change', toggleScheduledTime);
+        toggleScheduledTime(); // Run on initial load
+    }
 });
 </script>
 {% endblock %}
