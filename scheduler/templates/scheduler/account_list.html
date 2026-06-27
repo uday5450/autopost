@@ -5,19 +5,44 @@
 {% block page_title %}Connected Accounts{% endblock %}
 
 {% block topbar_actions %}
-<a href="{% url 'account_add' %}" class="btn btn-primary btn-sm" style="margin-right: 0.5rem;">
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-    </svg>
-    Add Instagram
-</a>
-<a href="{% url 'youtube_login' %}" class="btn btn-sm" style="background: #ff0000; color: #fff; border: none;">
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19.13C5.12 19.56 12 19.56 12 19.56s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.43z"/>
-        <polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02"/>
-    </svg>
-    Connect YouTube
-</a>
+<div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+    <a href="{% url 'account_add' %}" class="btn btn-primary btn-sm">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+        Add Instagram
+    </a>
+    <a href="{% url 'youtube_login' %}" class="btn btn-sm" style="background: #ff0000; color: #fff; border: none; font-size: 0.85rem; display: flex; align-items: center; gap: 0.35rem;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19.13C5.12 19.56 12 19.56 12 19.56s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.43z"/>
+            <polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02"/>
+        </svg>
+        Connect YouTube
+    </a>
+    <a href="{% url 'connect_facebook' %}" class="btn btn-sm" style="background: #1877f2; color: #fff; border: none; font-size: 0.85rem; display: flex; align-items: center; gap: 0.35rem;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/>
+        </svg>
+        Connect Facebook
+    </a>
+    <a href="{% url 'connect_x' %}" class="btn btn-sm" style="background: #000; color: #fff; border: 1px solid rgba(255,255,255,0.15); font-size: 0.85rem; display: flex; align-items: center; gap: 0.35rem;">
+        <span style="font-weight: 900;">𝕏</span>
+        Connect X
+    </a>
+    <a href="{% url 'connect_pinterest' %}" class="btn btn-sm" style="background: #e60023; color: #fff; border: none; font-size: 0.85rem; display: flex; align-items: center; gap: 0.35rem;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+        Connect Pinterest
+    </a>
+    <a href="{% url 'connect_tiktok' %}" class="btn btn-sm" style="background: #010101; color: #fff; border: 1px solid #fe2c55; font-size: 0.85rem; display: flex; align-items: center; gap: 0.35rem;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5"/>
+        </svg>
+        Connect TikTok
+    </a>
+</div>
 {% endblock %}
 
 {% block content %}
@@ -224,7 +249,270 @@
 </div>
 {% endif %}
 
-{% if not accounts and not youtube_accounts %}
+<!-- ── Facebook Accounts ─────────────────────────────── -->
+{% if facebook_accounts %}
+<div style="margin-bottom: 2rem; margin-top: 2rem;">
+    <h2 style="font-size: 1.1rem; font-weight: 600; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1877f2" stroke-width="2">
+            <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/>
+        </svg>
+        Facebook Pages
+    </h2>
+    <div class="accounts-grid">
+        {% for fb in facebook_accounts %}
+        <div class="card account-card">
+            <div class="card-body">
+                <div class="account-card-header">
+                    <div class="account-avatar-lg" style="background: linear-gradient(135deg, #1877f2, #0d5cb9);">
+                        {% if fb.profile_picture_url %}
+                        <img src="{{ fb.profile_picture_url }}" alt="{{ fb.name }}" style="width:100%;height:100%;border-radius:inherit;object-fit:cover;">
+                        {% else %}
+                        {{ fb.name|first|upper }}
+                        {% endif %}
+                    </div>
+                    <div class="account-details">
+                        <h3 class="account-name">{{ fb.name }}</h3>
+                        <span class="account-id">Page ID: {{ fb.page_id }}</span>
+                    </div>
+                    <div class="account-status-icon active">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
+                        </svg>
+                    </div>
+                </div>
+
+                <div class="token-section">
+                    <div class="token-header">
+                        <span class="token-label">Page Access</span>
+                        <span class="token-status-badge status-{{ fb.token_status }}">
+                            <span class="status-dot"></span>
+                            Connected
+                        </span>
+                    </div>
+                </div>
+
+                <div class="account-card-actions">
+                    <a href="{% url 'connect_facebook' %}" class="btn btn-ghost btn-sm">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+                        </svg>
+                        Reconnect
+                    </a>
+                    <form method="post" action="{% url 'disconnect_facebook' fb.pk %}" class="inline-form" onsubmit="return confirm('Disconnect Facebook page &quot;{{ fb.name }}&quot;? This will also delete all its scheduled posts.')">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-ghost btn-sm btn-danger-hover">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                            </svg>
+                            Disconnect
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<!-- ── X (Twitter) Accounts ───────────────────────────── -->
+{% if x_accounts %}
+<div style="margin-bottom: 2rem; margin-top: 2rem;">
+    <h2 style="font-size: 1.1rem; font-weight: 600; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+        <span style="font-weight: 900; font-size: 1.2rem; color: var(--text-primary);">𝕏</span>
+        X (Twitter) Accounts
+    </h2>
+    <div class="accounts-grid">
+        {% for x in x_accounts %}
+        <div class="card account-card">
+            <div class="card-body">
+                <div class="account-card-header">
+                    <div class="account-avatar-lg" style="background: #000; border: 1px solid var(--border-color);">
+                        {% if x.profile_picture_url %}
+                        <img src="{{ x.profile_picture_url }}" alt="{{ x.name }}" style="width:100%;height:100%;border-radius:inherit;object-fit:cover;">
+                        {% else %}
+                        {{ x.name|first|upper }}
+                        {% endif %}
+                    </div>
+                    <div class="account-details">
+                        <h3 class="account-name">{{ x.name }}</h3>
+                        <span class="account-id">@{{ x.screen_name }}</span>
+                    </div>
+                    <div class="account-status-icon active">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
+                        </svg>
+                    </div>
+                </div>
+
+                <div class="token-section">
+                    <div class="token-header">
+                        <span class="token-label">API Status</span>
+                        <span class="token-status-badge status-{{ x.token_status }}">
+                            <span class="status-dot"></span>
+                            Connected
+                        </span>
+                    </div>
+                </div>
+
+                <div class="account-card-actions">
+                    <a href="{% url 'connect_x' %}" class="btn btn-ghost btn-sm">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+                        </svg>
+                        Reconnect
+                    </a>
+                    <form method="post" action="{% url 'disconnect_x' x.pk %}" class="inline-form" onsubmit="return confirm('Disconnect X account &quot;{{ x.name }}&quot;? This will also delete all its scheduled posts.')">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-ghost btn-sm btn-danger-hover">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                            </svg>
+                            Disconnect
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<!-- ── Pinterest Accounts ────────────────────────────── -->
+{% if pinterest_accounts %}
+<div style="margin-bottom: 2rem; margin-top: 2rem;">
+    <h2 style="font-size: 1.1rem; font-weight: 600; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#e60023" stroke-width="2">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+        Pinterest Boards
+    </h2>
+    <div class="accounts-grid">
+        {% for pin in pinterest_accounts %}
+        <div class="card account-card">
+            <div class="card-body">
+                <div class="account-card-header">
+                    <div class="account-avatar-lg" style="background: linear-gradient(135deg, #e60023, #b8001c);">
+                        {% if pin.profile_picture_url %}
+                        <img src="{{ pin.profile_picture_url }}" alt="{{ pin.name }}" style="width:100%;height:100%;border-radius:inherit;object-fit:cover;">
+                        {% else %}
+                        {{ pin.name|first|upper }}
+                        {% endif %}
+                    </div>
+                    <div class="account-details">
+                        <h3 class="account-name">{{ pin.name }}</h3>
+                        <span class="account-id">Board: <strong>{{ pin.board_name }}</strong></span>
+                    </div>
+                    <div class="account-status-icon active">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
+                        </svg>
+                    </div>
+                </div>
+
+                <div class="token-section">
+                    <div class="token-header">
+                        <span class="token-label">Board Access</span>
+                        <span class="token-status-badge status-{{ pin.token_status }}">
+                            <span class="status-dot"></span>
+                            Connected
+                        </span>
+                    </div>
+                </div>
+
+                <div class="account-card-actions">
+                    <a href="{% url 'connect_pinterest' %}" class="btn btn-ghost btn-sm">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+                        </svg>
+                        Reconnect
+                    </a>
+                    <form method="post" action="{% url 'disconnect_pinterest' pin.pk %}" class="inline-form" onsubmit="return confirm('Disconnect Pinterest board &quot;{{ pin.board_name }}&quot;? This will also delete all its scheduled posts.')">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-ghost btn-sm btn-danger-hover">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                            </svg>
+                            Disconnect
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<!-- ── TikTok Accounts ───────────────────────────────── -->
+{% if tiktok_accounts %}
+<div style="margin-bottom: 2rem; margin-top: 2rem;">
+    <h2 style="font-size: 1.1rem; font-weight: 600; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#010101" stroke-width="2">
+            <path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5"/>
+        </svg>
+        TikTok Accounts
+    </h2>
+    <div class="accounts-grid">
+        {% for tt in tiktok_accounts %}
+        <div class="card account-card">
+            <div class="card-body">
+                <div class="account-card-header">
+                    <div class="account-avatar-lg" style="background: #010101; border: 1px solid #fe2c55;">
+                        {% if tt.profile_picture_url %}
+                        <img src="{{ tt.profile_picture_url }}" alt="{{ tt.name }}" style="width:100%;height:100%;border-radius:inherit;object-fit:cover;">
+                        {% else %}
+                        {{ tt.name|first|upper }}
+                        {% endif %}
+                    </div>
+                    <div class="account-details">
+                        <h3 class="account-name">{{ tt.name }}</h3>
+                        <span class="account-id">@{{ tt.username }}</span>
+                    </div>
+                    <div class="account-status-icon active">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
+                        </svg>
+                    </div>
+                </div>
+
+                <div class="token-section">
+                    <div class="token-header">
+                        <span class="token-label">Creator Access</span>
+                        <span class="token-status-badge status-{{ tt.token_status }}">
+                            <span class="status-dot"></span>
+                            Connected
+                        </span>
+                    </div>
+                </div>
+
+                <div class="account-card-actions">
+                    <a href="{% url 'connect_tiktok' %}" class="btn btn-ghost btn-sm">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+                        </svg>
+                        Reconnect
+                    </a>
+                    <form method="post" action="{% url 'disconnect_tiktok' tt.pk %}" class="inline-form" onsubmit="return confirm('Disconnect TikTok account &quot;{{ tt.name }}&quot;? This will also delete all its scheduled posts.')">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-ghost btn-sm btn-danger-hover">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                            </svg>
+                            Disconnect
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+{% if not accounts and not youtube_accounts and not facebook_accounts and not x_accounts and not pinterest_accounts and not tiktok_accounts %}
 <div class="card">
     <div class="card-body">
         <div class="empty-state" style="padding: 3rem;">
@@ -233,14 +521,37 @@
             </svg>
             <h3>You don't have any accounts connected yet</h3>
             <p>Let's add your first account so you can start scheduling your posts.</p>
-            <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+            <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; margin-top: 1.5rem;">
                 <a href="{% url 'account_add' %}" class="btn btn-primary">Connect Instagram</a>
-                <a href="{% url 'youtube_login' %}" class="btn" style="background: #ff0000; color: #fff; border: none;">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 0.25rem;">
+                <a href="{% url 'youtube_login' %}" class="btn" style="background: #ff0000; color: #fff; border: none; display: flex; align-items: center; gap: 0.25rem;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19.13C5.12 19.56 12 19.56 12 19.56s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.43z"/>
                         <polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02"/>
                     </svg>
                     Connect YouTube
+                </a>
+                <a href="{% url 'connect_facebook' %}" class="btn" style="background: #1877f2; color: #fff; border: none; display: flex; align-items: center; gap: 0.25rem;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/>
+                    </svg>
+                    Connect Facebook
+                </a>
+                <a href="{% url 'connect_x' %}" class="btn" style="background: #000; color: #fff; border: 1px solid rgba(255,255,255,0.15); display: flex; align-items: center; gap: 0.25rem;">
+                    <span style="font-weight: 900;">𝕏</span>
+                    Connect X
+                </a>
+                <a href="{% url 'connect_pinterest' %}" class="btn" style="background: #e60023; color: #fff; border: none; display: flex; align-items: center; gap: 0.25rem;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+                    Connect Pinterest
+                </a>
+                <a href="{% url 'connect_tiktok' %}" class="btn" style="background: #010101; color: #fff; border: 1px solid #fe2c55; display: flex; align-items: center; gap: 0.25rem;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5"/>
+                    </svg>
+                    Connect TikTok
                 </a>
             </div>
         </div>

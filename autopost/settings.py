@@ -32,6 +32,10 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
+CSRF_TRUSTED_ORIGINS = [
+    'https://8f78-2001-8f8-1a67-3636-59cd-5e8e-34a7-bc31.ngrok-free.app',
+]
+
 
 # Application definition
 
@@ -85,6 +89,9 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
+        'OPTIONS': {
+            'timeout': 20,  # Prevent 'database is locked' errors by waiting up to 20s
+        }
     }
 }
 
@@ -141,8 +148,15 @@ APSCHEDULER_RUN_NOW_TIMEOUT = 25  # seconds
 # Instagram API
 INSTAGRAM_GRAPH_API_BASE = 'https://graph.instagram.com'
 INSTAGRAM_GRAPH_FB_API_BASE = 'https://graph.facebook.com/v21.0'
+INSTAGRAM_CLIENT_ID = os.environ.get('INSTAGRAM_CLIENT_ID', '')
+INSTAGRAM_CLIENT_SECRET = os.environ.get('INSTAGRAM_CLIENT_SECRET', '')
 
 # Google / YouTube OAuth 2.0
 GOOGLE_OAUTH2_CLIENT_ID = os.environ.get('GOOGLE_OAUTH2_CLIENT_ID', '')
 GOOGLE_OAUTH2_CLIENT_SECRET = os.environ.get('GOOGLE_OAUTH2_CLIENT_SECRET', '')
 GOOGLE_OAUTH2_REDIRECT_URI = 'http://localhost:8000/accounts/youtube/callback/'
+
+# Authentication Settings
+LOGIN_URL = 'login'
+LOGIN_REDIRECT_URL = 'dashboard'
+LOGOUT_REDIRECT_URL = 'login'

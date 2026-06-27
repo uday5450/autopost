@@ -1,10 +1,13 @@
 from django.db import models
 from django.utils import timezone
+from django.contrib.auth.models import User
+
 
 
 class InstagramAccount(models.Model):
     """Stores Instagram account credentials and token information."""
     
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='instagram_accounts', null=True, blank=True)
     name = models.CharField(max_length=255, help_text="Display name for this account")
     instagram_user_id = models.CharField(
         max_length=100, 
@@ -74,6 +77,7 @@ class InstagramAccount(models.Model):
 class YouTubeAccount(models.Model):
     """Stores connected YouTube channel details and OAuth tokens."""
     
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='youtube_accounts', null=True, blank=True)
     name = models.CharField(max_length=255, help_text="YouTube Channel Name")
     channel_id = models.CharField(
         max_length=100,
@@ -134,12 +138,117 @@ class YouTubeAccount(models.Model):
         return 'valid'
 
 
+class FacebookAccount(models.Model):
+    """Stores connected Facebook page details and tokens."""
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='facebook_accounts', null=True, blank=True)
+    name = models.CharField(max_length=255, help_text="Facebook Page Name")
+    page_id = models.CharField(max_length=100, unique=True, help_text="Facebook Page ID")
+    access_token = models.TextField(blank=True, default='', help_text="Page access token")
+    profile_picture_url = models.URLField(max_length=500, blank=True, default='', help_text="Page avatar URL")
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = "Facebook Account"
+        verbose_name_plural = "Facebook Accounts"
+
+    def __str__(self):
+        return f"{self.name} ({self.page_id})"
+
+    @property
+    def token_status(self):
+        return 'valid' if self.access_token else 'missing'
+
+
+class XAccount(models.Model):
+    """Stores connected X (Twitter) account details and tokens."""
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='x_accounts', null=True, blank=True)
+    name = models.CharField(max_length=255, help_text="X Account Name")
+    screen_name = models.CharField(max_length=100, unique=True, help_text="X Handle / @username")
+    access_token = models.TextField(blank=True, default='', help_text="OAuth2 access token")
+    refresh_token = models.TextField(blank=True, default='', help_text="OAuth2 refresh token")
+    token_expires_at = models.DateTimeField(null=True, blank=True)
+    profile_picture_url = models.URLField(max_length=500, blank=True, default='', help_text="Avatar URL")
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = "X Account"
+        verbose_name_plural = "X Accounts"
+
+    def __str__(self):
+        return f"{self.name} (@{self.screen_name})"
+
+    @property
+    def token_status(self):
+        return 'valid' if self.access_token else 'missing'
+
+
+class PinterestAccount(models.Model):
+    """Stores connected Pinterest board details and tokens."""
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='pinterest_accounts', null=True, blank=True)
+    name = models.CharField(max_length=255, help_text="Pinterest Username")
+    board_name = models.CharField(max_length=255, help_text="Pinterest Board Name")
+    access_token = models.TextField(blank=True, default='', help_text="Pinterest access token")
+    profile_picture_url = models.URLField(max_length=500, blank=True, default='', help_text="Profile picture URL")
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = "Pinterest Account"
+        verbose_name_plural = "Pinterest Accounts"
+
+    def __str__(self):
+        return f"{self.name} - {self.board_name}"
+
+    @property
+    def token_status(self):
+        return 'valid' if self.access_token else 'missing'
+
+
+class TikTokAccount(models.Model):
+    """Stores connected TikTok account details and tokens."""
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='tiktok_accounts', null=True, blank=True)
+    name = models.CharField(max_length=255, help_text="TikTok Display Name")
+    username = models.CharField(max_length=100, unique=True, help_text="TikTok @username")
+    access_token = models.TextField(blank=True, default='', help_text="TikTok access token")
+    refresh_token = models.TextField(blank=True, default='', help_text="TikTok refresh token")
+    token_expires_at = models.DateTimeField(null=True, blank=True)
+    profile_picture_url = models.URLField(max_length=500, blank=True, default='', help_text="Avatar URL")
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = "TikTok Account"
+        verbose_name_plural = "TikTok Accounts"
+
+    def __str__(self):
+        return f"{self.name} (@{self.username})"
+
+    @property
+    def token_status(self):
+        return 'valid' if self.access_token else 'missing'
+
+
+
 class ScheduledPost(models.Model):
     """Represents a scheduled post (Instagram Image/Reel or YouTube Video)."""
     
     PLATFORM_CHOICES = [
         ('INSTAGRAM', 'Instagram'),
         ('YOUTUBE', 'YouTube'),
+        ('X', 'X (Twitter)'),
+        ('FACEBOOK', 'Facebook Page'),
+        ('PINTEREST', 'Pinterest'),
+        ('TIKTOK', 'TikTok'),
     ]
     
     POST_TYPE_CHOICES = [
@@ -161,6 +270,8 @@ class ScheduledPost(models.Model):
         default='INSTAGRAM',
         help_text="Target platform for this post"
     )
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='scheduled_posts', null=True, blank=True)
+
 
     # Instagram account — optional (only for Instagram posts)
     account = models.ForeignKey(
@@ -174,6 +285,42 @@ class ScheduledPost(models.Model):
     # YouTube account — optional (only for YouTube posts)
     youtube_account = models.ForeignKey(
         YouTubeAccount,
+        on_delete=models.CASCADE,
+        related_name='posts',
+        null=True,
+        blank=True,
+    )
+    
+    # Facebook Page account — optional
+    facebook_account = models.ForeignKey(
+        FacebookAccount,
+        on_delete=models.CASCADE,
+        related_name='posts',
+        null=True,
+        blank=True,
+    )
+
+    # X (Twitter) account — optional
+    x_account = models.ForeignKey(
+        XAccount,
+        on_delete=models.CASCADE,
+        related_name='posts',
+        null=True,
+        blank=True,
+    )
+
+    # Pinterest account — optional
+    pinterest_account = models.ForeignKey(
+        PinterestAccount,
+        on_delete=models.CASCADE,
+        related_name='posts',
+        null=True,
+        blank=True,
+    )
+
+    # TikTok account — optional
+    tiktok_account = models.ForeignKey(
+        TikTokAccount,
         on_delete=models.CASCADE,
         related_name='posts',
         null=True,
@@ -304,6 +451,18 @@ class ScheduledPost(models.Model):
         if self.platform == 'YOUTUBE':
             acct_name = self.youtube_account.name if self.youtube_account else 'No Account'
             return f"YouTube - {acct_name} - {self.scheduled_time}"
+        elif self.platform == 'FACEBOOK':
+            acct_name = self.facebook_account.name if self.facebook_account else 'No Account'
+            return f"Facebook - {acct_name} - {self.scheduled_time}"
+        elif self.platform == 'X':
+            acct_name = self.x_account.name if self.x_account else 'No Account'
+            return f"X - {acct_name} - {self.scheduled_time}"
+        elif self.platform == 'PINTEREST':
+            acct_name = self.pinterest_account.name if self.pinterest_account else 'No Account'
+            return f"Pinterest - {acct_name} - {self.scheduled_time}"
+        elif self.platform == 'TIKTOK':
+            acct_name = self.tiktok_account.name if self.tiktok_account else 'No Account'
+            return f"TikTok - {acct_name} - {self.scheduled_time}"
         acct_name = self.account.name if self.account else 'No Account'
         return f"{self.get_post_type_display()} - {acct_name} - {self.scheduled_time}"
 

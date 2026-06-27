@@ -178,6 +178,122 @@ def process_scheduled_posts():
             post.save(update_fields=['status', 'error_message'])
             logger.exception(f"Unexpected error processing YouTube post {post.id}")
 
+    # ── Simulated Facebook Page Posts ────────────────────────────────
+    fb_posts = ScheduledPost.objects.filter(
+        platform='FACEBOOK',
+        status='PENDING',
+        scheduled_time__lte=now,
+        facebook_account__isnull=False,
+        facebook_account__is_active=True,
+    ).select_related('facebook_account')
+
+    for post in fb_posts:
+        logger.info(f"Processing FB post {post.id} for page {post.facebook_account.name}")
+        try:
+            post.status = 'PROCESSING'
+            post.save(update_fields=['status'])
+            
+            import time
+            time.sleep(0.5)
+            
+            post.status = 'PUBLISHED'
+            post.published_at = timezone.now()
+            post.error_message = ''
+            post.save(update_fields=['status', 'published_at', 'error_message'])
+            logger.info(f"Facebook Page post {post.id} published successfully (simulated).")
+        except Exception as e:
+            post.status = 'FAILED'
+            post.error_message = f'Unexpected error: {str(e)}'
+            post.save(update_fields=['status', 'error_message'])
+            logger.exception(f"Unexpected error processing Facebook Page post {post.id}")
+
+    # ── Simulated X (Twitter) Posts ──────────────────────────────────
+    x_posts = ScheduledPost.objects.filter(
+        platform='X',
+        status='PENDING',
+        scheduled_time__lte=now,
+        x_account__isnull=False,
+        x_account__is_active=True,
+    ).select_related('x_account')
+
+    for post in x_posts:
+        logger.info(f"Processing X post {post.id} for account {post.x_account.name}")
+        try:
+            post.status = 'PROCESSING'
+            post.save(update_fields=['status'])
+            
+            import time
+            time.sleep(0.5)
+            
+            post.status = 'PUBLISHED'
+            post.published_at = timezone.now()
+            post.error_message = ''
+            post.save(update_fields=['status', 'published_at', 'error_message'])
+            logger.info(f"X post {post.id} published successfully (simulated).")
+        except Exception as e:
+            post.status = 'FAILED'
+            post.error_message = f'Unexpected error: {str(e)}'
+            post.save(update_fields=['status', 'error_message'])
+            logger.exception(f"Unexpected error processing X post {post.id}")
+
+    # ── Simulated Pinterest Posts ────────────────────────────────────
+    pin_posts = ScheduledPost.objects.filter(
+        platform='PINTEREST',
+        status='PENDING',
+        scheduled_time__lte=now,
+        pinterest_account__isnull=False,
+        pinterest_account__is_active=True,
+    ).select_related('pinterest_account')
+
+    for post in pin_posts:
+        logger.info(f"Processing Pinterest post {post.id} for board {post.pinterest_account.board_name}")
+        try:
+            post.status = 'PROCESSING'
+            post.save(update_fields=['status'])
+            
+            import time
+            time.sleep(0.5)
+            
+            post.status = 'PUBLISHED'
+            post.published_at = timezone.now()
+            post.error_message = ''
+            post.save(update_fields=['status', 'published_at', 'error_message'])
+            logger.info(f"Pinterest post {post.id} published successfully (simulated).")
+        except Exception as e:
+            post.status = 'FAILED'
+            post.error_message = f'Unexpected error: {str(e)}'
+            post.save(update_fields=['status', 'error_message'])
+            logger.exception(f"Unexpected error processing Pinterest post {post.id}")
+
+    # ── Simulated TikTok Posts ───────────────────────────────────────
+    tt_posts = ScheduledPost.objects.filter(
+        platform='TIKTOK',
+        status='PENDING',
+        scheduled_time__lte=now,
+        tiktok_account__isnull=False,
+        tiktok_account__is_active=True,
+    ).select_related('tiktok_account')
+
+    for post in tt_posts:
+        logger.info(f"Processing TikTok post {post.id} for account {post.tiktok_account.name}")
+        try:
+            post.status = 'PROCESSING'
+            post.save(update_fields=['status'])
+            
+            import time
+            time.sleep(0.5)
+            
+            post.status = 'PUBLISHED'
+            post.published_at = timezone.now()
+            post.error_message = ''
+            post.save(update_fields=['status', 'published_at', 'error_message'])
+            logger.info(f"TikTok post {post.id} published successfully (simulated).")
+        except Exception as e:
+            post.status = 'FAILED'
+            post.error_message = f'Unexpected error: {str(e)}'
+            post.save(update_fields=['status', 'error_message'])
+            logger.exception(f"Unexpected error processing TikTok post {post.id}")
+
 
 def refresh_expiring_tokens():
     """

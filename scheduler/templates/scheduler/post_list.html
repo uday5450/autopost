@@ -60,12 +60,39 @@
                     <tr class="post-row">
                         <td>
                             {% if post.platform == 'YOUTUBE' %}
-                            <span class="badge badge-youtube">
+                            <span class="badge badge-youtube" style="background: rgba(255, 0, 0, 0.1); color: #ff4444; border: 1px solid rgba(255, 0, 0, 0.2);">
                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19.13C5.12 19.56 12 19.56 12 19.56s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.43z"/>
                                     <polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02"/>
                                 </svg>
                                 YouTube
+                            </span>
+                            {% elif post.platform == 'FACEBOOK' %}
+                            <span class="badge badge-facebook" style="background: rgba(24, 119, 242, 0.1); color: #1877f2; border: 1px solid rgba(24, 119, 242, 0.2);">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/>
+                                </svg>
+                                Facebook
+                            </span>
+                            {% elif post.platform == 'X' %}
+                            <span class="badge badge-x" style="background: rgba(255, 255, 255, 0.1); color: #ffffff; border: 1px solid rgba(255, 255, 255, 0.2);">
+                                <span style="font-weight:900; font-size: 0.8rem; margin-right: 0.2rem;">𝕏</span>
+                                X
+                            </span>
+                            {% elif post.platform == 'PINTEREST' %}
+                            <span class="badge badge-pinterest" style="background: rgba(230, 0, 35, 0.1); color: #e60023; border: 1px solid rgba(230, 0, 35, 0.2);">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                                </svg>
+                                Pinterest
+                            </span>
+                            {% elif post.platform == 'TIKTOK' %}
+                            <span class="badge badge-tiktok" style="background: rgba(254, 44, 85, 0.1); color: #fe2c55; border: 1px solid rgba(254, 44, 85, 0.2);">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5"/>
+                                </svg>
+                                TikTok
                             </span>
                             {% else %}
                             <span class="badge badge-{{ post.post_type|lower }}">
@@ -87,6 +114,18 @@
                                 {% if post.platform == 'YOUTUBE' %}
                                 <div class="account-avatar-sm" style="background: linear-gradient(135deg, #ff0000, #cc0000); font-size: 0.55rem;">YT</div>
                                 {{ post.youtube_account.name|default:"—" }}
+                                {% elif post.platform == 'FACEBOOK' %}
+                                <div class="account-avatar-sm" style="background: linear-gradient(135deg, #1877f2, #0d5cb9); font-size: 0.55rem;">FB</div>
+                                {{ post.facebook_account.name|default:"—" }}
+                                {% elif post.platform == 'X' %}
+                                <div class="account-avatar-sm" style="background: #000; font-size: 0.55rem; border: 1px solid rgba(255,255,255,0.1);">𝕏</div>
+                                {{ post.x_account.name|default:"—" }}
+                                {% elif post.platform == 'PINTEREST' %}
+                                <div class="account-avatar-sm" style="background: linear-gradient(135deg, #e60023, #b8001c); font-size: 0.55rem;">PI</div>
+                                {{ post.pinterest_account.board_name|default:"—" }}
+                                {% elif post.platform == 'TIKTOK' %}
+                                <div class="account-avatar-sm" style="background: #010101; border: 1px solid #fe2c55; font-size: 0.55rem;">TT</div>
+                                {{ post.tiktok_account.name|default:"—" }}
                                 {% else %}
                                 <div class="account-avatar-sm">{{ post.account.name|first|upper }}</div>
                                 {{ post.account.name|default:"—" }}

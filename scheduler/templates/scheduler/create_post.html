@@ -16,7 +16,7 @@
             </h2>
         </div>
         <div class="card-body">
-            {% if not accounts and not youtube_accounts %}
+            {% if not accounts and not youtube_accounts and not facebook_accounts and not x_accounts and not pinterest_accounts and not tiktok_accounts %}
             <div class="empty-state">
                 <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.3">
                     <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
@@ -91,6 +91,135 @@
                                     <div class="account-check-info">
                                         <span class="account-check-name">{{ yt.name }}</span>
                                         <span class="account-check-id">{{ yt.channel_id|truncatechars:24 }}</span>
+                                    </div>
+                                    <div class="check-indicator">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                                            <polyline points="20 6 9 17 4 12"/>
+                                        </svg>
+                                    </div>
+                                </div>
+                            </label>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    {% if facebook_accounts %}
+                    <div class="account-check-group" style="margin-top: 1rem;">
+                        <span class="check-group-label" style="color: #1877f2;">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/>
+                            </svg>
+                            Facebook
+                        </span>
+                        <div class="account-check-list">
+                            {% for fb in facebook_accounts %}
+                            <label class="account-check-item">
+                                <input type="checkbox" name="fb_accounts" value="{{ fb.pk }}"
+                                    {% if form_data %}{% for v in form_data.fb_accounts %}{% if v == fb.pk|stringformat:"d" %}checked{% endif %}{% endfor %}{% endif %}>
+                                <div class="account-check-card fb">
+                                    <div class="account-avatar-sm" style="background: linear-gradient(135deg, #1877f2, #0d5cb9);">
+                                        {% if fb.profile_picture_url %}
+                                        <img src="{{ fb.profile_picture_url }}" alt="{{ fb.name }}" style="width:100%;height:100%;border-radius:inherit;object-fit:cover;">
+                                        {% else %}
+                                        FB
+                                        {% endif %}
+                                    </div>
+                                    <div class="account-check-info">
+                                        <span class="account-check-name">{{ fb.name }}</span>
+                                        <span class="account-check-id">Page: {{ fb.page_id|truncatechars:24 }}</span>
+                                    </div>
+                                    <div class="check-indicator">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                                            <polyline points="20 6 9 17 4 12"/>
+                                        </svg>
+                                    </div>
+                                </div>
+                            </label>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    {% if x_accounts %}
+                    <div class="account-check-group" style="margin-top: 1rem;">
+                        <span class="check-group-label" style="color: #ffffff;">
+                            <span style="font-weight:900; margin-right:0.25rem;">𝕏</span>
+                            X (Twitter)
+                        </span>
+                        <div class="account-check-list">
+                            {% for x in x_accounts %}
+                            <label class="account-check-item">
+                                <input type="checkbox" name="x_accounts" value="{{ x.pk }}"
+                                    {% if form_data %}{% for v in form_data.x_accounts %}{% if v == x.pk|stringformat:"d" %}checked{% endif %}{% endfor %}{% endif %}>
+                                <div class="account-check-card x">
+                                    <div class="account-avatar-sm" style="background: #000; border: 1px solid rgba(255,255,255,0.15);">𝕏</div>
+                                    <div class="account-check-info">
+                                        <span class="account-check-name">{{ x.name }}</span>
+                                        <span class="account-check-id">@{{ x.screen_name }}</span>
+                                    </div>
+                                    <div class="check-indicator">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                                            <polyline points="20 6 9 17 4 12"/>
+                                        </svg>
+                                    </div>
+                                </div>
+                            </label>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    {% if pinterest_accounts %}
+                    <div class="account-check-group" style="margin-top: 1rem;">
+                        <span class="check-group-label" style="color: #e60023;">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="12" y1="5" x2="12" y2="19"></line>
+                                <line x1="5" y1="12" x2="19" y2="12"></line>
+                            </svg>
+                            Pinterest
+                        </span>
+                        <div class="account-check-list">
+                            {% for pin in pinterest_accounts %}
+                            <label class="account-check-item">
+                                <input type="checkbox" name="pin_accounts" value="{{ pin.pk }}"
+                                    {% if form_data %}{% for v in form_data.pin_accounts %}{% if v == pin.pk|stringformat:"d" %}checked{% endif %}{% endfor %}{% endif %}>
+                                <div class="account-check-card pin">
+                                    <div class="account-avatar-sm" style="background: linear-gradient(135deg, #e60023, #b8001c);">PI</div>
+                                    <div class="account-check-info">
+                                        <span class="account-check-name">{{ pin.name }}</span>
+                                        <span class="account-check-id">Board: {{ pin.board_name|truncatechars:24 }}</span>
+                                    </div>
+                                    <div class="check-indicator">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                                            <polyline points="20 6 9 17 4 12"/>
+                                        </svg>
+                                    </div>
+                                </div>
+                            </label>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    {% if tiktok_accounts %}
+                    <div class="account-check-group" style="margin-top: 1rem;">
+                        <span class="check-group-label" style="color: #fe2c55;">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5"/>
+                            </svg>
+                            TikTok
+                        </span>
+                        <div class="account-check-list">
+                            {% for tt in tiktok_accounts %}
+                            <label class="account-check-item">
+                                <input type="checkbox" name="tt_accounts" value="{{ tt.pk }}"
+                                    {% if form_data %}{% for v in form_data.tt_accounts %}{% if v == tt.pk|stringformat:"d" %}checked{% endif %}{% endfor %}{% endif %}>
+                                <div class="account-check-card tt">
+                                    <div class="account-avatar-sm" style="background: #010101; border: 1px solid #fe2c55;">TT</div>
+                                    <div class="account-check-info">
+                                        <span class="account-check-name">{{ tt.name }}</span>
+                                        <span class="account-check-id">@{{ tt.username }}</span>
                                     </div>
                                     <div class="check-indicator">
                                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
@@ -316,6 +445,10 @@
 document.addEventListener('DOMContentLoaded', function() {
     const igCheckboxes = document.querySelectorAll('input[name="ig_accounts"]');
     const ytCheckboxes = document.querySelectorAll('input[name="yt_accounts"]');
+    const fbCheckboxes = document.querySelectorAll('input[name="fb_accounts"]');
+    const xCheckboxes = document.querySelectorAll('input[name="x_accounts"]');
+    const pinCheckboxes = document.querySelectorAll('input[name="pin_accounts"]');
+    const ttCheckboxes = document.querySelectorAll('input[name="tt_accounts"]');
     const postTypeSection = document.getElementById('postTypeSection');
     const titleSection = document.getElementById('titleSection');
     const thumbnailSection = document.getElementById('thumbnailSection');
@@ -329,56 +462,88 @@ document.addEventListener('DOMContentLoaded', function() {
     function hasYtSelected() {
         return Array.from(ytCheckboxes).some(cb => cb.checked);
     }
+    function hasFbSelected() {
+        return Array.from(fbCheckboxes).some(cb => cb.checked);
+    }
+    function hasXSelected() {
+        return Array.from(xCheckboxes).some(cb => cb.checked);
+    }
+    function hasPinSelected() {
+        return Array.from(pinCheckboxes).some(cb => cb.checked);
+    }
+    function hasTtSelected() {
+        return Array.from(ttCheckboxes).some(cb => cb.checked);
+    }
 
     function updateFormState() {
         const igSelected = hasIgSelected();
         const ytSelected = hasYtSelected();
+        const fbSelected = hasFbSelected();
+        const xSelected = hasXSelected();
+        const pinSelected = hasPinSelected();
+        const ttSelected = hasTtSelected();
 
-        // Show title and Advanced Settings if any YT account is selected
-        titleSection.style.display = ytSelected ? 'block' : 'none';
+        const anySelected = igSelected || ytSelected || fbSelected || xSelected || pinSelected || ttSelected;
+
+        // Show/hide Title section if YouTube, Facebook, Pinterest or TikTok is selected
+        const showTitle = ytSelected || fbSelected || pinSelected || ttSelected;
+        titleSection.style.display = showTitle ? 'block' : 'none';
+
         const ytAdvancedSection = document.getElementById('ytAdvancedSection');
         if (ytAdvancedSection) {
             ytAdvancedSection.style.display = ytSelected ? 'block' : 'none';
         }
 
-        // Show post type only if IG is selected (and not exclusively YT)
-        if (igSelected) {
-            postTypeSection.style.display = 'block';
-            if (ytSelected) {
-                postTypeHint.textContent = '💡 YouTube always receives the video. This only affects Instagram.';
+        // Post Type Selector visibility
+        // Post type is applicable to Instagram, Facebook, X.
+        // YouTube, TikTok are always videos. Pinterest is always image.
+        const showPostTypeSelector = igSelected || fbSelected || xSelected;
+        postTypeSection.style.display = showPostTypeSelector ? 'block' : 'none';
+
+        // Hints & thumbnail section based on selections and post type
+        const selectedPostType = document.querySelector('input[name="post_type"]:checked')?.value || 'IMAGE';
+        
+        let hintParts = [];
+        let forceVideo = ytSelected || ttSelected;
+        let forceImage = pinSelected;
+        
+        if (forceVideo && forceImage) {
+            hintParts.push('⚠️ Mixed Platforms: YouTube/TikTok require video, but Pinterest requires images. We recommend scheduling them separately.');
+        } else if (forceVideo) {
+            hintParts.push('🎥 Video file required for YouTube / TikTok.');
+        } else if (forceImage) {
+            hintParts.push('🖼️ Image file required for Pinterest.');
+        } else {
+            // Only IG/FB/X selected
+            if (selectedPostType === 'REEL') {
+                hintParts.push('🎥 Video file (MP4/MOV) for Reels / Video posts.');
             } else {
-                postTypeHint.textContent = '';
+                hintParts.push('🖼️ Image file (JPEG) for standard posts.');
             }
-        } else {
-            postTypeSection.style.display = ytSelected ? 'none' : 'block';
-            postTypeHint.textContent = '';
         }
+        
+        mediaHint.textContent = hintParts.join(' ');
 
-        // Media hint
-        if (ytSelected && !igSelected) {
-            mediaHint.textContent = 'MP4 or MOV video files for YouTube';
-        } else if (igSelected && ytSelected) {
-            mediaHint.textContent = 'MP4/MOV video — will be posted as Reel on Instagram + Video on YouTube';
-        } else {
-            updatePostType();
-            return; // updatePostType handles the rest
+        // Show/hide thumbnail cover section
+        const needsThumbnail = ytSelected || ttSelected || (showPostTypeSelector && selectedPostType === 'REEL');
+        thumbnailSection.style.display = needsThumbnail ? 'block' : 'none';
+        
+        // Show indicator messages on post type hint
+        let typeHint = '';
+        if (igSelected && ytSelected) {
+            typeHint = '💡 YouTube always receives a video. Post Type selection only affects Instagram/Facebook/X.';
         }
-
-        // For cross-platform or YT-only, show thumbnail section
-        if (ytSelected || (igSelected && document.querySelector('input[name="post_type"]:checked')?.value === 'REEL')) {
-            thumbnailSection.style.display = 'block';
-        } else {
-            thumbnailSection.style.display = 'none';
-        }
+        postTypeHint.textContent = typeHint;
     }
 
     function updatePostType() {
         const selected = document.querySelector('input[name="post_type"]:checked');
+        const hasVideoPlatform = hasYtSelected() || hasTtSelected();
         if (selected && selected.value === 'REEL') {
             thumbnailSection.style.display = 'block';
-            mediaHint.textContent = 'MP4 or MOV video files for Reels';
+            mediaHint.textContent = 'MP4 or MOV video files for Reels/Videos';
         } else {
-            if (!hasYtSelected()) {
+            if (!hasVideoPlatform) {
                 thumbnailSection.style.display = 'none';
             }
             mediaHint.textContent = 'JPEG images only';
@@ -387,6 +552,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
     igCheckboxes.forEach(cb => cb.addEventListener('change', updateFormState));
     ytCheckboxes.forEach(cb => cb.addEventListener('change', updateFormState));
+    fbCheckboxes.forEach(cb => cb.addEventListener('change', updateFormState));
+    xCheckboxes.forEach(cb => cb.addEventListener('change', updateFormState));
+    pinCheckboxes.forEach(cb => cb.addEventListener('change', updateFormState));
+    ttCheckboxes.forEach(cb => cb.addEventListener('change', updateFormState));
     typeRadios.forEach(r => r.addEventListener('change', updateFormState));
 
     // Initial state
