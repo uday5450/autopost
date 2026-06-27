@@ -1,0 +1,298 @@
+{% extends 'scheduler/base.html' %}
+{% load static %}
+
+{% block title %}Authorize {{ platform_name }} - AutoPost{% endblock %}
+
+{% block extra_head %}
+<style>
+    .oauth-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 75vh;
+        padding: 2rem;
+    }
+    .oauth-card {
+        width: 100%;
+        max-width: 520px;
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-lg);
+        padding: 2.5rem;
+        box-shadow: var(--shadow-lg);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+    }
+    .oauth-logo-flow {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+        position: relative;
+    }
+    .oauth-logo-flow::before {
+        content: '';
+        position: absolute;
+        width: 60px;
+        height: 2px;
+        background: linear-gradient(90deg, var(--purple-light), var(--border-color));
+        z-index: 1;
+    }
+    .app-logo-circle {
+        width: 56px;
+        height: 56px;
+        background: linear-gradient(135deg, var(--purple), var(--pink));
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        z-index: 2;
+        box-shadow: 0 4px 15px var(--purple-glow);
+    }
+    .platform-logo-circle {
+        width: 56px;
+        height: 56px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        z-index: 2;
+        font-size: 1.5rem;
+    }
+    
+    /* Platform Specific styles */
+    .platform-facebook {
+        background: #1877f2;
+        box-shadow: 0 4px 15px rgba(24, 119, 242, 0.4);
+    }
+    .platform-x {
+        background: #000000;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+    }
+    .platform-pinterest {
+        background: #e60023;
+        box-shadow: 0 4px 15px rgba(230, 0, 35, 0.4);
+    }
+    .platform-tiktok {
+        background: #010101;
+        box-shadow: 0 4px 15px rgba(1, 1, 1, 0.6);
+        border: 1px solid #fe2c55;
+    }
+    
+    .permissions-box {
+        background: var(--bg-input);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-md);
+        padding: 1.25rem;
+        text-align: left;
+        margin: 1.5rem 0 2rem 0;
+    }
+    .permissions-title {
+        font-size: 0.85rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: var(--text-secondary);
+        margin-bottom: 0.75rem;
+    }
+    .permission-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.75rem;
+        font-size: 0.9rem;
+        color: var(--text-primary);
+        margin-bottom: 0.5rem;
+    }
+    .permission-item:last-child {
+        margin-bottom: 0;
+    }
+    .permission-check {
+        color: var(--green-light);
+        margin-top: 0.15rem;
+    }
+    
+    .oauth-btn-group {
+        display: flex;
+        gap: 1rem;
+    }
+    .btn-auth {
+        flex: 1;
+        padding: 0.85rem;
+        border-radius: var(--radius-md);
+        font-weight: 600;
+        font-size: 0.95rem;
+        cursor: pointer;
+        transition: all var(--transition-fast);
+    }
+    
+    .btn-authorize {
+        background: linear-gradient(135deg, var(--purple), var(--purple-dark));
+        color: white;
+        border: none;
+        box-shadow: 0 4px 12px var(--purple-glow);
+    }
+    .btn-authorize:hover {
+        opacity: 0.9;
+        transform: translateY(-1px);
+    }
+    
+    .btn-cancel {
+        background: var(--bg-input);
+        border: 1px solid var(--border-color);
+        color: var(--text-secondary);
+    }
+    .btn-cancel:hover {
+        background: var(--bg-card-hover);
+        color: var(--text-primary);
+    }
+    
+    .loader-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(17, 24, 39, 0.9);
+        display: none;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        z-index: 10;
+        backdrop-filter: blur(5px);
+    }
+    .spinner {
+        width: 50px;
+        height: 50px;
+        border: 3px solid rgba(124, 58, 237, 0.1);
+        border-radius: 50%;
+        border-top-color: var(--purple-light);
+        animation: spin 1s ease-in-out infinite;
+        margin-bottom: 1.5rem;
+    }
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="oauth-container">
+    <div class="oauth-card">
+        
+        <!-- Loading Overlay -->
+        <div class="loader-overlay" id="loaderOverlay">
+            <div class="spinner"></div>
+            <h3 style="font-weight: 600; font-size: 1.2rem; color: var(--text-primary); margin-bottom: 0.5rem;">Authenticating with {{ platform_name }}</h3>
+            <p style="color: var(--text-muted); font-size: 0.9rem;">Exchanging security credentials...</p>
+        </div>
+        
+        <div class="oauth-logo-flow">
+            <div class="app-logo-circle" title="AutoPost">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
+                    <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/>
+                    <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/>
+                </svg>
+            </div>
+            
+            <div class="platform-logo-circle platform-{{ platform_id }}">
+                {% if platform_id == 'facebook' %}
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/>
+                    </svg>
+                {% elif platform_id == 'x' %}
+                    <span style="font-weight: 900; font-family: 'Outfit', sans-serif;">𝕏</span>
+                {% elif platform_id == 'pinterest' %}
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+                {% elif platform_id == 'tiktok' %}
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5"/>
+                    </svg>
+                {% endif %}
+            </div>
+        </div>
+        
+        <h2 style="font-size: 1.6rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.5rem;">Authorize AutoPost</h2>
+        <p style="color: var(--text-secondary); font-size: 0.95rem;">
+            <strong>AutoPost</strong> requests permission to access and publish on your <strong>{{ platform_name }}</strong> account.
+        </p>
+        
+        <div class="permissions-box">
+            <div class="permissions-title">Requested Permissions</div>
+            
+            <div class="permission-item">
+                <span class="permission-check">✓</span>
+                <div>
+                    <strong>View Profile Information</strong>
+                    <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.15rem;">Access your public avatar, name, and account handle.</div>
+                </div>
+            </div>
+            
+            <div class="permission-item">
+                <span class="permission-check">✓</span>
+                <div>
+                    <strong>Publish Media & Posts</strong>
+                    <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.15rem;">Create, schedule, and delete posts on your behalf.</div>
+                </div>
+            </div>
+            
+            {% if platform_id == 'pinterest' %}
+            <div class="permission-item">
+                <span class="permission-check">✓</span>
+                <div>
+                    <strong>Retrieve Boards List</strong>
+                    <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.15rem;">List boards to choose where to pin your content.</div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        
+        <form method="POST" id="authForm" action="">
+            {% csrf_token %}
+            
+            {% if platform_id == 'pinterest' %}
+            <div class="form-group" style="display: flex; flex-direction: column; gap: 0.5rem; text-align: left; margin-bottom: 1.5rem;">
+                <label for="board_name" style="font-size: 0.85rem; font-weight: 600; color: var(--text-secondary);">Select Target Pinterest Board</label>
+                <select id="board_name" name="board_name" required
+                        style="width: 100%; padding: 0.85rem 1rem; background: var(--bg-input); border: 1px solid var(--border-color); border-radius: var(--radius-md); color: var(--text-primary); font-size: 0.95rem; outline: none;">
+                    <option value="My Awesome Board">My Awesome Board (Default)</option>
+                    <option value="Social Designs">Social Designs</option>
+                    <option value="Inspirations">Inspirations</option>
+                    <option value="Media Schedule">Media Schedule</option>
+                </select>
+            </div>
+            {% endif %}
+            
+            <div class="oauth-btn-group">
+                <a href="{% url 'account_list' %}" class="btn-auth btn-cancel" style="text-decoration: none; display: flex; align-items: center; justify-content: center;">Cancel</a>
+                <button type="submit" class="btn-auth btn-authorize" id="btnAuthorize">Authorize Access</button>
+            </div>
+        </form>
+        
+    </div>
+</div>
+
+<script>
+    document.getElementById('authForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        // Show loading screen
+        document.getElementById('loaderOverlay').style.display = 'flex';
+        
+        // Wait 1.5 seconds to simulate authentication flow
+        setTimeout(() => {
+            this.submit();
+        }, 1500);
+    });
+</script>
+{% endblock %}

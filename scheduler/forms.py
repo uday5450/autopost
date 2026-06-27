@@ -43,6 +43,14 @@ class InstagramAccountForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         # Make instagram_user_id not required (auto-detected)
         self.fields['instagram_user_id'].required = False
+        
+        # Prepopulate app_id and client_secret if not already set (e.g. for new creation)
+        from django.conf import settings
+        if not self.instance.pk:
+            if hasattr(settings, 'INSTAGRAM_CLIENT_ID') and settings.INSTAGRAM_CLIENT_ID:
+                self.fields['app_id'].initial = settings.INSTAGRAM_CLIENT_ID
+            if hasattr(settings, 'INSTAGRAM_CLIENT_SECRET') and settings.INSTAGRAM_CLIENT_SECRET:
+                self.fields['client_secret'].initial = settings.INSTAGRAM_CLIENT_SECRET
 
 
 class ScheduledPostForm(forms.ModelForm):

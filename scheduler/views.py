@@ -9,38 +9,62 @@ from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.views.decorators.http import require_POST
+from django.contrib.auth import login, logout, authenticate
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
 
 from .forms import InstagramAccountForm, ScheduledPostForm, TokenExchangeForm
-from .models import InstagramAccount, ScheduledPost, YouTubeAccount
+from .models import (
+    InstagramAccount, ScheduledPost, YouTubeAccount,
+    FacebookAccount, XAccount, PinterestAccount, TikTokAccount
+)
 from .services import token_manager
 
 logger = logging.getLogger(__name__)
 
 
+@login_required
 def dashboard(request):
     """Main dashboard with overview stats."""
-    accounts = InstagramAccount.objects.filter(is_active=True)
-    youtube_accounts = YouTubeAccount.objects.filter(is_active=True)
+    accounts = InstagramAccount.objects.filter(user=request.user, is_active=True)
+    youtube_accounts = YouTubeAccount.objects.filter(user=request.user, is_active=True)
+    facebook_accounts = FacebookAccount.objects.filter(user=request.user, is_active=True)
+    x_accounts = XAccount.objects.filter(user=request.user, is_active=True)
+    pinterest_accounts = PinterestAccount.objects.filter(user=request.user, is_active=True)
+    tiktok_accounts = TikTokAccount.objects.filter(user=request.user, is_active=True)
     
     # Stats
-    total_accounts = accounts.count() + youtube_accounts.count()
-    total_pending = ScheduledPost.objects.filter(status='PENDING').count()
-    total_processing = ScheduledPost.objects.filter(status='PROCESSING').count()
-    total_published = ScheduledPost.objects.filter(status='PUBLISHED').count()
-    total_failed = ScheduledPost.objects.filter(status='FAILED').count()
+    total_accounts = (
+        accounts.count() + youtube_accounts.count() +
+        facebook_accounts.count() + x_accounts.count() +
+        pinterest_accounts.count() + tiktok_accounts.count()
+    )
+    total_pending = ScheduledPost.objects.filter(user=request.user, status='PENDING').count()
+    total_processing = ScheduledPost.objects.filter(user=request.user, status='PROCESSING').count()
+    total_published = ScheduledPost.objects.filter(user=request.user, status='PUBLISHED').count()
+    total_failed = ScheduledPost.objects.filter(user=request.user, status='FAILED').count()
     
     # Recent posts
-    recent_posts = ScheduledPost.objects.select_related('account', 'youtube_account').order_by('-created_at')[:10]
+    recent_posts = ScheduledPost.objects.filter(user=request.user).select_related(
+        'account', 'youtube_account', 'facebook_account', 'x_account', 'pinterest_account', 'tiktok_account'
+    ).order_by('-created_at')[:10]
     
     # Upcoming posts
     upcoming_posts = ScheduledPost.objects.filter(
+        user=request.user,
         status='PENDING',
         scheduled_time__gte=timezone.now(),
-    ).select_related('account', 'youtube_account').order_by('scheduled_time')[:5]
+    ).select_related(
+        'account', 'youtube_account', 'facebook_account', 'x_account', 'pinterest_account', 'tiktok_account'
+    ).order_by('scheduled_time')[:5]
     
     context = {
         'accounts': accounts,
         'youtube_accounts': youtube_accounts,
+        'facebook_accounts': facebook_accounts,
+        'x_accounts': x_accounts,
+        'pinterest_accounts': pinterest_accounts,
+        'tiktok_accounts': tiktok_accounts,
         'total_accounts': total_accounts,
         'total_pending': total_pending,
         'total_processing': total_processing,
@@ -52,15 +76,24 @@ def dashboard(request):
     return render(request, 'scheduler/dashboard.html', context)
 
 
+@login_required
 def create_post(request):
     """Create scheduled posts — supports multi-account + multi-platform."""
-    ig_accounts = InstagramAccount.objects.filter(is_active=True)
-    yt_accounts = YouTubeAccount.objects.filter(is_active=True)
+    ig_accounts = InstagramAccount.objects.filter(user=request.user, is_active=True)
+    yt_accounts = YouTubeAccount.objects.filter(user=request.user, is_active=True)
+    fb_accounts = FacebookAccount.objects.filter(user=request.user, is_active=True)
+    x_accounts = XAccount.objects.filter(user=request.user, is_active=True)
+    pin_accounts = PinterestAccount.objects.filter(user=request.user, is_active=True)
+    tt_accounts = TikTokAccount.objects.filter(user=request.user, is_active=True)
 
     if request.method == 'POST':
         # Collect selected accounts
         selected_ig_ids = request.POST.getlist('ig_accounts')  # list of PKs
         selected_yt_ids = request.POST.getlist('yt_accounts')  # list of PKs
+        selected_fb_ids = request.POST.getlist('fb_accounts')  # list of PKs
+        selected_x_ids = request.POST.getlist('x_accounts')  # list of PKs
+        selected_pin_ids = request.POST.getlist('pin_accounts')  # list of PKs
+        selected_tt_ids = request.POST.getlist('tt_accounts')  # list of PKs
 
         post_type = request.POST.get('post_type', 'IMAGE')
         title = request.POST.get('title', '').strip()
@@ -76,7 +109,7 @@ def create_post(request):
 
         # Validate basics
         errors = []
-        if not selected_ig_ids and not selected_yt_ids:
+        if not (selected_ig_ids or selected_yt_ids or selected_fb_ids or selected_x_ids or selected_pin_ids or selected_tt_ids):
             errors.append('Please select at least one account to post to.')
 
         media_file = request.FILES.get('media_file')
@@ -124,6 +157,10 @@ def create_post(request):
             context = {
                 'accounts': ig_accounts,
                 'youtube_accounts': yt_accounts,
+                'facebook_accounts': fb_accounts,
+                'x_accounts': x_accounts,
+                'pinterest_accounts': pin_accounts,
+                'tiktok_accounts': tt_accounts,
                 'form_data': request.POST,
             }
             return render(request, 'scheduler/create_post.html', context)
@@ -136,6 +173,7 @@ def create_post(request):
             from django.core.files.storage import default_storage
             from django.core.files.base import ContentFile
             import os
+            from django.utils import timezone as tz
             folder = f'posts/media/{tz.now().strftime("%Y/%m")}/'
             saved_media_file_name = default_storage.save(
                 os.path.join(folder, media_file.name),
@@ -147,6 +185,7 @@ def create_post(request):
             from django.core.files.storage import default_storage
             from django.core.files.base import ContentFile
             import os
+            from django.utils import timezone as tz
             folder = f'posts/thumbnails/{tz.now().strftime("%Y/%m")}/'
             saved_thumb_file_name = default_storage.save(
                 os.path.join(folder, thumbnail_file.name),
@@ -168,11 +207,12 @@ def create_post(request):
         # ── Create Instagram posts ─────────────────────────────────────
         for ig_id in selected_ig_ids:
             try:
-                ig_acct = InstagramAccount.objects.get(pk=ig_id, is_active=True)
+                ig_acct = InstagramAccount.objects.get(pk=ig_id, user=request.user, is_active=True)
             except InstagramAccount.DoesNotExist:
                 continue
 
             post = ScheduledPost(
+                user=request.user,
                 platform='INSTAGRAM',
                 account=ig_acct,
                 post_type=post_type,
@@ -192,11 +232,12 @@ def create_post(request):
         # ── Create YouTube posts ───────────────────────────────────────
         for yt_id in selected_yt_ids:
             try:
-                yt_acct = YouTubeAccount.objects.get(pk=yt_id, is_active=True)
+                yt_acct = YouTubeAccount.objects.get(pk=yt_id, user=request.user, is_active=True)
             except YouTubeAccount.DoesNotExist:
                 continue
 
             post = ScheduledPost(
+                user=request.user,
                 platform='YOUTUBE',
                 youtube_account=yt_acct,
                 post_type='REEL',  # YouTube = video
@@ -217,6 +258,106 @@ def create_post(request):
             post.save()
             created_count += 1
 
+        # ── Create Facebook posts ──────────────────────────────────────
+        for fb_id in selected_fb_ids:
+            try:
+                fb_acct = FacebookAccount.objects.get(pk=fb_id, user=request.user, is_active=True)
+            except FacebookAccount.DoesNotExist:
+                continue
+
+            post = ScheduledPost(
+                user=request.user,
+                platform='FACEBOOK',
+                facebook_account=fb_acct,
+                post_type=post_type,
+                title=title,
+                caption=caption,
+                media_url=built_media_url,
+                thumbnail_url=built_thumb_url,
+                scheduled_time=parsed_time,
+            )
+            if saved_media_file_name:
+                post.media_file.name = saved_media_file_name
+            if saved_thumb_file_name:
+                post.thumbnail_file.name = saved_thumb_file_name
+            post.save()
+            created_count += 1
+
+        # ── Create X (Twitter) posts ───────────────────────────────────
+        for x_id in selected_x_ids:
+            try:
+                x_acct = XAccount.objects.get(pk=x_id, user=request.user, is_active=True)
+            except XAccount.DoesNotExist:
+                continue
+
+            post = ScheduledPost(
+                user=request.user,
+                platform='X',
+                x_account=x_acct,
+                post_type='IMAGE' if post_type == 'IMAGE' else 'REEL',
+                title=title,
+                caption=caption,
+                media_url=built_media_url,
+                thumbnail_url=built_thumb_url,
+                scheduled_time=parsed_time,
+            )
+            if saved_media_file_name:
+                post.media_file.name = saved_media_file_name
+            if saved_thumb_file_name:
+                post.thumbnail_file.name = saved_thumb_file_name
+            post.save()
+            created_count += 1
+
+        # ── Create Pinterest posts ─────────────────────────────────────
+        for pin_id in selected_pin_ids:
+            try:
+                pin_acct = PinterestAccount.objects.get(pk=pin_id, user=request.user, is_active=True)
+            except PinterestAccount.DoesNotExist:
+                continue
+
+            post = ScheduledPost(
+                user=request.user,
+                platform='PINTEREST',
+                pinterest_account=pin_acct,
+                post_type='IMAGE',
+                title=title or 'Pin Title',
+                caption=caption,
+                media_url=built_media_url,
+                thumbnail_url=built_thumb_url,
+                scheduled_time=parsed_time,
+            )
+            if saved_media_file_name:
+                post.media_file.name = saved_media_file_name
+            if saved_thumb_file_name:
+                post.thumbnail_file.name = saved_thumb_file_name
+            post.save()
+            created_count += 1
+
+        # ── Create TikTok posts ────────────────────────────────────────
+        for tt_id in selected_tt_ids:
+            try:
+                tt_acct = TikTokAccount.objects.get(pk=tt_id, user=request.user, is_active=True)
+            except TikTokAccount.DoesNotExist:
+                continue
+
+            post = ScheduledPost(
+                user=request.user,
+                platform='TIKTOK',
+                tiktok_account=tt_acct,
+                post_type='REEL',
+                title=title or 'TikTok Video',
+                caption=caption,
+                media_url=built_media_url,
+                thumbnail_url=built_thumb_url,
+                scheduled_time=parsed_time,
+            )
+            if saved_media_file_name:
+                post.media_file.name = saved_media_file_name
+            if saved_thumb_file_name:
+                post.thumbnail_file.name = saved_thumb_file_name
+            post.save()
+            created_count += 1
+
         time_str = parsed_time.strftime('%b %d, %Y %I:%M %p')
         messages.success(request, f'🚀 {created_count} post(s) scheduled for {time_str}!')
         return redirect('post_list')
@@ -224,16 +365,23 @@ def create_post(request):
     context = {
         'accounts': ig_accounts,
         'youtube_accounts': yt_accounts,
+        'facebook_accounts': fb_accounts,
+        'x_accounts': x_accounts,
+        'pinterest_accounts': pin_accounts,
+        'tiktok_accounts': tt_accounts,
     }
     return render(request, 'scheduler/create_post.html', context)
 
 
+@login_required
 def post_list(request):
     """List all scheduled posts with filtering."""
     status_filter = request.GET.get('status', 'all')
     type_filter = request.GET.get('type', 'all')
     
-    posts = ScheduledPost.objects.select_related('account', 'youtube_account').all()
+    posts = ScheduledPost.objects.filter(user=request.user).select_related(
+        'account', 'youtube_account', 'facebook_account', 'x_account', 'pinterest_account', 'tiktok_account'
+    )
     
     if status_filter != 'all':
         posts = posts.filter(status=status_filter.upper())
@@ -242,7 +390,7 @@ def post_list(request):
         posts = posts.filter(post_type=type_filter.upper())
     
     # Stats for filter badges
-    status_counts = ScheduledPost.objects.values('status').annotate(count=Count('id'))
+    status_counts = ScheduledPost.objects.filter(user=request.user).values('status').annotate(count=Count('id'))
     status_map = {item['status']: item['count'] for item in status_counts}
     
     context = {
@@ -250,22 +398,32 @@ def post_list(request):
         'status_filter': status_filter,
         'type_filter': type_filter,
         'status_counts': status_map,
-        'total_count': ScheduledPost.objects.count(),
+        'total_count': ScheduledPost.objects.filter(user=request.user).count(),
     }
     return render(request, 'scheduler/post_list.html', context)
 
 
+@login_required
 def account_list(request):
-    """Manage Instagram and YouTube accounts."""
-    accounts = InstagramAccount.objects.all()
-    youtube_accounts = YouTubeAccount.objects.all()
+    """Manage Instagram, YouTube, Facebook, X, Pinterest, TikTok accounts."""
+    accounts = InstagramAccount.objects.filter(user=request.user)
+    youtube_accounts = YouTubeAccount.objects.filter(user=request.user)
+    facebook_accounts = FacebookAccount.objects.filter(user=request.user)
+    x_accounts = XAccount.objects.filter(user=request.user)
+    pinterest_accounts = PinterestAccount.objects.filter(user=request.user)
+    tiktok_accounts = TikTokAccount.objects.filter(user=request.user)
     context = {
         'accounts': accounts,
         'youtube_accounts': youtube_accounts,
+        'facebook_accounts': facebook_accounts,
+        'x_accounts': x_accounts,
+        'pinterest_accounts': pinterest_accounts,
+        'tiktok_accounts': tiktok_accounts,
     }
     return render(request, 'scheduler/account_list.html', context)
 
 
+@login_required
 def account_add(request):
     """Add a new Instagram account."""
     if request.method == 'POST':
@@ -274,6 +432,7 @@ def account_add(request):
         
         if form.is_valid():
             account = form.save(commit=False)
+            account.user = request.user
             # Save first to get a PK
             account.save()
             
@@ -311,9 +470,10 @@ def account_add(request):
     return render(request, 'scheduler/account_form.html', context)
 
 
+@login_required
 def account_edit(request, pk):
     """Edit an existing Instagram account."""
-    account = get_object_or_404(InstagramAccount, pk=pk)
+    account = get_object_or_404(InstagramAccount, pk=pk, user=request.user)
     
     if request.method == 'POST':
         form = InstagramAccountForm(request.POST, instance=account)
@@ -348,10 +508,11 @@ def account_edit(request, pk):
     return render(request, 'scheduler/account_form.html', context)
 
 
+@login_required
 @require_POST
 def account_exchange_token(request, pk):
     """Exchange a short-lived token for a long-lived token (AJAX)."""
-    account = get_object_or_404(InstagramAccount, pk=pk)
+    account = get_object_or_404(InstagramAccount, pk=pk, user=request.user)
     
     try:
         data = json.loads(request.body)
@@ -382,10 +543,11 @@ def account_exchange_token(request, pk):
     return JsonResponse({'success': False, 'error': result.get('error', 'Token failed')})
 
 
+@login_required
 @require_POST
 def account_refresh_token(request, pk):
     """Refresh the long-lived token for an account (AJAX)."""
-    account = get_object_or_404(InstagramAccount, pk=pk)
+    account = get_object_or_404(InstagramAccount, pk=pk, user=request.user)
     
     result = token_manager.refresh_and_store(account)
     
@@ -400,20 +562,22 @@ def account_refresh_token(request, pk):
     return JsonResponse({'success': False, 'error': result.get('error', 'Refresh failed')})
 
 
+@login_required
 @require_POST
 def account_delete(request, pk):
     """Delete an Instagram account."""
-    account = get_object_or_404(InstagramAccount, pk=pk)
+    account = get_object_or_404(InstagramAccount, pk=pk, user=request.user)
     name = account.name
     account.delete()
     messages.success(request, f'Account "{name}" deleted.')
     return redirect('account_list')
 
 
+@login_required
 @require_POST
 def post_cancel(request, pk):
     """Cancel a pending post."""
-    post = get_object_or_404(ScheduledPost, pk=pk)
+    post = get_object_or_404(ScheduledPost, pk=pk, user=request.user)
     if post.status == 'PENDING':
         post.status = 'CANCELLED'
         post.save(update_fields=['status'])
@@ -423,10 +587,11 @@ def post_cancel(request, pk):
     return redirect('post_list')
 
 
+@login_required
 @require_POST
 def post_retry(request, pk):
     """Retry a failed post."""
-    post = get_object_or_404(ScheduledPost, pk=pk)
+    post = get_object_or_404(ScheduledPost, pk=pk, user=request.user)
     if post.status in ('FAILED', 'CANCELLED'):
         post.status = 'PENDING'
         post.error_message = ''
@@ -444,10 +609,11 @@ def post_retry(request, pk):
     return redirect('post_list')
 
 
+@login_required
 @require_POST
 def post_delete(request, pk):
     """Delete a post."""
-    post = get_object_or_404(ScheduledPost, pk=pk)
+    post = get_object_or_404(ScheduledPost, pk=pk, user=request.user)
     post.delete()
     messages.success(request, 'Post deleted.')
     return redirect('post_list')
@@ -457,6 +623,7 @@ def post_delete(request, pk):
 # YouTube OAuth 2.0 Views
 # ──────────────────────────────────────────────────────────────────
 
+@login_required
 def youtube_login(request):
     """Redirect the user to Google's consent screen to authorize YouTube access."""
     from google_auth_oauthlib.flow import Flow
@@ -500,6 +667,7 @@ def youtube_login(request):
     return redirect(authorization_url)
 
 
+@login_required
 def youtube_callback(request):
     """Handle the OAuth callback from Google — exchange code for tokens."""
     from google_auth_oauthlib.flow import Flow
@@ -574,6 +742,7 @@ def youtube_callback(request):
     yt_account, created = YouTubeAccount.objects.update_or_create(
         channel_id=channel_id,
         defaults={
+            'user': request.user,
             'name': channel_title,
             'access_token': credentials.token,
             'refresh_token': credentials.refresh_token or '',
@@ -588,11 +757,261 @@ def youtube_callback(request):
     return redirect('account_list')
 
 
+@login_required
 @require_POST
 def youtube_disconnect(request, pk):
     """Disconnect (delete) a YouTube account."""
-    yt_account = get_object_or_404(YouTubeAccount, pk=pk)
+    yt_account = get_object_or_404(YouTubeAccount, pk=pk, user=request.user)
     name = yt_account.name
     yt_account.delete()
     messages.success(request, f'YouTube channel "{name}" disconnected.')
     return redirect('account_list')
+
+
+# ──────────────────────────────────────────────────────────────────
+# Simulated OAuth Views for new platforms
+# ──────────────────────────────────────────────────────────────────
+
+@login_required
+def connect_facebook(request):
+    """Simulate Facebook Page connection."""
+    if request.method == 'POST':
+        from random import randint
+        page_num = randint(100, 999)
+        FacebookAccount.objects.create(
+            user=request.user,
+            name=f"Facebook Page {page_num}",
+            page_id=f"fb_page_{randint(100000, 999999)}",
+            access_token=f"mock_fb_token_{randint(100000, 999999)}",
+            profile_picture_url="https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?w=100&h=100&fit=crop",
+            is_active=True
+        )
+        messages.success(request, "Facebook Page connected successfully! 🎉")
+        return redirect('account_list')
+        
+    context = {
+        'platform_name': 'Facebook Page',
+        'platform_id': 'facebook',
+    }
+    return render(request, 'scheduler/connect_mock.html', context)
+
+
+@login_required
+@require_POST
+def disconnect_facebook(request, pk):
+    """Disconnect Facebook Page."""
+    acct = get_object_or_404(FacebookAccount, pk=pk, user=request.user)
+    name = acct.name
+    acct.delete()
+    messages.success(request, f"Facebook Page '{name}' disconnected.")
+    return redirect('account_list')
+
+
+@login_required
+def connect_x(request):
+    """Simulate X (Twitter) connection."""
+    if request.method == 'POST':
+        from random import randint
+        user_num = randint(100, 999)
+        XAccount.objects.create(
+            user=request.user,
+            name=f"X Brand User {user_num}",
+            screen_name=f"brand_user_{user_num}",
+            access_token=f"mock_x_token_{randint(100000, 999999)}",
+            refresh_token=f"mock_x_refresh_{randint(100000, 999999)}",
+            profile_picture_url="https://images.unsplash.com/photo-1611605698335-8b15d27e03f3?w=100&h=100&fit=crop",
+            is_active=True
+        )
+        messages.success(request, "X (Twitter) account connected successfully! 🎉")
+        return redirect('account_list')
+        
+    context = {
+        'platform_name': 'X (Twitter)',
+        'platform_id': 'x',
+    }
+    return render(request, 'scheduler/connect_mock.html', context)
+
+
+@login_required
+@require_POST
+def disconnect_x(request, pk):
+    """Disconnect X Account."""
+    acct = get_object_or_404(XAccount, pk=pk, user=request.user)
+    name = acct.name
+    acct.delete()
+    messages.success(request, f"X Account '{name}' disconnected.")
+    return redirect('account_list')
+
+
+@login_required
+def connect_pinterest(request):
+    """Simulate Pinterest Board connection."""
+    if request.method == 'POST':
+        from random import randint
+        board_name = request.POST.get('board_name', 'My Awesome Board')
+        user_num = randint(100, 999)
+        PinterestAccount.objects.create(
+            user=request.user,
+            name=f"PinCreator_{user_num}",
+            board_name=board_name,
+            access_token=f"mock_pinterest_token_{randint(100000, 999999)}",
+            profile_picture_url="https://images.unsplash.com/photo-1611162616305-c69b3fa7fbe0?w=100&h=100&fit=crop",
+            is_active=True
+        )
+        messages.success(request, f"Pinterest board '{board_name}' connected successfully! 🎉")
+        return redirect('account_list')
+        
+    context = {
+        'platform_name': 'Pinterest',
+        'platform_id': 'pinterest',
+    }
+    return render(request, 'scheduler/connect_mock.html', context)
+
+
+@login_required
+@require_POST
+def disconnect_pinterest(request, pk):
+    """Disconnect Pinterest board."""
+    acct = get_object_or_404(PinterestAccount, pk=pk, user=request.user)
+    name = acct.board_name
+    acct.delete()
+    messages.success(request, f"Pinterest Board '{name}' disconnected.")
+    return redirect('account_list')
+
+
+@login_required
+def connect_tiktok(request):
+    """Simulate TikTok connection."""
+    if request.method == 'POST':
+        from random import randint
+        user_num = randint(100, 999)
+        TikTokAccount.objects.create(
+            user=request.user,
+            name=f"TikTok Star {user_num}",
+            username=f"tiktok_star_{user_num}",
+            access_token=f"mock_tiktok_token_{randint(100000, 999999)}",
+            refresh_token=f"mock_tiktok_refresh_{randint(100000, 999999)}",
+            profile_picture_url="https://images.unsplash.com/photo-1611162618071-b39a2ec055fb?w=100&h=100&fit=crop",
+            is_active=True
+        )
+        messages.success(request, "TikTok account connected successfully! 🎉")
+        return redirect('account_list')
+        
+    context = {
+        'platform_name': 'TikTok',
+        'platform_id': 'tiktok',
+    }
+    return render(request, 'scheduler/connect_mock.html', context)
+
+
+@login_required
+@require_POST
+def disconnect_tiktok(request, pk):
+    """Disconnect TikTok Account."""
+    acct = get_object_or_404(TikTokAccount, pk=pk, user=request.user)
+    name = acct.name
+    acct.delete()
+    messages.success(request, f"TikTok Account '{name}' disconnected.")
+    return redirect('account_list')
+
+
+def signup_view(request):
+    """Handle sign up with email and password."""
+    if request.user.is_authenticated:
+        return redirect('dashboard')
+        
+    if request.method == 'POST':
+        email = request.POST.get('email', '').strip().lower()
+        password = request.POST.get('password', '')
+        password_confirm = request.POST.get('password_confirm', '')
+        
+        errors = []
+        if not email:
+            errors.append('Email is required.')
+        if not password:
+            errors.append('Password is required.')
+        elif len(password) < 4:
+            errors.append('Password must be at least 4 characters long.')
+        if password != password_confirm:
+            errors.append('Passwords do not match.')
+            
+        if not errors:
+            if User.objects.filter(username=email).exists() or User.objects.filter(email=email).exists():
+                errors.append('A user with this email already exists.')
+                
+        if errors:
+            for err in errors:
+                messages.error(request, err)
+            return render(request, 'scheduler/signup.html', {'email': email})
+            
+        # Create user
+        user = User.objects.create_user(username=email, email=email, password=password)
+        login(request, user)
+        messages.success(request, 'Welcome to AutoPost! Your account was created successfully. 🎉')
+        return redirect('dashboard')
+        
+    return render(request, 'scheduler/signup.html')
+
+
+def login_view(request):
+    """Handle login with email and password."""
+    if request.user.is_authenticated:
+        return redirect('dashboard')
+        
+    if request.method == 'POST':
+        email = request.POST.get('email', '').strip().lower()
+        password = request.POST.get('password', '')
+        
+        errors = []
+        if not email:
+            errors.append('Email is required.')
+        if not password:
+            errors.append('Password is required.')
+            
+        if not errors:
+            # First try matching by username (which is email)
+            user = authenticate(request, username=email, password=password)
+            if not user:
+                # If username match fails, look up email to find username
+                try:
+                    user_obj = User.objects.get(email=email)
+                    user = authenticate(request, username=user_obj.username, password=password)
+                except User.DoesNotExist:
+                    pass
+                    
+            if user is not None:
+                login(request, user)
+                messages.success(request, f'Welcome back, {email}! 👋')
+                return redirect('dashboard')
+            else:
+                errors.append('Invalid email or password.')
+                
+        for err in errors:
+            messages.error(request, err)
+        return render(request, 'scheduler/login.html', {'email': email})
+        
+    return render(request, 'scheduler/login.html')
+
+
+def logout_view(request):
+    """Log out the user."""
+    logout(request)
+    messages.success(request, 'You have logged out successfully.')
+    return redirect('landing')  # Redirect to landing page after logout
+
+
+def landing_page(request):
+    """Clean minimalist landing page."""
+    if request.user.is_authenticated:
+        return redirect('dashboard')
+    return render(request, 'scheduler/landing.html')
+
+
+def privacy_policy(request):
+    """Privacy Policy page (compliance requirement)."""
+    return render(request, 'scheduler/privacy_policy.html')
+
+
+def terms_of_service(request):
+    """Terms of Service page (compliance requirement)."""
+    return render(request, 'scheduler/terms_of_service.html')

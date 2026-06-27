@@ -11,15 +11,64 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'scheduler/css/style.css' %}">
     
-    <!-- Theme Script (Load early to prevent flash) -->
+    <!-- Theme Script (Force light theme application-wide) -->
     <script>
-        const savedTheme = localStorage.getItem('theme') || 'dark';
-        document.documentElement.setAttribute('data-theme', savedTheme);
+        document.documentElement.setAttribute('data-theme', 'light');
     </script>
     
+    <style>
+        .main-content.no-sidebar {
+            margin-left: 0 !important;
+            width: 100% !important;
+        }
+        .user-profile-menu {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            border-left: 1px solid var(--border-color);
+            padding-left: 1rem;
+            margin-left: 0.5rem;
+        }
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, var(--purple), var(--pink));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: white;
+            font-size: 0.85rem;
+        }
+        .user-details {
+            display: flex;
+            flex-direction: column;
+        }
+        .user-email {
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+        .btn-logout {
+            padding: 0.35rem 0.75rem;
+            font-size: 0.8rem;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border-color);
+            color: var(--red-light) !important;
+            margin-left: 0.25rem;
+            transition: all var(--transition-fast);
+        }
+        .btn-logout:hover {
+            background: var(--red-glow);
+            border-color: var(--red);
+            color: #ffffff !important;
+        }
+    </style>
     {% block extra_head %}{% endblock %}
 </head>
 <body>
+    {% if user.is_authenticated %}
     <!-- Sidebar Navigation -->
     <nav class="sidebar" id="sidebar">
         <div class="sidebar-header">
@@ -75,9 +124,11 @@
             <div class="version-badge">v1.0</div>
         </div>
     </nav>
+    {% endif %}
 
     <!-- Main Content -->
-    <main class="main-content">
+    <main class="main-content{% if not user.is_authenticated %} no-sidebar{% endif %}">
+        {% if user.is_authenticated %}
         <!-- Top Bar -->
         <header class="topbar">
             <button class="menu-toggle" id="menuToggle" onclick="toggleSidebar()">
@@ -89,7 +140,7 @@
             </button>
             <h1 class="page-title">{% block page_title %}Dashboard{% endblock %}</h1>
             <div class="topbar-actions">
-                <button id="themeToggleBtn" class="btn btn-ghost" style="padding: 0.5rem; color: var(--text-secondary);" title="Toggle Light/Dark Mode">
+                <button id="themeToggleBtn" class="btn btn-ghost" style="display: none; padding: 0.5rem; color: var(--text-secondary);" title="Toggle Light/Dark Mode">
                     <!-- Sun Icon (shown in dark mode) -->
                     <svg id="themeIconSun" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: none;">
                         <circle cx="12" cy="12" r="5"></circle>
@@ -107,9 +158,21 @@
                         <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
                     </svg>
                 </button>
+                <div class="user-profile-menu">
+                    <div class="user-avatar" title="{{ user.email }}">
+                        {{ user.email|slice:":1"|upper }}
+                    </div>
+                    <div class="user-details">
+                        <span class="user-email">{{ user.email }}</span>
+                    </div>
+                    <a href="{% url 'logout' %}" class="btn-logout">
+                        Logout
+                    </a>
+                </div>
                 {% block topbar_actions %}{% endblock %}
             </div>
         </header>
+        {% endif %}
 
         <!-- Messages -->
         {% if messages %}
