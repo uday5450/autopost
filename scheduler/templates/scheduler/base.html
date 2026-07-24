@@ -11,9 +11,12 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'scheduler/css/style.css' %}">
     
-    <!-- Theme Script (Force light theme application-wide) -->
+    <!-- Theme Script (Restore saved theme or default to light) -->
     <script>
-        document.documentElement.setAttribute('data-theme', 'light');
+        (function() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+        })();
     </script>
     
     <style>
@@ -140,7 +143,7 @@
             </button>
             <h1 class="page-title">{% block page_title %}Dashboard{% endblock %}</h1>
             <div class="topbar-actions">
-                <button id="themeToggleBtn" class="btn btn-ghost" style="display: none; padding: 0.5rem; color: var(--text-secondary);" title="Toggle Light/Dark Mode">
+                <button id="themeToggleBtn" class="btn btn-ghost" style="display: inline-flex; align-items: center; justify-content: center; padding: 0.45rem 0.6rem; border-radius: var(--radius-md); border: 1px solid var(--border-color); background: var(--bg-glass); color: var(--text-primary); cursor: pointer;" title="Toggle Light/Dark Mode">
                     <!-- Sun Icon (shown in dark mode) -->
                     <svg id="themeIconSun" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: none;">
                         <circle cx="12" cy="12" r="5"></circle>

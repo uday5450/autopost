@@ -19,8 +19,11 @@
             <p style="color: var(--text-muted); font-size: 0.95rem;">Sign in to manage your scheduled posts</p>
         </div>
 
-        <form method="POST" action="{% url 'login' %}" style="display: flex; flex-direction: column; gap: 1.25rem;">
+        <form method="POST" action="" style="display: flex; flex-direction: column; gap: 1.25rem;">
             {% csrf_token %}
+            {% if next or request.GET.next %}
+            <input type="hidden" name="next" value="{{ next|default:request.GET.next }}">
+            {% endif %}
             
             <div class="form-group" style="display: flex; flex-direction: column; gap: 0.5rem;">
                 <label for="email" style="font-size: 0.85rem; font-weight: 600; color: var(--text-secondary);">Gmail Address</label>

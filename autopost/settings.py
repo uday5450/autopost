@@ -87,11 +87,13 @@ WSGI_APPLICATION = 'autopost.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-        'OPTIONS': {
-            'timeout': 20,  # Prevent 'database is locked' errors by waiting up to 20s
-        }
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'autopost',
+        'USER': 'postgres',
+        'PASSWORD': '1234',
+        'HOST': 'localhost',
+        'PORT': '5432',
+        'CONN_MAX_AGE': 0,
     }
 }
 
@@ -154,7 +156,7 @@ INSTAGRAM_CLIENT_SECRET = os.environ.get('INSTAGRAM_CLIENT_SECRET', '')
 # Google / YouTube OAuth 2.0
 GOOGLE_OAUTH2_CLIENT_ID = os.environ.get('GOOGLE_OAUTH2_CLIENT_ID', '')
 GOOGLE_OAUTH2_CLIENT_SECRET = os.environ.get('GOOGLE_OAUTH2_CLIENT_SECRET', '')
-GOOGLE_OAUTH2_REDIRECT_URI = 'http://localhost:8000/accounts/youtube/callback/'
+GOOGLE_OAUTH2_REDIRECT_URI = os.environ.get('GOOGLE_OAUTH2_REDIRECT_URI', 'http://localhost:8000/accounts/youtube/callback/')
 
 # Authentication Settings
 LOGIN_URL = 'login'

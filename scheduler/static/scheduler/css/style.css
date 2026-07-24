@@ -67,11 +67,11 @@
 
 [data-theme="light"] {
     --bg-primary: #f8fafc;
-    --bg-secondary: #f1f5f9;
+    --bg-secondary: #ffffff;
     --bg-card: #ffffff;
-    --bg-card-hover: #f8fafc;
-    --bg-glass: rgba(255, 255, 255, 0.8);
-    --bg-input: #ffffff;
+    --bg-card-hover: #f1f5f9;
+    --bg-glass: rgba(15, 23, 42, 0.04);
+    --bg-input: #f1f5f9;
     
     --border-color: #e2e8f0;
     --border-hover: #cbd5e1;
@@ -84,21 +84,24 @@
     --purple: #6d28d9;
     --purple-light: #8b5cf6;
     --purple-dark: #5b21b6;
-    --purple-glow: rgba(109, 40, 217, 0.2);
+    --purple-glow: rgba(109, 40, 217, 0.15);
 
     --blue: #2563eb;
-    --blue-glow: rgba(37, 99, 235, 0.2);
+    --blue-light: #3b82f6;
+    --blue-glow: rgba(37, 99, 235, 0.15);
     --green: #059669;
-    --green-glow: rgba(5, 150, 105, 0.2);
+    --green-light: #10b981;
+    --green-glow: rgba(5, 150, 105, 0.15);
     --red: #dc2626;
-    --red-glow: rgba(220, 38, 38, 0.2);
+    --red-light: #ef4444;
+    --red-glow: rgba(220, 38, 38, 0.15);
 
     /* 3D Shadows & Borders (Light Mode) */
-    --shadow-sm: 0 2px 4px rgba(148,163,184,0.1), inset 0 1px 1px #ffffff;
-    --shadow-md: 0 4px 6px -1px rgba(148,163,184,0.2), 0 2px 4px -1px rgba(148,163,184,0.1), inset 0 1px 1px #ffffff;
-    --shadow-lg: 0 10px 15px -3px rgba(148,163,184,0.25), 0 4px 6px -2px rgba(148,163,184,0.15), inset 0 1px 1px #ffffff;
-    --shadow-3d: 0 6px 12px rgba(148,163,184,0.25), 0 0 0 1px rgba(255,255,255,0.5), inset 0 2px 1px rgba(255,255,255,1), inset 0 -2px 2px rgba(148,163,184,0.15);
-    --shadow-3d-active: 0 1px 2px rgba(148,163,184,0.2), inset 0 3px 5px rgba(148,163,184,0.3), inset 0 -1px 1px rgba(255,255,255,0.8);
+    --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.06), 0 1px 2px rgba(15, 23, 42, 0.04);
+    --shadow-md: 0 4px 6px -1px rgba(15, 23, 42, 0.08), 0 2px 4px -1px rgba(15, 23, 42, 0.04);
+    --shadow-lg: 0 10px 15px -3px rgba(15, 23, 42, 0.1), 0 4px 6px -2px rgba(15, 23, 42, 0.05);
+    --shadow-3d: 0 4px 12px rgba(15, 23, 42, 0.06);
+    --shadow-3d-active: 0 1px 2px rgba(15, 23, 42, 0.1);
 }
 
 /* Reset & Base */
@@ -258,7 +261,7 @@ a:hover {
     align-items: center;
     gap: 1rem;
     border-bottom: 1px solid var(--border-color);
-    background: rgba(10, 14, 26, 0.9);
+    background: var(--bg-card);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
     position: sticky;
