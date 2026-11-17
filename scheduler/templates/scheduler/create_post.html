@@ -1,631 +1,878 @@
 {% extends 'scheduler/base.html' %}
 
-{% block title %}Create Post — AutoPost{% endblock %}
+{% block title %}Create your post — FeedBridge{% endblock %}
 {% block nav_create %}active{% endblock %}
-{% block page_title %}Create Post{% endblock %}
+{% block page_title %}Studio & Publisher{% endblock %}
+
+{% block extra_head %}
+<style>
+    /* Clean Light SaaS Theme (Matching FeedBridge Video frame90.png) */
+    .studio-container {
+        max-width: 1280px;
+        margin: 0 auto;
+    }
+
+    .studio-grid {
+        display: grid;
+        grid-template-columns: 1.15fr 0.85fr;
+        gap: 1.5rem;
+        align-items: start;
+    }
+
+    @media (max-width: 1100px) {
+        .studio-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    /* Channel Avatar Bar (Clean White Card) */
+    .channels-bar {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 1rem 1.25rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .channels-bar-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .channels-label {
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: #64748b;
+    }
+
+    .channels-avatars-list {
+        display: flex;
+        align-items: center;
+        gap: 0.85rem;
+        flex-wrap: wrap;
+    }
+
+    .channel-avatar-item {
+        position: relative;
+        cursor: pointer;
+        user-select: none;
+        transition: transform 0.15s ease;
+    }
+
+    .channel-avatar-item:hover {
+        transform: translateY(-2px);
+    }
+
+    .channel-avatar-circle {
+        width: 46px;
+        height: 46px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 0.85rem;
+        color: #fff;
+        background: #f1f5f9;
+        border: 2px solid #cbd5e1;
+        position: relative;
+        overflow: hidden;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .channel-avatar-circle img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .channel-mini-badge {
+        position: absolute;
+        bottom: -2px;
+        right: -2px;
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 9px;
+        border: 2px solid #ffffff;
+        color: #fff;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+    }
+
+    .badge-ig { background: radial-gradient(circle at 30% 107%, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285AEB 90%); }
+    .badge-yt { background: #ff0000; }
+    .badge-x { background: #000; }
+    .badge-tt { background: #000; color: #fe2c55; }
+    .badge-li { background: #0a66c2; }
+    .badge-fb { background: #1877f2; }
+    .badge-rd { background: #ff4500; }
+    .badge-pin { background: #e60023; }
+    .badge-sc { background: #fffc00; color: #000; font-weight: bold; }
+
+    /* Active Selection Ring */
+    .channel-avatar-item.active .channel-avatar-circle {
+        border-color: #22c55e;
+        box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.25);
+        opacity: 1;
+    }
+
+    .channel-check-badge {
+        display: none;
+        position: absolute;
+        top: -3px;
+        right: -3px;
+        width: 16px;
+        height: 16px;
+        background: #22c55e;
+        border: 2px solid #ffffff;
+        border-radius: 50%;
+        color: #fff;
+        font-size: 9px;
+        align-items: center;
+        justify-content: center;
+        font-weight: 800;
+        z-index: 3;
+    }
+
+    .channel-avatar-item.active .channel-check-badge {
+        display: flex;
+    }
+
+    .channel-avatar-item:not(.active) .channel-avatar-circle {
+        opacity: 0.45;
+        filter: grayscale(70%);
+    }
+
+    /* Composer Cards */
+    .white-card {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 1.25rem;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+        margin-bottom: 1.25rem;
+    }
+
+    /* Platform Subtabs */
+    .channel-tabs {
+        display: flex;
+        gap: 0.4rem;
+        border-bottom: 1px solid #e2e8f0;
+        padding-bottom: 0.5rem;
+        margin-bottom: 1.25rem;
+        overflow-x: auto;
+    }
+
+    .channel-tab-pill {
+        background: transparent;
+        border: 1px solid transparent;
+        padding: 0.45rem 0.85rem;
+        font-size: 0.8rem;
+        font-weight: 600;
+        border-radius: 6px;
+        color: #64748b;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+        white-space: nowrap;
+        transition: all 0.15s ease;
+    }
+
+    .channel-tab-pill:hover {
+        background: #f1f5f9;
+        color: #0f172a;
+    }
+
+    .channel-tab-pill.active {
+        background: #f1f5f9;
+        color: #0f172a;
+        border-color: #cbd5e1;
+    }
+
+    /* Drag & Drop Media Uploader */
+    .media-box {
+        border: 2px dashed #cbd5e1;
+        background: #f8fafc;
+        border-radius: 10px;
+        padding: 1.75rem 1rem;
+        text-align: center;
+        cursor: pointer;
+        position: relative;
+        transition: all 0.2s ease;
+        margin-bottom: 1rem;
+    }
+
+    .media-box:hover {
+        border-color: #22c55e;
+        background: rgba(34, 197, 94, 0.02);
+    }
+
+    /* Smartphone Frame */
+    .phone-mockup-wrapper {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .phone-mockup {
+        width: 320px;
+        height: 600px;
+        background: #0f172a;
+        border-radius: 40px;
+        border: 10px solid #1e293b;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 15px 35px -5px rgba(0, 0, 0, 0.25);
+        color: #fff;
+    }
+
+    .phone-notch {
+        width: 120px;
+        height: 22px;
+        background: #1e293b;
+        border-radius: 0 0 14px 14px;
+        position: absolute;
+        top: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 10;
+    }
+
+    .phone-screen {
+        width: 100%;
+        height: 100%;
+        background: #000;
+        position: relative;
+        overflow-y: auto;
+    }
+
+    /* Switch toggle */
+    .toggle-switch {
+        position: relative;
+        display: inline-block;
+        width: 44px;
+        height: 24px;
+    }
+    .toggle-switch input { opacity: 0; width: 0; height: 0; }
+    .toggle-slider {
+        position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
+        background-color: #cbd5e1;
+        transition: .2s;
+        border-radius: 24px;
+    }
+    .toggle-slider:before {
+        position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px;
+        background-color: white;
+        transition: .2s;
+        border-radius: 50%;
+    }
+    input:checked + .toggle-slider { background-color: #22c55e; }
+    input:checked + .toggle-slider:before { transform: translateX(20px); }
+</style>
+{% endblock %}
 
 {% block content %}
-<div class="form-page">
-    <div class="card form-card">
-        <div class="card-header">
-            <h2 class="card-title">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
-                </svg>
-                Let's schedule something new
-            </h2>
-        </div>
-        <div class="card-body">
-            {% if not accounts and not youtube_accounts and not facebook_accounts and not x_accounts and not pinterest_accounts and not tiktok_accounts %}
-            <div class="empty-state">
-                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.3">
-                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
-                </svg>
-                <p>Before we can schedule anything, we need somewhere to post it to. Let's add your first account!</p>
-                <a href="{% url 'account_list' %}" class="btn btn-primary">Connect an Account</a>
+<div class="studio-container">
+    
+    <!-- Top Channel Bar (FeedBridge Frame 90 Style) -->
+    <div class="channels-bar">
+        <div class="channels-bar-header">
+            <span class="channels-label">Publishing to (<span id="selectedCountText">0</span> selected)</span>
+            <div style="display: flex; gap: 0.75rem; align-items: center; font-size: 0.82rem;">
+                <button type="button" onclick="selectAllAccounts(true)" style="background: none; border: none; color: #22c55e; font-weight: 600; cursor: pointer;">Select All</button>
+                <span style="color: #cbd5e1;">•</span>
+                <button type="button" onclick="selectAllAccounts(false)" style="background: none; border: none; color: #64748b; font-weight: 500; cursor: pointer;">Clear</button>
+                <span style="color: #cbd5e1;">•</span>
+                <a href="{% url 'account_list' %}" style="color: #0f172a; text-decoration: underline; font-weight: 500;">+ Connect Accounts</a>
             </div>
-            {% else %}
-            <form method="post" enctype="multipart/form-data" id="createPostForm">
-                {% csrf_token %}
+        </div>
 
-                <!-- ═══ Select Accounts (Multi-Select Checkboxes) ═══ -->
-                <div class="form-section">
-                    <h3 class="form-section-title">Where should we post?</h3>
-                    <p class="form-hint" style="margin-bottom: 1rem;">Select one or more accounts. The same content will be posted to all selected accounts.</p>
-
-                    {% if accounts %}
-                    <div class="account-check-group">
-                        <span class="check-group-label">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
-                                <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/>
-                                <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/>
-                            </svg>
-                            Instagram
-                        </span>
-                        <div class="account-check-list">
-                            {% for acct in accounts %}
-                            <label class="account-check-item">
-                                <input type="checkbox" name="ig_accounts" value="{{ acct.pk }}"
-                                    {% if form_data %}{% for v in form_data.ig_accounts %}{% if v == acct.pk|stringformat:"d" %}checked{% endif %}{% endfor %}{% endif %}>
-                                <div class="account-check-card">
-                                    <div class="account-avatar-sm">
-                                        {% if acct.profile_picture_url %}
-                                        <img src="{{ acct.profile_picture_url }}" alt="{{ acct.name }}" style="width:100%;height:100%;border-radius:inherit;object-fit:cover;">
-                                        {% else %}
-                                        {{ acct.name|first|upper }}
-                                        {% endif %}
-                                    </div>
-                                    <div class="account-check-info">
-                                        <span class="account-check-name">{{ acct.name }}</span>
-                                        <span class="account-check-id">@{{ acct.instagram_user_id|default:"not set" }}</span>
-                                    </div>
-                                    <div class="check-indicator">
-                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
-                                            <polyline points="20 6 9 17 4 12"/>
-                                        </svg>
-                                    </div>
-                                </div>
-                            </label>
-                            {% endfor %}
-                        </div>
-                    </div>
-                    {% endif %}
-
-                    {% if youtube_accounts %}
-                    <div class="account-check-group" style="margin-top: 1rem;">
-                        <span class="check-group-label" style="color: #ff6b6b;">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19.13C5.12 19.56 12 19.56 12 19.56s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.43z"/>
-                                <polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02"/>
-                            </svg>
-                            YouTube
-                        </span>
-                        <div class="account-check-list">
-                            {% for yt in youtube_accounts %}
-                            <label class="account-check-item">
-                                <input type="checkbox" name="yt_accounts" value="{{ yt.pk }}"
-                                    {% if form_data %}{% for v in form_data.yt_accounts %}{% if v == yt.pk|stringformat:"d" %}checked{% endif %}{% endfor %}{% endif %}>
-                                <div class="account-check-card yt">
-                                    <div class="account-avatar-sm" style="background: linear-gradient(135deg, #ff0000, #cc0000); font-size: 0.55rem;">YT</div>
-                                    <div class="account-check-info">
-                                        <span class="account-check-name">{{ yt.name }}</span>
-                                        <span class="account-check-id">{{ yt.channel_id|truncatechars:24 }}</span>
-                                    </div>
-                                    <div class="check-indicator">
-                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
-                                            <polyline points="20 6 9 17 4 12"/>
-                                        </svg>
-                                    </div>
-                                </div>
-                            </label>
-                            {% endfor %}
-                        </div>
-                    </div>
-                    {% endif %}
-
-                    {% if facebook_accounts %}
-                    <div class="account-check-group" style="margin-top: 1rem;">
-                        <span class="check-group-label" style="color: #1877f2;">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/>
-                            </svg>
-                            Facebook
-                        </span>
-                        <div class="account-check-list">
-                            {% for fb in facebook_accounts %}
-                            <label class="account-check-item">
-                                <input type="checkbox" name="fb_accounts" value="{{ fb.pk }}"
-                                    {% if form_data %}{% for v in form_data.fb_accounts %}{% if v == fb.pk|stringformat:"d" %}checked{% endif %}{% endfor %}{% endif %}>
-                                <div class="account-check-card fb">
-                                    <div class="account-avatar-sm" style="background: linear-gradient(135deg, #1877f2, #0d5cb9);">
-                                        {% if fb.profile_picture_url %}
-                                        <img src="{{ fb.profile_picture_url }}" alt="{{ fb.name }}" style="width:100%;height:100%;border-radius:inherit;object-fit:cover;">
-                                        {% else %}
-                                        FB
-                                        {% endif %}
-                                    </div>
-                                    <div class="account-check-info">
-                                        <span class="account-check-name">{{ fb.name }}</span>
-                                        <span class="account-check-id">Page: {{ fb.page_id|truncatechars:24 }}</span>
-                                    </div>
-                                    <div class="check-indicator">
-                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
-                                            <polyline points="20 6 9 17 4 12"/>
-                                        </svg>
-                                    </div>
-                                </div>
-                            </label>
-                            {% endfor %}
-                        </div>
-                    </div>
-                    {% endif %}
-
-                    {% if x_accounts %}
-                    <div class="account-check-group" style="margin-top: 1rem;">
-                        <span class="check-group-label" style="color: #ffffff;">
-                            <span style="font-weight:900; margin-right:0.25rem;">𝕏</span>
-                            X (Twitter)
-                        </span>
-                        <div class="account-check-list">
-                            {% for x in x_accounts %}
-                            <label class="account-check-item">
-                                <input type="checkbox" name="x_accounts" value="{{ x.pk }}"
-                                    {% if form_data %}{% for v in form_data.x_accounts %}{% if v == x.pk|stringformat:"d" %}checked{% endif %}{% endfor %}{% endif %}>
-                                <div class="account-check-card x">
-                                    <div class="account-avatar-sm" style="background: #000; border: 1px solid rgba(255,255,255,0.15);">𝕏</div>
-                                    <div class="account-check-info">
-                                        <span class="account-check-name">{{ x.name }}</span>
-                                        <span class="account-check-id">@{{ x.screen_name }}</span>
-                                    </div>
-                                    <div class="check-indicator">
-                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
-                                            <polyline points="20 6 9 17 4 12"/>
-                                        </svg>
-                                    </div>
-                                </div>
-                            </label>
-                            {% endfor %}
-                        </div>
-                    </div>
-                    {% endif %}
-
-                    {% if pinterest_accounts %}
-                    <div class="account-check-group" style="margin-top: 1rem;">
-                        <span class="check-group-label" style="color: #e60023;">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <line x1="12" y1="5" x2="12" y2="19"></line>
-                                <line x1="5" y1="12" x2="19" y2="12"></line>
-                            </svg>
-                            Pinterest
-                        </span>
-                        <div class="account-check-list">
-                            {% for pin in pinterest_accounts %}
-                            <label class="account-check-item">
-                                <input type="checkbox" name="pin_accounts" value="{{ pin.pk }}"
-                                    {% if form_data %}{% for v in form_data.pin_accounts %}{% if v == pin.pk|stringformat:"d" %}checked{% endif %}{% endfor %}{% endif %}>
-                                <div class="account-check-card pin">
-                                    <div class="account-avatar-sm" style="background: linear-gradient(135deg, #e60023, #b8001c);">PI</div>
-                                    <div class="account-check-info">
-                                        <span class="account-check-name">{{ pin.name }}</span>
-                                        <span class="account-check-id">Board: {{ pin.board_name|truncatechars:24 }}</span>
-                                    </div>
-                                    <div class="check-indicator">
-                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
-                                            <polyline points="20 6 9 17 4 12"/>
-                                        </svg>
-                                    </div>
-                                </div>
-                            </label>
-                            {% endfor %}
-                        </div>
-                    </div>
-                    {% endif %}
-
-                    {% if tiktok_accounts %}
-                    <div class="account-check-group" style="margin-top: 1rem;">
-                        <span class="check-group-label" style="color: #fe2c55;">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5"/>
-                            </svg>
-                            TikTok
-                        </span>
-                        <div class="account-check-list">
-                            {% for tt in tiktok_accounts %}
-                            <label class="account-check-item">
-                                <input type="checkbox" name="tt_accounts" value="{{ tt.pk }}"
-                                    {% if form_data %}{% for v in form_data.tt_accounts %}{% if v == tt.pk|stringformat:"d" %}checked{% endif %}{% endfor %}{% endif %}>
-                                <div class="account-check-card tt">
-                                    <div class="account-avatar-sm" style="background: #010101; border: 1px solid #fe2c55;">TT</div>
-                                    <div class="account-check-info">
-                                        <span class="account-check-name">{{ tt.name }}</span>
-                                        <span class="account-check-id">@{{ tt.username }}</span>
-                                    </div>
-                                    <div class="check-indicator">
-                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
-                                            <polyline points="20 6 9 17 4 12"/>
-                                        </svg>
-                                    </div>
-                                </div>
-                            </label>
-                            {% endfor %}
-                        </div>
-                    </div>
-                    {% endif %}
+        <div class="channels-avatars-list">
+            <!-- Instagram -->
+            {% for ig in instagram_accounts %}
+            <div class="channel-avatar-item active" data-platform="ig" data-id="{{ ig.id }}" onclick="toggleChannel(this)" title="Instagram: {{ ig.name }}">
+                <div class="channel-avatar-circle" style="background: linear-gradient(135deg, #f58529, #dd2a7b, #8134af);">
+                    {% if ig.profile_picture_url %}<img src="{{ ig.profile_picture_url }}" alt="{{ ig.name }}">{% else %}IG{% endif %}
                 </div>
+                <div class="channel-mini-badge badge-ig">📸</div>
+                <div class="channel-check-badge">✓</div>
+            </div>
+            {% endfor %}
 
-                <!-- ═══ Post Type (Instagram only) ═══ -->
-                <div class="form-group" id="postTypeSection">
-                    <label class="form-label">What kind of Instagram post?</label>
-                    <div class="type-selector">
-                        <label class="type-option" id="type-image-label">
-                            <input type="radio" name="post_type" value="IMAGE"
-                                {% if form_data.post_type == 'IMAGE' or not form_data %}checked{% endif %}>
-                            <div class="type-card">
-                                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
-                                    <circle cx="8.5" cy="8.5" r="1.5"/>
-                                    <polyline points="21 15 16 10 5 21"/>
-                                </svg>
-                                <span>Image</span>
-                            </div>
+            <!-- YouTube -->
+            {% for yt in youtube_accounts %}
+            <div class="channel-avatar-item active" data-platform="yt" data-id="{{ yt.id }}" onclick="toggleChannel(this)" title="YouTube: {{ yt.name }}">
+                <div class="channel-avatar-circle" style="background: #ff0000;">
+                    {% if yt.profile_picture_url %}<img src="{{ yt.profile_picture_url }}" alt="{{ yt.name }}">{% else %}YT{% endif %}
+                </div>
+                <div class="channel-mini-badge badge-yt">▶</div>
+                <div class="channel-check-badge">✓</div>
+            </div>
+            {% endfor %}
+
+            <!-- TikTok -->
+            {% for tt in tiktok_accounts %}
+            <div class="channel-avatar-item active" data-platform="tt" data-id="{{ tt.id }}" onclick="toggleChannel(this)" title="TikTok: {{ tt.name }}">
+                <div class="channel-avatar-circle" style="background: #000;">TT</div>
+                <div class="channel-mini-badge badge-tt">🎵</div>
+                <div class="channel-check-badge">✓</div>
+            </div>
+            {% endfor %}
+
+            <!-- X (Twitter) -->
+            {% for x in x_accounts %}
+            <div class="channel-avatar-item active" data-platform="x" data-id="{{ x.id }}" onclick="toggleChannel(this)" title="X: {{ x.name }}">
+                <div class="channel-avatar-circle" style="background: #000;">𝕏</div>
+                <div class="channel-mini-badge badge-x">𝕏</div>
+                <div class="channel-check-badge">✓</div>
+            </div>
+            {% endfor %}
+
+            <!-- LinkedIn -->
+            {% for li in linkedin_accounts %}
+            <div class="channel-avatar-item active" data-platform="li" data-id="{{ li.id }}" onclick="toggleChannel(this)" title="LinkedIn: {{ li.name }}">
+                <div class="channel-avatar-circle" style="background: #0a66c2;">IN</div>
+                <div class="channel-mini-badge badge-li">💼</div>
+                <div class="channel-check-badge">✓</div>
+            </div>
+            {% endfor %}
+
+            <!-- Facebook -->
+            {% for fb in facebook_accounts %}
+            <div class="channel-avatar-item active" data-platform="fb" data-id="{{ fb.id }}" onclick="toggleChannel(this)" title="Facebook: {{ fb.name }}">
+                <div class="channel-avatar-circle" style="background: #1877f2;">FB</div>
+                <div class="channel-mini-badge badge-fb">f</div>
+                <div class="channel-check-badge">✓</div>
+            </div>
+            {% endfor %}
+
+            <!-- Pinterest -->
+            {% for pi in pinterest_accounts %}
+            <div class="channel-avatar-item active" data-platform="pin" data-id="{{ pi.id }}" onclick="toggleChannel(this)" title="Pinterest: {{ pi.board_name }}">
+                <div class="channel-avatar-circle" style="background: #e60023;">PI</div>
+                <div class="channel-mini-badge badge-pin">📌</div>
+                <div class="channel-check-badge">✓</div>
+            </div>
+            {% endfor %}
+
+
+            <!-- Snapchat -->
+            {% for sc in snapchat_accounts %}
+            <div class="channel-avatar-item active" data-platform="sc" data-id="{{ sc.id }}" onclick="toggleChannel(this)" title="Snapchat: {{ sc.name }}">
+                <div class="channel-avatar-circle" style="background: #fffc00; color: #000;">SC</div>
+                <div class="channel-mini-badge badge-sc">👻</div>
+                <div class="channel-check-badge">✓</div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Main Studio Form -->
+    <form id="postBridgeForm" method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <!-- Hidden inputs for active channels -->
+        <div id="hiddenChannelsContainer"></div>
+
+        <div class="studio-grid">
+            
+            <!-- LEFT COLUMN: Content & Overrides -->
+            <div>
+                
+                <!-- Main Universal Caption Card -->
+                <div class="white-card">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+                        <label style="font-weight: 700; font-size: 0.95rem; color: #0f172a; display: flex; align-items: center; gap: 0.35rem;">
+                            Main Caption
+                            <span style="font-size: 0.75rem; color: #94a3b8;" title="Broadcasting across all selected channels">ⓘ</span>
                         </label>
-                        <label class="type-option" id="type-reel-label">
-                            <input type="radio" name="post_type" value="REEL"
-                                {% if form_data.post_type == 'REEL' %}checked{% endif %}>
-                            <div class="type-card">
-                                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                                    <polygon points="23 7 16 12 23 17 23 7"/>
-                                    <rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>
-                                </svg>
-                                <span>Reel</span>
-                            </div>
-                        </label>
+                        
+                        <!-- AI Write Trigger Button -->
+                        <button type="button" onclick="openAiGenerator()" style="background: rgba(34, 197, 94, 0.1); color: #16a34a; border: 1px solid rgba(34, 197, 94, 0.3); font-weight: 600; font-size: 0.8rem; padding: 0.35rem 0.75rem; border-radius: 999px; cursor: pointer; display: flex; align-items: center; gap: 0.35rem;">
+                            <span>✨ AI Write / Polish</span>
+                        </button>
                     </div>
-                    <span class="form-hint" id="postTypeHint" style="margin-top: 0.5rem; display: block;"></span>
+
+                    <!-- AI Assistant Drawer (Collapsible) -->
+                    <div id="aiDrawer" style="display: none; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 0.85rem; margin-bottom: 0.85rem;">
+                        <div style="display: flex; gap: 0.5rem; margin-bottom: 0.5rem;">
+                            <input type="text" id="aiTopicInput" placeholder="What is this post about? (e.g. 3 morning productivity habits)" style="flex: 1; padding: 0.45rem 0.75rem; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.85rem;">
+                            <button type="button" onclick="generateAiCaption()" id="aiSubmitBtn" style="background: #22c55e; color: #fff; border: none; font-weight: 600; font-size: 0.82rem; padding: 0.45rem 0.85rem; border-radius: 6px; cursor: pointer;">
+                                Generate
+                            </button>
+                        </div>
+                        <div style="display: flex; gap: 0.4rem; flex-wrap: wrap;">
+                            <button type="button" onclick="quickTone('viral')" style="font-size: 0.75rem; padding: 0.2rem 0.5rem; background: #fff; border: 1px solid #cbd5e1; border-radius: 4px; cursor: pointer;">🔥 Viral Hook</button>
+                            <button type="button" onclick="quickTone('professional')" style="font-size: 0.75rem; padding: 0.2rem 0.5rem; background: #fff; border: 1px solid #cbd5e1; border-radius: 4px; cursor: pointer;">💼 Professional</button>
+                            <button type="button" onclick="quickTone('question')" style="font-size: 0.75rem; padding: 0.2rem 0.5rem; background: #fff; border: 1px solid #cbd5e1; border-radius: 4px; cursor: pointer;">❓ Ask Audience</button>
+                        </div>
+                    </div>
+
+                    <textarea id="captionUniversal" name="caption" rows="5" placeholder="Caption here! Write once and it broadcasts everywhere..." oninput="syncCaptions(this.value)" style="width: 100%; border: 1px solid #e2e8f0; border-radius: 8px; padding: 0.85rem 1rem; font-size: 0.92rem; background: #fafafa; color: #0f172a; line-height: 1.5; resize: vertical;"></textarea>
+
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.5rem; font-size: 0.78rem; color: #64748b;">
+                        <span>Tip: Use platform tabs below for custom overrides.</span>
+                        <span id="charCount">0 / 3000</span>
+                    </div>
                 </div>
 
-                <!-- ═══ YouTube Title ═══ -->
-                <div class="form-group" id="titleSection" style="display: none;">
-                    <label for="id_title" class="form-label">Video Title</label>
-                    <input type="text" name="title" id="id_title" class="form-input" maxlength="100"
-                        placeholder="Enter the video title (required for YouTube)"
-                        value="{{ form_data.title|default:'' }}">
-                    <span class="form-hint">Required for YouTube — max 100 characters</span>
+                <!-- Post Configurations & Tools (Frame 90 Style) -->
+                <div class="white-card">
+                    <div style="font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #64748b; margin-bottom: 0.75rem;">
+                        Post configurations & tools
+                    </div>
+
+                    <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1rem;">
+                        <button type="button" onclick="toggleToolSection('platformTabs')" class="btn btn-sm" style="background: #f1f5f9; color: #0f172a; font-weight: 600; border: 1px solid #e2e8f0; border-radius: 6px;">
+                            🟢 Platform Captions ˅
+                        </button>
+                        <button type="button" onclick="toggleToolSection('ytSection')" class="btn btn-sm" style="background: #f1f5f9; color: #0f172a; font-weight: 600; border: 1px solid #e2e8f0; border-radius: 6px;">
+                            YouTube Title & Tags ˅
+                        </button>
+                        <button type="button" onclick="toggleToolSection('videoConfig')" class="btn btn-sm" style="background: #f1f5f9; color: #0f172a; font-weight: 600; border: 1px solid #e2e8f0; border-radius: 6px;">
+                            Reels / Shorts Settings ˅
+                        </button>
+                    </div>
+
+                    <!-- Platform Specific Captions (Accordion Content) -->
+                    <div id="platformTabsSection">
+                        <div class="channel-tabs">
+                            <button type="button" class="channel-tab-pill active" onclick="switchPlatformTab('universal')">🌐 Universal</button>
+                            <button type="button" class="channel-tab-pill" onclick="switchPlatformTab('ig')">📸 Instagram</button>
+                            <button type="button" class="channel-tab-pill" onclick="switchPlatformTab('yt')">▶ YouTube</button>
+                            <button type="button" class="channel-tab-pill" onclick="switchPlatformTab('x')">𝕏 Twitter</button>
+                            <button type="button" class="channel-tab-pill" onclick="switchPlatformTab('tt')">🎵 TikTok</button>
+                            <button type="button" class="channel-tab-pill" onclick="switchPlatformTab('li')">💼 LinkedIn</button>
+                        </div>
+
+                        <!-- Instagram Tab -->
+                        <div id="tab-ig" class="platform-tab-pane" style="display: none;">
+                            <label style="display: block; font-weight: 600; font-size: 0.85rem; margin-bottom: 0.4rem;">Instagram Specific Caption</label>
+                            <textarea name="caption_ig" id="caption_ig" rows="4" placeholder="Custom Instagram caption with hashtags..." style="width: 100%; border: 1px solid #e2e8f0; border-radius: 8px; padding: 0.75rem; font-size: 0.9rem; background: #fafafa;"></textarea>
+                        </div>
+
+                        <!-- YouTube Tab -->
+                        <div id="tab-yt" class="platform-tab-pane" style="display: none;">
+                            <label style="display: block; font-weight: 600; font-size: 0.85rem; margin-bottom: 0.4rem;">YouTube Description</label>
+                            <textarea name="caption_yt" id="caption_yt" rows="4" placeholder="YouTube description text & timestamps..." style="width: 100%; border: 1px solid #e2e8f0; border-radius: 8px; padding: 0.75rem; font-size: 0.9rem; background: #fafafa;"></textarea>
+                        </div>
+
+                        <!-- X (Twitter) Tab -->
+                        <div id="tab-x" class="platform-tab-pane" style="display: none;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
+                                <label style="font-weight: 600; font-size: 0.85rem;">𝕏 Post Content</label>
+                                <span id="xCharCounter" style="font-size: 0.75rem; color: #22c55e;">280 chars left</span>
+                            </div>
+                            <textarea name="caption_x" id="caption_x" rows="3" maxlength="280" placeholder="Tweet text..." oninput="updateXCounter(this.value)" style="width: 100%; border: 1px solid #e2e8f0; border-radius: 8px; padding: 0.75rem; font-size: 0.9rem; background: #fafafa;"></textarea>
+                        </div>
+
+                        <!-- TikTok Tab -->
+                        <div id="tab-tt" class="platform-tab-pane" style="display: none;">
+                            <label style="display: block; font-weight: 600; font-size: 0.85rem; margin-bottom: 0.4rem;">TikTok Caption & Hashtags</label>
+                            <textarea name="caption_tiktok" id="caption_tiktok" rows="3" placeholder="Quick punchy caption for TikTok..." style="width: 100%; border: 1px solid #e2e8f0; border-radius: 8px; padding: 0.75rem; font-size: 0.9rem; background: #fafafa;"></textarea>
+                        </div>
+
+                        <!-- LinkedIn Tab -->
+                        <div id="tab-li" class="platform-tab-pane" style="display: none;">
+                            <label style="display: block; font-weight: 600; font-size: 0.85rem; margin-bottom: 0.4rem;">LinkedIn Post Commentary</label>
+                            <textarea name="caption_linkedin" id="caption_linkedin" rows="4" placeholder="Professional summary and commentary..." style="width: 100%; border: 1px solid #e2e8f0; border-radius: 8px; padding: 0.75rem; font-size: 0.9rem; background: #fafafa;"></textarea>
+                        </div>
+                    </div>
+
+                    <!-- YouTube Title & Tags Section -->
+                    <div id="ytSection" style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #e2e8f0;">
+                        <label style="display: block; font-weight: 600; font-size: 0.85rem; margin-bottom: 0.4rem;">Video Title (Used for YouTube, Facebook)</label>
+                        <input type="text" name="title" id="postTitleInput" placeholder="Enter engaging video title..." style="width: 100%; border: 1px solid #e2e8f0; border-radius: 8px; padding: 0.65rem 0.85rem; font-size: 0.9rem; background: #fafafa; margin-bottom: 0.75rem;">
+                        <input type="text" name="yt_tags" placeholder="Tags (comma separated, e.g. tech, saas, coding)" style="width: 100%; border: 1px solid #e2e8f0; border-radius: 8px; padding: 0.65rem 0.85rem; font-size: 0.9rem; background: #fafafa;">
+                    </div>
+
+                    <!-- Reels / Shorts Toggle Section -->
+                    <div id="videoConfig" style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: space-between;">
+                        <div>
+                            <div style="font-weight: 600; font-size: 0.88rem; color: #0f172a;">Publish as Reel / Short</div>
+                            <div style="font-size: 0.78rem; color: #64748b;">Optimize 9:16 vertical videos for Instagram Reels and YouTube Shorts</div>
+                        </div>
+                        <input type="hidden" name="post_type" value="REEL">
+                        <span style="font-size: 0.75rem; font-weight: 700; background: rgba(34, 197, 94, 0.15); color: #16a34a; padding: 0.25rem 0.6rem; border-radius: 999px;">Auto Enabled</span>
+                    </div>
                 </div>
 
-                <!-- ═══ Media Upload ═══ -->
-                <div class="form-section">
-                    <h3 class="form-section-title">Media</h3>
-                    
-                    <div class="form-group">
-                        <label class="form-label">Upload File</label>
-                        <div class="file-upload-area" id="mediaDropZone">
-                            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.4">
+            </div>
+
+            <!-- RIGHT COLUMN: Media Preview & Scheduling -->
+            <div>
+                
+                <!-- Media Upload Card -->
+                <div class="white-card">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+                        <span style="font-weight: 700; font-size: 0.95rem; color: #0f172a;">Media Preview</span>
+                        <button type="button" id="removeMediaBtn" onclick="clearMedia()" style="display: none; background: none; border: none; color: #ef4444; font-size: 0.8rem; cursor: pointer; font-weight: 600;">Remove</button>
+                    </div>
+
+                    <input type="file" name="media_file" id="mediaFileInput" accept="video/*,image/*" onchange="handleFileSelect(event)" style="display: none;">
+
+                    <!-- Drag & Drop Area -->
+                    <div class="media-box" id="dropZone" onclick="document.getElementById('mediaFileInput').click()">
+                        <div id="uploadPrompt">
+                            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2" style="margin: 0 auto 0.75rem;">
                                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
                                 <polyline points="17 8 12 3 7 8"/>
                                 <line x1="12" y1="3" x2="12" y2="15"/>
                             </svg>
-                            <p>Drag & drop or click to upload</p>
-                            <span class="file-hint" id="mediaHint">JPEG images for Image posts • MP4/MOV for Reels & YouTube</span>
-                            <input type="file" name="media_file" class="form-input file-input"
-                                accept="image/jpeg,video/mp4,video/quicktime">
-                            <span class="file-name" id="mediaFileName"></span>
-                        </div>
-                    </div>
-
-                    <div class="form-divider" id="mediaUrlDivider">
-                        <span>OR</span>
-                    </div>
-
-                    <div class="form-group" id="mediaUrlSection">
-                        <label for="id_media_url" class="form-label">Media URL</label>
-                        <input type="url" name="media_url" id="id_media_url" class="form-input"
-                            placeholder="https://example.com/media/photo.jpg"
-                            value="{{ form_data.media_url|default:'' }}">
-                        <span class="form-hint">Publicly accessible URL to your image or video</span>
-                    </div>
-                </div>
-
-                <!-- ═══ Thumbnail (Reels only) ═══ -->
-                <div class="form-section" id="thumbnailSection" style="display: none;">
-                    <h3 class="form-section-title">Reel Thumbnail / Cover</h3>
-                    
-                    <div class="form-group">
-                        <label class="form-label">Upload Thumbnail</label>
-                        <div class="file-upload-area" id="thumbDropZone">
-                            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.4">
-                                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
-                                <circle cx="8.5" cy="8.5" r="1.5"/>
-                                <polyline points="21 15 16 10 5 21"/>
-                            </svg>
-                            <p>Upload cover image (JPEG)</p>
-                            <input type="file" name="thumbnail_file" class="form-input file-input" accept="image/jpeg">
-                            <span class="file-name" id="thumbFileName"></span>
-                        </div>
-                    </div>
-
-                    <div class="form-divider"><span>OR</span></div>
-
-                    <div class="form-group">
-                        <label for="id_thumbnail_url" class="form-label">Thumbnail URL</label>
-                        <input type="url" name="thumbnail_url" id="id_thumbnail_url" class="form-input"
-                            placeholder="https://example.com/media/thumbnail.jpg"
-                            value="{{ form_data.thumbnail_url|default:'' }}">
-                        <span class="form-hint">Publicly accessible URL to the cover image</span>
-                    </div>
-                </div>
-
-                <!-- ═══ Caption ═══ -->
-                <div class="form-group">
-                    <label for="id_caption" class="form-label" id="captionLabel">Caption / Description</label>
-                    <textarea name="caption" id="id_caption" class="form-input" rows="5"
-                        placeholder="Write your post caption here...&#10;&#10;Use hashtags for reach #instagram #post">{{ form_data.caption|default:'' }}</textarea>
-                    <div class="caption-counter">
-                        <span id="captionCount">0</span> / 2,200 characters
-                    </div>
-                </div>
-
-                <!-- ═══ YouTube Advanced Settings ═══ -->
-                <div class="form-section yt-advanced-card" id="ytAdvancedSection" style="display: none; background: linear-gradient(145deg, rgba(30, 30, 40, 0.6), rgba(20, 20, 25, 0.8)); border: 1px solid rgba(255, 68, 68, 0.2); box-shadow: 0 4px 20px rgba(255, 68, 68, 0.05); padding: 1.5rem; border-radius: 12px; margin-bottom: 1.5rem; position: relative; overflow: hidden;">
-                    <!-- Decorative subtle glow -->
-                    <div style="position: absolute; top: -50px; right: -50px; width: 100px; height: 100px; background: rgba(255, 68, 68, 0.2); filter: blur(50px); border-radius: 50%;"></div>
-                    
-                    <h3 class="form-section-title" style="color: #fff; margin-top: 0; font-size: 1.1rem; display: flex; align-items: center; gap: 0.5rem; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 1rem; margin-bottom: 1.2rem;">
-                        <span style="display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; background: rgba(255, 68, 68, 0.15); color: #ff4444; border-radius: 8px;">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19.13C5.12 19.56 12 19.56 12 19.56s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.43z"/>
-                                <polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02"/>
-                            </svg>
-                        </span>
-                        YouTube Studio Settings
-                    </h3>
-                    
-                    <div class="form-group" style="position: relative; z-index: 1;">
-                        <label for="id_yt_tags" class="form-label" style="color: #cbd5e1;">Video Tags</label>
-                        <input type="text" name="yt_tags" id="id_yt_tags" class="form-input" 
-                            style="background: rgba(0,0,0,0.2); border-color: rgba(255,255,255,0.1);"
-                            placeholder="e.g. podcast, technology, vlog..."
-                            value="{{ form_data.yt_tags|default:'' }}">
-                        <span class="form-hint" style="color: #94a3b8;">Separate keywords with commas to help viewers discover your video.</span>
-                    </div>
-
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; position: relative; z-index: 1;">
-                        <div class="form-group" style="margin-bottom: 0;">
-                            <label for="id_yt_privacy_status" class="form-label" style="color: #cbd5e1;">Visibility</label>
-                            <select name="yt_privacy_status" id="id_yt_privacy_status" class="form-input" style="background: rgba(0,0,0,0.2); border-color: rgba(255,255,255,0.1);">
-                                <option value="public" {% if form_data.yt_privacy_status == 'public' or not form_data %}selected{% endif %}>🌎 Public (Everyone can see)</option>
-                                <option value="private" {% if form_data.yt_privacy_status == 'private' %}selected{% endif %}>🔒 Private (Only you)</option>
-                                <option value="unlisted" {% if form_data.yt_privacy_status == 'unlisted' %}selected{% endif %}>🔗 Unlisted (Anyone with link)</option>
-                            </select>
-                            <span class="form-hint" style="color: #94a3b8;">Schedules force videos to start as Private.</span>
-                        </div>
-                        <div class="form-group" style="margin-bottom: 0;">
-                            <label for="id_yt_category_id" class="form-label" style="color: #cbd5e1;">Category</label>
-                            <select name="yt_category_id" id="id_yt_category_id" class="form-input" style="background: rgba(0,0,0,0.2); border-color: rgba(255,255,255,0.1);">
-                                <option value="1" {% if form_data.yt_category_id == '1' %}selected{% endif %}>🎬 Film & Animation</option>
-                                <option value="2" {% if form_data.yt_category_id == '2' %}selected{% endif %}>🚗 Autos & Vehicles</option>
-                                <option value="10" {% if form_data.yt_category_id == '10' %}selected{% endif %}>🎵 Music</option>
-                                <option value="15" {% if form_data.yt_category_id == '15' %}selected{% endif %}>🐾 Pets & Animals</option>
-                                <option value="17" {% if form_data.yt_category_id == '17' %}selected{% endif %}>⚽ Sports</option>
-                                <option value="19" {% if form_data.yt_category_id == '19' %}selected{% endif %}>✈️ Travel & Events</option>
-                                <option value="20" {% if form_data.yt_category_id == '20' %}selected{% endif %}>🎮 Gaming</option>
-                                <option value="22" {% if form_data.yt_category_id == '22' or not form_data %}selected{% endif %}>👥 People & Blogs</option>
-                                <option value="23" {% if form_data.yt_category_id == '23' %}selected{% endif %}>😂 Comedy</option>
-                                <option value="24" {% if form_data.yt_category_id == '24' %}selected{% endif %}>🎭 Entertainment</option>
-                                <option value="25" {% if form_data.yt_category_id == '25' %}selected{% endif %}>📰 News & Politics</option>
-                                <option value="26" {% if form_data.yt_category_id == '26' %}selected{% endif %}>💡 Howto & Style</option>
-                                <option value="27" {% if form_data.yt_category_id == '27' %}selected{% endif %}>📚 Education</option>
-                                <option value="28" {% if form_data.yt_category_id == '28' %}selected{% endif %}>🔬 Science & Tech</option>
-                                <option value="29" {% if form_data.yt_category_id == '29' %}selected{% endif %}>🤝 Nonprofits</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div class="form-group" style="margin-top: 1.5rem; margin-bottom: 0; background: rgba(0,0,0,0.15); padding: 1rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.03); position: relative; z-index: 1;">
-                        <label class="form-label" style="display: flex; align-items: flex-start; gap: 0.8rem; cursor: pointer; margin: 0;">
-                            <input type="checkbox" name="yt_made_for_kids" id="id_yt_made_for_kids" 
-                                {% if form_data.yt_made_for_kids == 'on' %}checked{% endif %}
-                                style="width: 20px; height: 20px; accent-color: #ff4444; margin-top: 2px;">
-                            <div>
-                                <div style="color: #e2e8f0; font-weight: 600; margin-bottom: 0.2rem;">Yes, it's made for kids</div>
-                                <div style="font-size: 0.75rem; color: #94a3b8; font-weight: 400; line-height: 1.4;">Regardless of your location, you're legally required to comply with COPPA. Select this if kids are your primary audience.</div>
+                            <div style="font-weight: 600; font-size: 0.92rem; color: #0f172a; margin-bottom: 0.25rem;">
+                                Drop your photo or video here, or <span style="color: #22c55e; text-decoration: underline;">browse</span>
                             </div>
-                        </label>
+                            <div style="font-size: 0.78rem; color: #94a3b8;">
+                                Supports MP4, MOV, JPEG, PNG • Up to 4K / 60fps
+                            </div>
+                        </div>
+
+                        <!-- Active Media Preview -->
+                        <div id="mediaPreviewContainer" style="display: none;">
+                            <video id="videoPreview" controls style="max-width: 100%; max-height: 260px; border-radius: 8px; display: none;"></video>
+                            <img id="imagePreview" src="" alt="Preview" style="max-width: 100%; max-height: 260px; border-radius: 8px; object-fit: contain; display: none;">
+                        </div>
+                    </div>
+
+                    <!-- Direct URL Option -->
+                    <input type="url" name="media_url" id="mediaUrlInput" placeholder="Or paste public direct media URL (https://...)" oninput="handleUrlInput(this.value)" style="width: 100%; border: 1px solid #e2e8f0; border-radius: 8px; padding: 0.6rem 0.85rem; font-size: 0.82rem; background: #fafafa;">
+                </div>
+
+                <!-- Live Smartphone Mockup Preview (iPhone Frame) -->
+                <div class="white-card" style="padding: 1.25rem; display: flex; flex-direction: column; align-items: center;">
+                    <div style="display: flex; gap: 0.4rem; margin-bottom: 1rem; width: 100%; justify-content: center;">
+                        <button type="button" class="btn btn-xs" onclick="setMockupMode('ig')" style="border-radius: 999px; padding: 0.25rem 0.65rem; background: #0f172a; color: #fff; font-size: 0.75rem;">Instagram</button>
+                        <button type="button" class="btn btn-xs" onclick="setMockupMode('tt')" style="border-radius: 999px; padding: 0.25rem 0.65rem; background: #f1f5f9; color: #0f172a; font-size: 0.75rem;">TikTok</button>
+                        <button type="button" class="btn btn-xs" onclick="setMockupMode('yt')" style="border-radius: 999px; padding: 0.25rem 0.65rem; background: #f1f5f9; color: #0f172a; font-size: 0.75rem;">YouTube</button>
+                        <button type="button" class="btn btn-xs" onclick="setMockupMode('x')" style="border-radius: 999px; padding: 0.25rem 0.65rem; background: #f1f5f9; color: #0f172a; font-size: 0.75rem;">𝕏</button>
+                        <button type="button" class="btn btn-xs" onclick="setMockupMode('li')" style="border-radius: 999px; padding: 0.25rem 0.65rem; background: #f1f5f9; color: #0f172a; font-size: 0.75rem;">LinkedIn</button>
+                    </div>
+
+                    <div class="phone-mockup">
+                        <div class="phone-notch"></div>
+                        <div class="phone-screen" id="phoneScreen">
+                            
+                            <!-- Mockup Header -->
+                            <div style="padding: 30px 14px 10px; display: flex; align-items: center; justify-content: space-between; z-index: 5;">
+                                <div style="display: flex; align-items: center; gap: 0.4rem;">
+                                    <div style="width: 24px; height: 24px; border-radius: 50%; background: #22c55e; display: flex; align-items: center; justify-content: center; font-size: 0.65rem; font-weight: bold;">PB</div>
+                                    <span style="font-size: 0.75rem; font-weight: 700;">your_profile</span>
+                                </div>
+                                <span style="font-size: 0.8rem; letter-spacing: 2px;">•••</span>
+                            </div>
+
+                            <!-- Mockup Media Area -->
+                            <div id="mockupMediaBox" style="width: 100%; height: 380px; background: #111; display: flex; align-items: center; justify-content: center; position: relative;">
+                                <span id="mockupPlaceholder" style="font-size: 0.8rem; color: #64748b;">No Media Selected</span>
+                                <video id="mockupVideo" loop muted autoplay style="width: 100%; height: 100%; object-fit: cover; display: none;"></video>
+                                <img id="mockupImage" src="" alt="preview" style="width: 100%; height: 100%; object-fit: cover; display: none;">
+                            </div>
+
+                            <!-- Mockup Caption Area -->
+                            <div style="padding: 10px 14px; font-size: 0.75rem;">
+                                <div style="display: flex; gap: 0.75rem; margin-bottom: 0.4rem;">
+                                    <span>❤️</span>
+                                    <span>💬</span>
+                                    <span>↗️</span>
+                                </div>
+                                <div id="mockupCaption" style="line-height: 1.4; color: #e2e8f0; word-break: break-word;">
+                                    Your caption will show up right here in real time...
+                                </div>
+                            </div>
+
+                        </div>
                     </div>
                 </div>
 
-                <!-- ═══ Schedule Time ═══ -->
-                <div class="form-section">
-                    <div class="form-group" style="margin-bottom: 1rem;">
-                        <label class="form-label" style="display: flex; align-items: center; gap: 0.8rem; cursor: pointer; margin: 0; padding: 1rem; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-md); box-shadow: var(--shadow-sm);">
-                            <input type="checkbox" name="post_immediately" id="id_post_immediately" style="width: 20px; height: 20px; accent-color: var(--purple-light);">
-                            <div>
-                                <div style="color: var(--text-primary); font-weight: 600;">Post Immediately 🚀</div>
-                                <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 400;">Skip scheduling and publish this as soon as possible.</div>
-                            </div>
+                <!-- Schedule & Publishing Card -->
+                <div class="white-card">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                        <div>
+                            <div style="font-weight: 700; font-size: 0.95rem; color: #0f172a;">Schedule post</div>
+                            <div style="font-size: 0.75rem; color: #64748b;">Turn off to post immediately</div>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="scheduleToggle" name="is_scheduled" value="true" checked onchange="toggleScheduleOptions(this.checked)">
+                            <span class="toggle-slider"></span>
                         </label>
                     </div>
 
-                    <div class="form-group" id="scheduledTimeGroup">
-                        <label for="id_scheduled_time" class="form-label">When should we post it?</label>
-                        <input type="datetime-local" name="scheduled_time" id="id_scheduled_time" class="form-input"
-                            value="{{ form_data.scheduled_time|default:'' }}">
-                        <span class="form-hint">Choose the exact local date and time.</span>
+                    <div id="scheduleInputsSection">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 0.75rem;">
+                            <div>
+                                <label style="display: block; font-size: 0.75rem; font-weight: 600; color: #64748b; margin-bottom: 0.25rem;">Date</label>
+                                <input type="date" name="scheduled_date" id="scheduledDateInput" style="width: 100%; border: 1px solid #e2e8f0; border-radius: 8px; padding: 0.55rem; font-size: 0.85rem; background: #fafafa;">
+                            </div>
+                            <div>
+                                <label style="display: block; font-size: 0.75rem; font-weight: 600; color: #64748b; margin-bottom: 0.25rem;">Time</label>
+                                <input type="time" name="scheduled_time_only" id="scheduledTimeInput" style="width: 100%; border: 1px solid #e2e8f0; border-radius: 8px; padding: 0.55rem; font-size: 0.85rem; background: #fafafa;">
+                            </div>
+                        </div>
+                        <div style="font-size: 0.75rem; color: #94a3b8; margin-bottom: 1.25rem;">
+                            Your post will be published at your local time.
+                        </div>
                     </div>
-                </div>
 
-                <!-- ═══ Submit ═══ -->
-                <div class="form-actions">
-                    <a href="{% url 'post_list' %}" class="btn btn-ghost">Cancel</a>
-                    <button type="submit" class="btn btn-primary btn-lg">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
-                        </svg>
-                        Schedule Post
+                    <!-- Hidden combined datetime field -->
+                    <input type="hidden" name="scheduled_time" id="combinedScheduledTime">
+                    <input type="hidden" name="action_type" id="actionTypeInput" value="schedule">
+
+                    <!-- Big Green Submit Button -->
+                    <button type="submit" id="mainSubmitBtn" style="width: 100%; background: #22c55e; hover: #16a34a; color: #ffffff; border: none; padding: 0.85rem; border-radius: 10px; font-weight: 700; font-size: 1rem; cursor: pointer; transition: background 0.15s ease; box-shadow: 0 2px 8px rgba(34, 197, 94, 0.3);">
+                        Schedule Post (<span id="btnAccountCount">0</span> accounts)
                     </button>
                 </div>
-            </form>
-            {% endif %}
+
+            </div>
+
         </div>
-    </div>
+    </form>
+
 </div>
-{% endblock %}
 
-{% block extra_js %}
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const igCheckboxes = document.querySelectorAll('input[name="ig_accounts"]');
-    const ytCheckboxes = document.querySelectorAll('input[name="yt_accounts"]');
-    const fbCheckboxes = document.querySelectorAll('input[name="fb_accounts"]');
-    const xCheckboxes = document.querySelectorAll('input[name="x_accounts"]');
-    const pinCheckboxes = document.querySelectorAll('input[name="pin_accounts"]');
-    const ttCheckboxes = document.querySelectorAll('input[name="tt_accounts"]');
-    const postTypeSection = document.getElementById('postTypeSection');
-    const titleSection = document.getElementById('titleSection');
-    const thumbnailSection = document.getElementById('thumbnailSection');
-    const mediaHint = document.getElementById('mediaHint');
-    const postTypeHint = document.getElementById('postTypeHint');
-    const typeRadios = document.querySelectorAll('input[name="post_type"]');
-
-    function hasIgSelected() {
-        return Array.from(igCheckboxes).some(cb => cb.checked);
-    }
-    function hasYtSelected() {
-        return Array.from(ytCheckboxes).some(cb => cb.checked);
-    }
-    function hasFbSelected() {
-        return Array.from(fbCheckboxes).some(cb => cb.checked);
-    }
-    function hasXSelected() {
-        return Array.from(xCheckboxes).some(cb => cb.checked);
-    }
-    function hasPinSelected() {
-        return Array.from(pinCheckboxes).some(cb => cb.checked);
-    }
-    function hasTtSelected() {
-        return Array.from(ttCheckboxes).some(cb => cb.checked);
-    }
-
-    function updateFormState() {
-        const igSelected = hasIgSelected();
-        const ytSelected = hasYtSelected();
-        const fbSelected = hasFbSelected();
-        const xSelected = hasXSelected();
-        const pinSelected = hasPinSelected();
-        const ttSelected = hasTtSelected();
-
-        const anySelected = igSelected || ytSelected || fbSelected || xSelected || pinSelected || ttSelected;
-
-        // Show/hide Title section if YouTube, Facebook, Pinterest or TikTok is selected
-        const showTitle = ytSelected || fbSelected || pinSelected || ttSelected;
-        titleSection.style.display = showTitle ? 'block' : 'none';
-
-        const ytAdvancedSection = document.getElementById('ytAdvancedSection');
-        if (ytAdvancedSection) {
-            ytAdvancedSection.style.display = ytSelected ? 'block' : 'none';
-        }
-
-        // Post Type Selector visibility
-        // Post type is applicable to Instagram, Facebook, X.
-        // YouTube, TikTok are always videos. Pinterest is always image.
-        const showPostTypeSelector = igSelected || fbSelected || xSelected;
-        postTypeSection.style.display = showPostTypeSelector ? 'block' : 'none';
-
-        // Hints & thumbnail section based on selections and post type
-        const selectedPostType = document.querySelector('input[name="post_type"]:checked')?.value || 'IMAGE';
-        
-        let hintParts = [];
-        let forceVideo = ytSelected || ttSelected;
-        let forceImage = pinSelected;
-        
-        if (forceVideo && forceImage) {
-            hintParts.push('⚠️ Mixed Platforms: YouTube/TikTok require video, but Pinterest requires images. We recommend scheduling them separately.');
-        } else if (forceVideo) {
-            hintParts.push('🎥 Video file required for YouTube / TikTok.');
-        } else if (forceImage) {
-            hintParts.push('🖼️ Image file required for Pinterest.');
-        } else {
-            // Only IG/FB/X selected
-            if (selectedPostType === 'REEL') {
-                hintParts.push('🎥 Video file (MP4/MOV) for Reels / Video posts.');
-            } else {
-                hintParts.push('🖼️ Image file (JPEG) for standard posts.');
-            }
-        }
-        
-        mediaHint.textContent = hintParts.join(' ');
-
-        // Show/hide thumbnail cover section
-        const needsThumbnail = ytSelected || ttSelected || (showPostTypeSelector && selectedPostType === 'REEL');
-        thumbnailSection.style.display = needsThumbnail ? 'block' : 'none';
-        
-        // Show indicator messages on post type hint
-        let typeHint = '';
-        if (igSelected && ytSelected) {
-            typeHint = '💡 YouTube always receives a video. Post Type selection only affects Instagram/Facebook/X.';
-        }
-        postTypeHint.textContent = typeHint;
-    }
-
-    function updatePostType() {
-        const selected = document.querySelector('input[name="post_type"]:checked');
-        const hasVideoPlatform = hasYtSelected() || hasTtSelected();
-        if (selected && selected.value === 'REEL') {
-            thumbnailSection.style.display = 'block';
-            mediaHint.textContent = 'MP4 or MOV video files for Reels/Videos';
-        } else {
-            if (!hasVideoPlatform) {
-                thumbnailSection.style.display = 'none';
-            }
-            mediaHint.textContent = 'JPEG images only';
-        }
-    }
-
-    igCheckboxes.forEach(cb => cb.addEventListener('change', updateFormState));
-    ytCheckboxes.forEach(cb => cb.addEventListener('change', updateFormState));
-    fbCheckboxes.forEach(cb => cb.addEventListener('change', updateFormState));
-    xCheckboxes.forEach(cb => cb.addEventListener('change', updateFormState));
-    pinCheckboxes.forEach(cb => cb.addEventListener('change', updateFormState));
-    ttCheckboxes.forEach(cb => cb.addEventListener('change', updateFormState));
-    typeRadios.forEach(r => r.addEventListener('change', updateFormState));
-
-    // Initial state
-    updateFormState();
-
-    // Caption counter
-    const captionInput = document.getElementById('id_caption');
-    const captionCount = document.getElementById('captionCount');
-    if (captionInput && captionCount) {
-        function updateCount() {
-            captionCount.textContent = captionInput.value.length;
-        }
-        captionInput.addEventListener('input', updateCount);
-        updateCount();
-    }
-
-    // File upload display
-    function setupFileInput(containerId, displayId) {
-        const container = document.getElementById(containerId);
-        if (!container) return;
-        const input = container.querySelector('input[type="file"]');
-        const display = document.getElementById(displayId);
-        if (input && display) {
-            input.addEventListener('change', function() {
-                if (this.files.length > 0) {
-                    display.textContent = this.files[0].name;
-                    display.style.display = 'block';
-                }
-            });
-        }
-    }
+// Channel Selection Logic
+function updateSelectedChannels() {
+    const activeItems = document.querySelectorAll('.channel-avatar-item.active');
+    const container = document.getElementById('hiddenChannelsContainer');
+    container.innerHTML = '';
     
-    setupFileInput('mediaDropZone', 'mediaFileName');
-    setupFileInput('thumbDropZone', 'thumbFileName');
+    let count = 0;
+    activeItems.forEach(item => {
+        const platform = item.getAttribute('data-platform');
+        const id = item.getAttribute('data-id');
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = `accounts_${platform}`;
+        input.value = id;
+        container.appendChild(input);
+        count++;
+    });
 
-    // Post Immediately Toggle Logic
-    const postImmediatelyCheckbox = document.getElementById('id_post_immediately');
-    const scheduledTimeGroup = document.getElementById('scheduledTimeGroup');
-    const scheduledTimeInput = document.getElementById('id_scheduled_time');
-    
-    if (postImmediatelyCheckbox && scheduledTimeGroup) {
-        function toggleScheduledTime() {
-            if (postImmediatelyCheckbox.checked) {
-                scheduledTimeGroup.style.opacity = '0.4';
-                scheduledTimeGroup.style.pointerEvents = 'none';
-                scheduledTimeInput.disabled = true;
-                scheduledTimeInput.required = false;
-            } else {
-                scheduledTimeGroup.style.opacity = '1';
-                scheduledTimeGroup.style.pointerEvents = 'auto';
-                scheduledTimeInput.disabled = false;
-                scheduledTimeInput.required = true;
-            }
-        }
-        
-        postImmediatelyCheckbox.addEventListener('change', toggleScheduledTime);
-        toggleScheduledTime(); // Run on initial load
+    document.getElementById('selectedCountText').innerText = count;
+    document.getElementById('btnAccountCount').innerText = count;
+}
+
+function toggleChannel(elem) {
+    elem.classList.toggle('active');
+    updateSelectedChannels();
+}
+
+function selectAllAccounts(status) {
+    document.querySelectorAll('.channel-avatar-item').forEach(el => {
+        if (status) el.classList.add('active');
+        else el.classList.remove('active');
+    });
+    updateSelectedChannels();
+}
+
+// Universal Caption Sync
+function syncCaptions(val) {
+    document.getElementById('mockupCaption').innerText = val || "Your caption will show up right here in real time...";
+    document.getElementById('charCount').innerText = `${val.length} / 3000`;
+}
+
+// Media Handling
+function handleFileSelect(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const url = URL.createObjectURL(file);
+    document.getElementById('uploadPrompt').style.display = 'none';
+    document.getElementById('mediaPreviewContainer').style.display = 'block';
+    document.getElementById('removeMediaBtn').style.display = 'inline';
+    document.getElementById('mockupPlaceholder').style.display = 'none';
+
+    if (file.type.startsWith('video/')) {
+        const v = document.getElementById('videoPreview');
+        v.src = url;
+        v.style.display = 'block';
+        document.getElementById('imagePreview').style.display = 'none';
+
+        const mv = document.getElementById('mockupVideo');
+        mv.src = url;
+        mv.style.display = 'block';
+        document.getElementById('mockupImage').style.display = 'none';
+    } else {
+        const img = document.getElementById('imagePreview');
+        img.src = url;
+        img.style.display = 'block';
+        document.getElementById('videoPreview').style.display = 'none';
+
+        const mi = document.getElementById('mockupImage');
+        mi.src = url;
+        mi.style.display = 'block';
+        document.getElementById('mockupVideo').style.display = 'none';
     }
+}
+
+function handleUrlInput(url) {
+    if (!url) return;
+    document.getElementById('uploadPrompt').style.display = 'none';
+    document.getElementById('mediaPreviewContainer').style.display = 'block';
+    document.getElementById('removeMediaBtn').style.display = 'inline';
+    document.getElementById('mockupPlaceholder').style.display = 'none';
+
+    const mi = document.getElementById('mockupImage');
+    mi.src = url;
+    mi.style.display = 'block';
+}
+
+function clearMedia() {
+    document.getElementById('mediaFileInput').value = '';
+    document.getElementById('mediaUrlInput').value = '';
+    document.getElementById('uploadPrompt').style.display = 'block';
+    document.getElementById('mediaPreviewContainer').style.display = 'none';
+    document.getElementById('removeMediaBtn').style.display = 'none';
+    document.getElementById('videoPreview').style.display = 'none';
+    document.getElementById('imagePreview').style.display = 'none';
+    document.getElementById('mockupPlaceholder').style.display = 'block';
+    document.getElementById('mockupVideo').style.display = 'none';
+    document.getElementById('mockupImage').style.display = 'none';
+}
+
+// Schedule Toggle
+function toggleScheduleOptions(isScheduled) {
+    const sec = document.getElementById('scheduleInputsSection');
+    const btn = document.getElementById('mainSubmitBtn');
+    const actionInput = document.getElementById('actionTypeInput');
+
+    if (isScheduled) {
+        sec.style.display = 'block';
+        btn.innerText = `Schedule Post (${document.getElementById('selectedCountText').innerText} accounts)`;
+        btn.style.background = '#22c55e';
+        actionInput.value = 'schedule';
+    } else {
+        sec.style.display = 'none';
+        btn.innerText = `Post Now (${document.getElementById('selectedCountText').innerText} accounts)`;
+        btn.style.background = '#3b82f6';
+        actionInput.value = 'post_now';
+    }
+}
+
+// Mockup Switcher
+function setMockupMode(platform) {
+    const screen = document.getElementById('phoneScreen');
+    if (platform === 'x') {
+        screen.style.background = '#000';
+    } else if (platform === 'li') {
+        screen.style.background = '#1b1f23';
+    } else {
+        screen.style.background = '#000';
+    }
+}
+
+// Tool Tabs
+function toggleToolSection(secId) {
+    const sec = document.getElementById(secId);
+    if (!sec) return;
+    sec.style.display = sec.style.display === 'none' ? 'block' : 'none';
+}
+
+function switchPlatformTab(tab) {
+    document.querySelectorAll('.channel-tab-pill').forEach(b => b.classList.remove('active'));
+    event.target.classList.add('active');
+
+    document.querySelectorAll('.platform-tab-pane').forEach(p => p.style.display = 'none');
+    if (tab !== 'universal') {
+        const pane = document.getElementById(`tab-${tab}`);
+        if (pane) pane.style.display = 'block';
+    }
+}
+
+function updateXCounter(val) {
+    const remaining = 280 - val.length;
+    const el = document.getElementById('xCharCounter');
+    el.innerText = `${remaining} chars left`;
+    el.style.color = remaining < 0 ? '#ef4444' : '#22c55e';
+}
+
+// AI Caption Generator
+function openAiGenerator() {
+    const d = document.getElementById('aiDrawer');
+    d.style.display = d.style.display === 'none' ? 'block' : 'none';
+    if (d.style.display === 'block') {
+        document.getElementById('aiTopicInput').focus();
+    }
+}
+
+function quickTone(tone) {
+    const topic = document.getElementById('aiTopicInput').value.trim() || document.getElementById('captionUniversal').value.trim() || 'creating viral content';
+    generateAiCaption(tone, topic);
+}
+
+function generateAiCaption(tone = 'viral', topicText = null) {
+    const topic = topicText || document.getElementById('aiTopicInput').value.trim();
+    if (!topic) {
+        alert('Please enter a topic or prompt for the AI.');
+        return;
+    }
+
+    const btn = document.getElementById('aiSubmitBtn');
+    btn.disabled = true;
+    btn.innerText = 'Writing...';
+
+    fetch('/api/ai/generate-caption/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        },
+        body: JSON.stringify({ topic: topic, tone: tone })
+    })
+    .then(r => r.json())
+    .then(data => {
+        btn.disabled = false;
+        btn.innerText = 'Generate';
+        if (data.caption) {
+            document.getElementById('captionUniversal').value = data.caption;
+            syncCaptions(data.caption);
+            document.getElementById('aiDrawer').style.display = 'none';
+        } else {
+            alert(data.error || 'Failed to generate caption.');
+        }
+    })
+    .catch(err => {
+        btn.disabled = false;
+        btn.innerText = 'Generate';
+        console.error(err);
+    });
+}
+
+// Form Pre-submit Preparation
+document.getElementById('postBridgeForm').addEventListener('submit', function(e) {
+    const isScheduled = document.getElementById('scheduleToggle').checked;
+    if (isScheduled) {
+        const d = document.getElementById('scheduledDateInput').value;
+        const t = document.getElementById('scheduledTimeInput').value;
+        if (d && t) {
+            document.getElementById('combinedScheduledTime').value = `${d}T${t}`;
+        }
+    }
+});
+
+// Initialization
+document.addEventListener('DOMContentLoaded', () => {
+    // Set default schedule date to tomorrow 2:00 PM
+    const now = new Date();
+    now.setDate(now.getDate() + 1);
+    const yyyy = now.getFullYear();
+    const mm = String(now.getMonth() + 1).padStart(2, '0');
+    const dd = String(now.getDate()).padStart(2, '0');
+    document.getElementById('scheduledDateInput').value = `${yyyy}-${mm}-${dd}`;
+    document.getElementById('scheduledTimeInput').value = '14:00';
+
+    updateSelectedChannels();
 });
 </script>
 {% endblock %}

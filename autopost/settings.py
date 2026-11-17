@@ -33,7 +33,11 @@ DEBUG = True
 ALLOWED_HOSTS = ['*']
 
 CSRF_TRUSTED_ORIGINS = [
-    'https://8f78-2001-8f8-1a67-3636-59cd-5e8e-34a7-bc31.ngrok-free.app',
+    'https://1b10-103-70-34-146.ngrok-free.app',
+    'https://*.ngrok-free.app',
+    'https://growspace.solutions',
+    'http://localhost:8000',
+    'http://127.0.0.1:8000',
 ]
 
 
@@ -87,13 +91,13 @@ WSGI_APPLICATION = 'autopost.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'autopost',
-        'USER': 'postgres',
-        'PASSWORD': '1234',
-        'HOST': 'localhost',
-        'PORT': '5432',
-        'CONN_MAX_AGE': 0,
+        'ENGINE': os.getenv('DB_ENGINE', 'django.db.backends.postgresql'),
+        'NAME': os.getenv('DB_NAME', 'autopost'),
+        'USER': os.getenv('DB_USER', 'postgres'),
+        'PASSWORD': os.getenv('DB_PASSWORD', '1234'),
+        'HOST': os.getenv('DB_HOST', 'localhost'),
+        'PORT': os.getenv('DB_PORT', '5432'),
+        'CONN_MAX_AGE': int(os.getenv('DB_CONN_MAX_AGE', '0')),
     }
 }
 
@@ -158,7 +162,54 @@ GOOGLE_OAUTH2_CLIENT_ID = os.environ.get('GOOGLE_OAUTH2_CLIENT_ID', '')
 GOOGLE_OAUTH2_CLIENT_SECRET = os.environ.get('GOOGLE_OAUTH2_CLIENT_SECRET', '')
 GOOGLE_OAUTH2_REDIRECT_URI = os.environ.get('GOOGLE_OAUTH2_REDIRECT_URI', 'http://localhost:8000/accounts/youtube/callback/')
 
+# Facebook Developer Credentials
+FACEBOOK_APP_ID = os.environ.get('FACEBOOK_APP_ID', '')
+FACEBOOK_CLIENT_SECRET = os.environ.get('FACEBOOK_CLIENT_SECRET', '')
+FACEBOOK_REDIRECT_URI = os.environ.get('FACEBOOK_REDIRECT_URI', '')
+
+# X (Twitter) Developer Credentials
+TWITTER_CLIENT_ID = os.environ.get('TWITTER_CLIENT_ID', '')
+TWITTER_CLIENT_SECRET = os.environ.get('TWITTER_CLIENT_SECRET', '')
+TWITTER_REDIRECT_URI = os.environ.get('TWITTER_REDIRECT_URI', '')
+
+# Pinterest Credentials
+PINTEREST_APP_ID = os.environ.get('PINTEREST_APP_ID', '')
+PINTEREST_APP_SECRET = os.environ.get('PINTEREST_APP_SECRET', '')
+PINTEREST_REDIRECT_URI = os.environ.get('PINTEREST_REDIRECT_URI', '')
+
+# LinkedIn Credentials
+LINKEDIN_CLIENT_ID = os.environ.get('LINKEDIN_CLIENT_ID', '')
+LINKEDIN_CLIENT_SECRET = os.environ.get('LINKEDIN_CLIENT_SECRET', '')
+LINKEDIN_REDIRECT_URI = os.environ.get('LINKEDIN_REDIRECT_URI', '')
+LINKEDIN_SCOPES = os.environ.get('LINKEDIN_SCOPES', 'w_member_social,w_organization_social')
+
+# Reddit Credentials
+REDDIT_CLIENT_ID = os.environ.get('REDDIT_CLIENT_ID', '')
+REDDIT_CLIENT_SECRET = os.environ.get('REDDIT_CLIENT_SECRET', '')
+REDDIT_REDIRECT_URI = os.environ.get('REDDIT_REDIRECT_URI', '')
+
+# Snapchat Credentials
+SNAPCHAT_CLIENT_ID = os.environ.get('SNAPCHAT_CLIENT_ID', '')
+SNAPCHAT_CLIENT_SECRET = os.environ.get('SNAPCHAT_CLIENT_SECRET', '')
+SNAPCHAT_REDIRECT_URI = os.environ.get('SNAPCHAT_REDIRECT_URI', '')
+SNAPCHAT_SCOPES = os.environ.get('SNAPCHAT_SCOPES', 'snapchat-profile-api snapchat-marketing-api')
+
+# TikTok Credentials
+TIKTOK_CLIENT_KEY = os.environ.get('TIKTOK_CLIENT_KEY', '')
+TIKTOK_CLIENT_SECRET = os.environ.get('TIKTOK_CLIENT_SECRET', '')
+TIKTOK_REDIRECT_URI = os.environ.get('TIKTOK_REDIRECT_URI', '')
+
+# Razorpay Payments
+RAZORPAY_KEY_ID = os.environ.get('RAZORPAY_KEY_ID', '')
+RAZORPAY_KEY_SECRET = os.environ.get('RAZORPAY_KEY_SECRET', '')
+
+# App Domain
+APP_DOMAIN = os.environ.get('APP_DOMAIN', 'https://1b10-103-70-34-146.ngrok-free.app')
+
 # Authentication Settings
 LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = 'dashboard'
 LOGOUT_REDIRECT_URL = 'login'
+
+
+

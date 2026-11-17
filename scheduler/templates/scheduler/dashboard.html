@@ -1,6 +1,6 @@
 {% extends 'scheduler/base.html' %}
 
-{% block title %}Dashboard — AutoPost{% endblock %}
+{% block title %}Dashboard — FeedBridge{% endblock %}
 {% block nav_dashboard %}active{% endblock %}
 {% block page_title %}Dashboard{% endblock %}
 
@@ -154,42 +154,66 @@
             <a href="{% url 'account_list' %}" class="card-link">Manage</a>
         </div>
         <div class="card-body">
-            {% if accounts or youtube_accounts %}
+            {% if total_accounts > 0 %}
             <div class="account-list-mini">
                 {% for yt in youtube_accounts %}
                 <div class="account-item-mini">
-                    <div class="account-avatar" style="background: linear-gradient(135deg, #ff0000, #cc0000); font-size: 0.7rem;">YT</div>
+                    <div class="account-avatar" style="background: #ff0000; font-size: 0.7rem;">YT</div>
                     <div class="account-info-mini">
                         <span class="account-name-mini">{{ yt.name }}</span>
-                        <span class="account-id-mini">Channel: {{ yt.channel_id|truncatechars:20 }}</span>
+                        <span class="account-id-mini">Channel: {{ yt.channel_id|truncatechars:18 }}</span>
                     </div>
-                    <div class="token-status-badge status-{{ yt.token_status }}">
-                        <span class="status-dot"></span>
-                        {% if yt.token_status == 'valid' %}Connected
-                        {% elif yt.token_status == 'expired' %}Expired
-                        {% else %}Not Set
-                        {% endif %}
-                    </div>
+                    <div class="token-status-badge status-valid"><span class="status-dot"></span> Active</div>
                 </div>
                 {% endfor %}
                 {% for account in accounts %}
                 <div class="account-item-mini">
-                    <div class="account-avatar">{{ account.name|first|upper }}</div>
+                    <div class="account-avatar" style="background: radial-gradient(circle at 30% 107%, #fdf497 0%, #fd5949 45%, #d6249f 60%, #285AEB 90%);">IG</div>
                     <div class="account-info-mini">
                         <span class="account-name-mini">{{ account.name }}</span>
-                        <span class="account-id-mini">ID: {{ account.instagram_user_id }}</span>
+                        <span class="account-id-mini">@{{ account.instagram_user_id }}</span>
                     </div>
-                    <div class="token-status-badge status-{{ account.token_status }}">
-                        {% if account.token_status == 'valid' %}
-                            <span class="status-dot"></span> {{ account.token_days_remaining }}d left
-                        {% elif account.token_status == 'expiring' %}
-                            <span class="status-dot"></span> {{ account.token_days_remaining }}d left
-                        {% elif account.token_status == 'expired' %}
-                            <span class="status-dot"></span> Expired
-                        {% else %}
-                            <span class="status-dot"></span> No Token
-                        {% endif %}
+                    <div class="token-status-badge status-valid"><span class="status-dot"></span> Active</div>
+                </div>
+                {% endfor %}
+                {% for x in x_accounts %}
+                <div class="account-item-mini">
+                    <div class="account-avatar" style="background: #000; border: 1px solid #333;">𝕏</div>
+                    <div class="account-info-mini">
+                        <span class="account-name-mini">{{ x.name }}</span>
+                        <span class="account-id-mini">@{{ x.screen_name }}</span>
                     </div>
+                    <div class="token-status-badge status-valid"><span class="status-dot"></span> Active</div>
+                </div>
+                {% endfor %}
+                {% for tt in tiktok_accounts %}
+                <div class="account-item-mini">
+                    <div class="account-avatar" style="background: #000; border: 1px solid #fe2c55; color: #fe2c55;">TT</div>
+                    <div class="account-info-mini">
+                        <span class="account-name-mini">{{ tt.name }}</span>
+                        <span class="account-id-mini">@{{ tt.username }}</span>
+                    </div>
+                    <div class="token-status-badge status-valid"><span class="status-dot"></span> Active</div>
+                </div>
+                {% endfor %}
+                {% for li in linkedin_accounts %}
+                <div class="account-item-mini">
+                    <div class="account-avatar" style="background: #0077b5;">IN</div>
+                    <div class="account-info-mini">
+                        <span class="account-name-mini">{{ li.name }}</span>
+                        <span class="account-id-mini">{{ li.urn_id|truncatechars:18 }}</span>
+                    </div>
+                    <div class="token-status-badge status-valid"><span class="status-dot"></span> Active</div>
+                </div>
+                {% endfor %}
+                {% for fb in facebook_accounts %}
+                <div class="account-item-mini">
+                    <div class="account-avatar" style="background: #1877f2;">FB</div>
+                    <div class="account-info-mini">
+                        <span class="account-name-mini">{{ fb.name }}</span>
+                        <span class="account-id-mini">Page: {{ fb.page_id|truncatechars:18 }}</span>
+                    </div>
+                    <div class="token-status-badge status-valid"><span class="status-dot"></span> Active</div>
                 </div>
                 {% endfor %}
             </div>
@@ -198,8 +222,8 @@
                 <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.3">
                     <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
                 </svg>
-                <p>You haven't linked any accounts yet.</p>
-                <a href="{% url 'account_list' %}" class="btn btn-primary btn-sm">Connect an Account</a>
+                <p>No social accounts connected yet.</p>
+                <a href="{% url 'account_list' %}" class="btn btn-primary btn-sm">Connect Channels</a>
             </div>
             {% endif %}
         </div>

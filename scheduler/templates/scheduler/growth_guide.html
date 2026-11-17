@@ -1,0 +1,296 @@
+{% extends 'scheduler/base.html' %}
+
+{% block title %}Growth Guide & Blog — FeedBridge{% endblock %}
+{% block nav_growth %}active{% endblock %}
+{% block page_title %}Growth Guide & Blog{% endblock %}
+
+{% block content %}
+<div class="growth-container" style="max-width: 1100px; margin: 0 auto; padding: 1.5rem 1rem 4rem;">
+
+    <!-- Hero Header -->
+    <div style="text-align: center; margin-bottom: 2.5rem;">
+        <span style="font-size: 0.8rem; font-weight: 700; background: rgba(34, 197, 94, 0.15); color: #16a34a; padding: 0.25rem 0.8rem; border-radius: 999px; text-transform: uppercase; letter-spacing: 0.5px;">
+            FeedBridge Knowledge Hub &amp; Playbooks
+        </span>
+        <h1 style="font-size: 2.2rem; font-weight: 800; color: var(--text-primary); margin: 0.75rem 0 0.5rem; letter-spacing: -0.02em;">
+            Growth Guide &amp; Masterclasses
+        </h1>
+        <p style="color: var(--text-muted); font-size: 1.05rem; max-width: 650px; margin: 0 auto;">
+            Actionable playbooks, algorithm insights, multi-platform strategies, and developer automation to scale your reach 10x.
+        </p>
+    </div>
+
+    <!-- Filter Category Pills -->
+    <div style="display: flex; gap: 0.5rem; justify-content: center; flex-wrap: wrap; margin-bottom: 2.5rem;">
+        <button class="cat-pill active" onclick="filterArticles('all', this)">All Guides (6)</button>
+        <button class="cat-pill" onclick="filterArticles('viral', this)">🔥 Viral &amp; Reels</button>
+        <button class="cat-pill" onclick="filterArticles('multiuser', this)">👥 Multi-User Ops</button>
+        <button class="cat-pill" onclick="filterArticles('mcp', this)">🤖 AI &amp; MCP Agent</button>
+        <button class="cat-pill" onclick="filterArticles('seo', this)">🚀 SEO &amp; Backlinks</button>
+    </div>
+
+    <!-- Articles Grid -->
+    <div class="articles-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.75rem; margin-bottom: 3.5rem;">
+
+        <!-- Article 1: 1-to-5 Repurposing -->
+        <div class="article-card" data-cat="viral" style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 16px; padding: 1.75rem; display: flex; flex-direction: column; justify-content: space-between; transition: all 0.2s ease;">
+            <div>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                    <span style="font-size: 0.72rem; font-weight: 700; color: #db2777; background: rgba(219, 39, 119, 0.1); padding: 0.2rem 0.6rem; border-radius: 6px;">VIRAL GROWTH</span>
+                    <span style="font-size: 0.75rem; color: var(--text-muted);">5 min read</span>
+                </div>
+                <h3 style="font-size: 1.18rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.65rem; line-height: 1.35;">
+                    The 1-to-5 Repurposing Engine: 1 Video to 5 Social Networks
+                </h3>
+                <p style="font-size: 0.88rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 1.25rem;">
+                    How top creators take one 9:16 vertical video and distribute it across Instagram Reels, YouTube Shorts, TikTok, X, and LinkedIn without getting flagged for duplicate content.
+                </p>
+                <div style="background: #f8fafc; border-radius: 8px; padding: 0.75rem 1rem; margin-bottom: 1.25rem; font-size: 0.82rem; color: #475569;">
+                    <strong>Key Strategy:</strong> Optimize first 3 seconds, adapt audio per platform, and leverage FeedBridge per-platform caption overrides.
+                </div>
+            </div>
+            <button class="btn btn-secondary btn-sm" onclick="toggleArticle('art-1')" style="width: 100%; font-weight: 600;">
+                Read Full Playbook ˅
+            </button>
+            <div id="art-1" class="article-expanded" style="display: none; margin-top: 1.25rem; border-top: 1px solid #f1f5f9; padding-top: 1rem; font-size: 0.88rem; color: #334155; line-height: 1.6;">
+                <h4 style="font-size: 0.95rem; font-weight: 700; margin-bottom: 0.4rem; color: #0f172a;">1. The 9:16 Golden Aspect Ratio</h4>
+                <p style="margin-bottom: 0.75rem;">Always record in 1080x1920 at 60fps. Avoid placing crucial text in the bottom 25% where Instagram and TikTok UI captions sit.</p>
+                <h4 style="font-size: 0.95rem; font-weight: 700; margin-bottom: 0.4rem; color: #0f172a;">2. Native Platform Overrides</h4>
+                <p style="margin-bottom: 0.75rem;">Don't use identical captions. Instagram needs 3-5 niche hashtags, YouTube Shorts needs an engaging searchable title with #Shorts, and LinkedIn needs conversational business takeaways.</p>
+                <h4 style="font-size: 0.95rem; font-weight: 700; margin-bottom: 0.4rem; color: #0f172a;">3. Scheduling with FeedBridge Studio</h4>
+                <p>Upload your video once in the FeedBridge Studio, select all 5 avatars, tailor captions in the tabs, and click Schedule. FeedBridge handles encoding and publishing automatically.</p>
+            </div>
+        </div>
+
+        <!-- Article 2: Multi-User Architecture -->
+        <div class="article-card" data-cat="multiuser" style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 16px; padding: 1.75rem; display: flex; flex-direction: column; justify-content: space-between; transition: all 0.2s ease;">
+            <div>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                    <span style="font-size: 0.72rem; font-weight: 700; color: #2563eb; background: rgba(37, 99, 235, 0.1); padding: 0.2rem 0.6rem; border-radius: 6px;">MULTI-USER OPS</span>
+                    <span style="font-size: 0.75rem; color: var(--text-muted);">6 min read</span>
+                </div>
+                <h3 style="font-size: 1.18rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.65rem; line-height: 1.35;">
+                    Multi-User &amp; Team Architecture: Handling Shared Social IDs Safely
+                </h3>
+                <p style="font-size: 0.88rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 1.25rem;">
+                    What happens when 3-5 users in an agency connect the same brand account? How FeedBridge prevents collisions, container locks, and rate-limit bans.
+                </p>
+                <div style="background: #f8fafc; border-radius: 8px; padding: 0.75rem 1rem; margin-bottom: 1.25rem; font-size: 0.82rem; color: #475569;">
+                    <strong>Architecture:</strong> Smart FIFO queue, Account Mutex Locks, +2 min Safe Stagger Delays, and Token Auto-Refreshes.
+                </div>
+            </div>
+            <button class="btn btn-secondary btn-sm" onclick="toggleArticle('art-2')" style="width: 100%; font-weight: 600;">
+                Read Full Playbook ˅
+            </button>
+            <div id="art-2" class="article-expanded" style="display: none; margin-top: 1.25rem; border-top: 1px solid #f1f5f9; padding-top: 1rem; font-size: 0.88rem; color: #334155; line-height: 1.6;">
+                <h4 style="font-size: 0.95rem; font-weight: 700; margin-bottom: 0.4rem; color: #0f172a;">1. Same-Minute Collision Prevention</h4>
+                <p style="margin-bottom: 0.75rem;">If two team members schedule at the exact same minute (e.g., 2:00 PM), FeedBridge detects the account lock and automatically buffers the second post with a +2 minute stagger to ensure Meta's video transcoder completes cleanly.</p>
+                <h4 style="font-size: 0.95rem; font-weight: 700; margin-bottom: 0.4rem; color: #0f172a;">2. Shared Content Calendar</h4>
+                <p style="margin-bottom: 0.75rem;">All members in the workspace can inspect the interactive Content Calendar to see upcoming queued posts by color-coded platform badges, eliminating duplicate work.</p>
+                <h4 style="font-size: 0.95rem; font-weight: 700; margin-bottom: 0.4rem; color: #0f172a;">3. Quota Management</h4>
+                <p>FeedBridge monitors YouTube's 10,000 unit daily upload quota and shifts excess scheduled uploads automatically to the next day's reset window.</p>
+            </div>
+        </div>
+
+        <!-- Article 3: AI & MCP Agent Mode -->
+        <div class="article-card" data-cat="mcp" style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 16px; padding: 1.75rem; display: flex; flex-direction: column; justify-content: space-between; transition: all 0.2s ease;">
+            <div>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                    <span style="font-size: 0.72rem; font-weight: 700; color: #22c55e; background: rgba(34, 197, 94, 0.12); padding: 0.2rem 0.6rem; border-radius: 6px;">AI &amp; MCP AGENTS</span>
+                    <span style="font-size: 0.75rem; color: var(--text-muted);">4 min read</span>
+                </div>
+                <h3 style="font-size: 1.18rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.65rem; line-height: 1.35;">
+                    Autonomous Social Scheduling with FeedBridge MCP &amp; AI Agents
+                </h3>
+                <p style="font-size: 0.88rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 1.25rem;">
+                    Integrate Claude Desktop, Cursor, or Antigravity to write content and autonomously schedule posts across all social networks from your code editor.
+                </p>
+                <div style="background: #f8fafc; border-radius: 8px; padding: 0.75rem 1rem; margin-bottom: 1.25rem; font-size: 0.82rem; color: #475569;">
+                    <strong>MCP Protocol:</strong> JSON-RPC 2.0 endpoints supporting tools/list, schedule_post, and generate_caption.
+                </div>
+            </div>
+            <button class="btn btn-secondary btn-sm" onclick="toggleArticle('art-3')" style="width: 100%; font-weight: 600;">
+                Read Full Playbook ˅
+            </button>
+            <div id="art-3" class="article-expanded" style="display: none; margin-top: 1.25rem; border-top: 1px solid #f1f5f9; padding-top: 1rem; font-size: 0.88rem; color: #334155; line-height: 1.6;">
+                <h4 style="font-size: 0.95rem; font-weight: 700; margin-bottom: 0.4rem; color: #0f172a;">1. Setup in 30 Seconds</h4>
+                <p style="margin-bottom: 0.75rem;">Add FeedBridge MCP to your Claude / Cursor config:</p>
+                <pre style="background: #0f172a; color: #f8fafc; padding: 0.75rem; border-radius: 8px; font-size: 0.78rem; overflow-x: auto; margin-bottom: 0.75rem;">{
+  "mcpServers": {
+    "feedbridge": {
+      "command": "npx",
+      "args": ["-y", "feedbridge-agent-mode"],
+      "env": {"FEEDBRIDGE_API_KEY": "YOUR_API_KEY"}
+    }
+  }
+}</pre>
+                <h4 style="font-size: 0.95rem; font-weight: 700; margin-bottom: 0.4rem; color: #0f172a;">2. Autonomous Prompting</h4>
+                <p>Tell Claude: <em>"Review our latest release notes, write an engaging tweet and LinkedIn summary, and schedule them on FeedBridge for tomorrow 10 AM."</em> The agent calls FeedBridge tools seamlessly!</p>
+            </div>
+        </div>
+
+        <!-- Article 4: SEO & Backlinks -->
+        <div class="article-card" data-cat="seo" style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 16px; padding: 1.75rem; display: flex; flex-direction: column; justify-content: space-between; transition: all 0.2s ease;">
+            <div>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                    <span style="font-size: 0.72rem; font-weight: 700; color: #16a34a; background: rgba(34, 197, 94, 0.1); padding: 0.2rem 0.6rem; border-radius: 6px;">SEO &amp; BACKLINKS</span>
+                    <span style="font-size: 0.75rem; color: var(--text-muted);">7 min read</span>
+                </div>
+                <h3 style="font-size: 1.18rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.65rem; line-height: 1.35;">
+                    The 25+ High-DA Backlink Blueprint: Ranking FeedBridge on Google
+                </h3>
+                <p style="font-size: 0.88rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 1.25rem;">
+                    How to acquire DA 70-95+ backlinks from Product Hunt, SaaSHub, AlternativeTo, GitHub, npm, and Medium to rank on Page 1 within 72 hours.
+                </p>
+                <div style="background: #f8fafc; border-radius: 8px; padding: 0.75rem 1rem; margin-bottom: 1.25rem; font-size: 0.82rem; color: #475569;">
+                    <strong>Tiers:</strong> SaaS directories, Developer ecosystem packages, and Parasite SEO on high-authority publications.
+                </div>
+            </div>
+            <button class="btn btn-secondary btn-sm" onclick="toggleArticle('art-4')" style="width: 100%; font-weight: 600;">
+                Read Full Playbook ˅
+            </button>
+            <div id="art-4" class="article-expanded" style="display: none; margin-top: 1.25rem; border-top: 1px solid #f1f5f9; padding-top: 1rem; font-size: 0.88rem; color: #334155; line-height: 1.6;">
+                <h4 style="font-size: 0.95rem; font-weight: 700; margin-bottom: 0.4rem; color: #0f172a;">1. High-DA Directory Submissions</h4>
+                <p style="margin-bottom: 0.75rem;">Submit to Product Hunt (DA 91), AlternativeTo (DA 82), SaaSHub (DA 74), and BetaList (DA 70). Ensure consistent anchor text like 'social media scheduler' and 'cross posting tool'.</p>
+                <h4 style="font-size: 0.95rem; font-weight: 700; margin-bottom: 0.4rem; color: #0f172a;">2. Developer Backlinks (DA 90+)</h4>
+                <p style="margin-bottom: 0.75rem;">GitHub repo (DA 96) and npm package feedbridge-agent-mode (DA 92) pass immediate dofollow link equity directly to your domain.</p>
+                <h4 style="font-size: 0.95rem; font-weight: 700; margin-bottom: 0.4rem; color: #0f172a;">3. Parasite SEO</h4>
+                <p>Publish a 1,200-word tutorial on Medium (DA 95) titled <em>"How to Cross-Post to Instagram Reels, TikTok, and YouTube Shorts in 1 Click"</em> targeting high-volume search queries.</p>
+            </div>
+        </div>
+
+        <!-- Article 5: Peak Posting Windows -->
+        <div class="article-card" data-cat="viral" style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 16px; padding: 1.75rem; display: flex; flex-direction: column; justify-content: space-between; transition: all 0.2s ease;">
+            <div>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                    <span style="font-size: 0.72rem; font-weight: 700; color: #d97706; background: rgba(217, 119, 6, 0.1); padding: 0.2rem 0.6rem; border-radius: 6px;">ALGORITHM SECRETS</span>
+                    <span style="font-size: 0.75rem; color: var(--text-muted);">4 min read</span>
+                </div>
+                <h3 style="font-size: 1.18rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.65rem; line-height: 1.35;">
+                    The 2026 Peak Posting Hours: Data Across 100K Viral Posts
+                </h3>
+                <p style="font-size: 0.88rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 1.25rem;">
+                    The exact hours when user engagement peaks on Instagram Reels, YouTube Shorts, TikTok, and LinkedIn based on fresh algorithm data.
+                </p>
+                <div style="background: #f8fafc; border-radius: 8px; padding: 0.75rem 1rem; margin-bottom: 1.25rem; font-size: 0.82rem; color: #475569;">
+                    <strong>Optimal Windows:</strong> 11:30 AM - 1:00 PM (Lunch scrolling) and 7:00 PM - 9:30 PM (Evening peak).
+                </div>
+            </div>
+            <button class="btn btn-secondary btn-sm" onclick="toggleArticle('art-5')" style="width: 100%; font-weight: 600;">
+                Read Full Playbook ˅
+            </button>
+            <div id="art-5" class="article-expanded" style="display: none; margin-top: 1.25rem; border-top: 1px solid #f1f5f9; padding-top: 1rem; font-size: 0.88rem; color: #334155; line-height: 1.6;">
+                <h4 style="font-size: 0.95rem; font-weight: 700; margin-bottom: 0.4rem; color: #0f172a;">Instagram Reels</h4>
+                <p style="margin-bottom: 0.75rem;">Tuesdays &amp; Thursdays: 9:00 AM, 12:00 PM, and 8:00 PM local time.</p>
+                <h4 style="font-size: 0.95rem; font-weight: 700; margin-bottom: 0.4rem; color: #0f172a;">YouTube Shorts</h4>
+                <p style="margin-bottom: 0.75rem;">Fridays &amp; Saturdays: 3:00 PM - 6:00 PM (highest weekend consumption).</p>
+                <h4 style="font-size: 0.95rem; font-weight: 700; margin-bottom: 0.4rem; color: #0f172a;">LinkedIn</h4>
+                <p>Tuesdays through Thursdays: 7:45 AM - 9:15 AM (before morning standup / commuting).</p>
+            </div>
+        </div>
+
+        <!-- Article 6: AI Caption Engineering -->
+        <div class="article-card" data-cat="mcp" style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 16px; padding: 1.75rem; display: flex; flex-direction: column; justify-content: space-between; transition: all 0.2s ease;">
+            <div>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                    <span style="font-size: 0.72rem; font-weight: 700; color: #0891b2; background: rgba(8, 145, 178, 0.1); padding: 0.2rem 0.6rem; border-radius: 6px;">AI PROMPTING</span>
+                    <span style="font-size: 0.75rem; color: var(--text-muted);">3 min read</span>
+                </div>
+                <h3 style="font-size: 1.18rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.65rem; line-height: 1.35;">
+                    AI Caption Engineering: Writing 10/10 Viral Hooks with Gemini
+                </h3>
+                <p style="font-size: 0.88rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 1.25rem;">
+                    Formulas for scroll-stopping hooks, high-converting call-to-actions, and how FeedBridge's built-in AI Caption generator drafts ready-to-post copy in 2 seconds.
+                </p>
+                <div style="background: #f8fafc; border-radius: 8px; padding: 0.75rem 1rem; margin-bottom: 1.25rem; font-size: 0.82rem; color: #475569;">
+                    <strong>The 3-Second Rule:</strong> Hook in line 1, punchy value in lines 2-4, clear question/CTA at the bottom.
+                </div>
+            </div>
+            <button class="btn btn-secondary btn-sm" onclick="toggleArticle('art-6')" style="width: 100%; font-weight: 600;">
+                Read Full Playbook ˅
+            </button>
+            <div id="art-6" class="article-expanded" style="display: none; margin-top: 1.25rem; border-top: 1px solid #f1f5f9; padding-top: 1rem; font-size: 0.88rem; color: #334155; line-height: 1.6;">
+                <h4 style="font-size: 0.95rem; font-weight: 700; margin-bottom: 0.4rem; color: #0f172a;">Proven Hook Templates:</h4>
+                <ul style="padding-left: 1.2rem; margin-bottom: 0.75rem;">
+                    <li><em>"Stop doing [Common Mistake]. Here's how top creators do [Goal] instead..."</em></li>
+                    <li><em>"The exact 3-step workflow that saved our team 15 hours this week..."</em></li>
+                    <li><em>"I tested 5 social media schedulers so you don't have to..."</em></li>
+                </ul>
+                <p>Click the <strong>✨ AI Caption Generator</strong> in your FeedBridge Studio anytime to have Gemini draft hooks automatically!</p>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Quick CTA Banner -->
+    <div style="background: linear-gradient(135deg, #0f172a, #1e1b4b); border-radius: 16px; padding: 2.5rem; color: #fff; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.12);">
+        <h2 style="font-size: 1.75rem; font-weight: 800; margin-bottom: 0.75rem;">Ready to Put These Playbooks into Action?</h2>
+        <p style="color: #cbd5e1; max-width: 540px; margin: 0 auto 1.75rem; font-size: 0.95rem;">
+            Connect your Instagram, YouTube, TikTok, X, and LinkedIn accounts and schedule your next viral campaign in minutes.
+        </p>
+        <div style="display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap;">
+            <a href="{% url 'create_post' %}" class="btn btn-primary btn-lg" style="background: #22c55e; border-color: #22c55e; font-weight: 700;">
+                + Create &amp; Schedule Post
+            </a>
+            <a href="{% url 'api_keys' %}" class="btn btn-secondary btn-lg" style="background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2); color: #fff; font-weight: 600;">
+                ⚡ Open Developer API &amp; MCP
+            </a>
+        </div>
+    </div>
+
+</div>
+
+<style>
+.cat-pill {
+    background: #f1f5f9;
+    color: #475569;
+    border: 1px solid #e2e8f0;
+    padding: 0.5rem 1.15rem;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+.cat-pill:hover {
+    background: #e2e8f0;
+    color: #0f172a;
+}
+.cat-pill.active {
+    background: #0f172a;
+    color: #ffffff;
+    border-color: #0f172a;
+}
+.article-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 24px -6px rgba(0,0,0,0.06);
+    border-color: #cbd5e1;
+}
+</style>
+
+<script>
+function filterArticles(category, btn) {
+    document.querySelectorAll('.cat-pill').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+
+    const cards = document.querySelectorAll('.article-card');
+    cards.forEach(card => {
+        if (category === 'all' || card.getAttribute('data-cat') === category) {
+            card.style.display = 'flex';
+        } else {
+            card.style.display = 'none';
+        }
+    });
+}
+
+function toggleArticle(id) {
+    const el = document.getElementById(id);
+    if (el.style.display === 'none') {
+        el.style.display = 'block';
+    } else {
+        el.style.display = 'none';
+    }
+}
+</script>
+{% endblock %}
+

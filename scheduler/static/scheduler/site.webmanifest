@@ -1,0 +1,26 @@
+{
+  "name": "FeedBridge — Social Media Automation & Scheduler",
+  "short_name": "FeedBridge",
+  "description": "Schedule once. Publish everywhere. Cross-post automatically across Instagram, YouTube, TikTok, X, LinkedIn, Facebook, and Pinterest.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#07090e",
+  "theme_color": "#22c55e",
+  "icons": [
+    {
+      "src": "/static/scheduler/images/android-chrome-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/static/scheduler/images/android-chrome-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "/static/scheduler/images/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}

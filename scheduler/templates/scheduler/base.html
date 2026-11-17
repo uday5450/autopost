@@ -4,229 +4,731 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Instagram Post Scheduler - Schedule and manage your Instagram posts and reels">
-    <title>{% block title %}Instagram Scheduler{% endblock %}</title>
+    <meta name="description" content="FeedBridge — The all-in-one social media scheduler & cross-platform automation tool. Schedule and auto-publish content simultaneously to Instagram, YouTube, TikTok, X (Twitter), LinkedIn, Facebook, and Pinterest.">
+    <meta name="keywords" content="social media scheduler, cross post automation, auto post instagram youtube tiktok, FeedBridge, social media management tool, automated posting software">
+    <meta name="robots" content="index, follow">
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="FeedBridge">
+    <meta property="og:title" content="{% block og_title %}FeedBridge — #1 Social Media Automation & Scheduler{% endblock %}">
+    <meta property="og:description" content="{% block og_description %}Schedule once. Publish everywhere. Automate your posts across Instagram, YouTube Shorts, TikTok, X, LinkedIn, Facebook, and Pinterest with FeedBridge.{% endblock %}">
+    <meta property="og:image" content="https://feedbridge.io/static/scheduler/images/og-feedbridge.png">
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="FeedBridge — The All-in-One Social Media Automation Platform">
+    <meta name="twitter:description" content="Schedule and auto-publish videos, photos, and carousels across all social channels with FeedBridge.">
+    
+    <title>{% block title %}FeedBridge — Social Media Automation & Scheduler{% endblock %}</title>
+    
+    <!-- Favicon & Touch Icons -->
+    <link rel="icon" type="image/svg+xml" href="{% static 'scheduler/images/favicon.svg' %}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{% static 'scheduler/images/favicon-32x32.png' %}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{% static 'scheduler/images/favicon-16x16.png' %}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{% static 'scheduler/images/apple-touch-icon.png' %}">
+    <link rel="shortcut icon" href="{% static 'scheduler/images/favicon.ico' %}">
+    <link rel="manifest" href="{% static 'scheduler/site.webmanifest' %}">
+    <meta name="theme-color" content="#22c55e">
+    
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'scheduler/css/style.css' %}">
     
-    <!-- Theme Script (Restore saved theme or default to light) -->
+    <!-- Theme Script -->
     <script>
         (function() {
-            const savedTheme = localStorage.getItem('theme') || 'light';
+            const savedTheme = localStorage.getItem('theme') || 'dark';
             document.documentElement.setAttribute('data-theme', savedTheme);
         })();
     </script>
     
     <style>
+        :root, [data-theme="light"] {
+            /* FeedBridge Modern Design Tokens (Light Theme) */
+            --pb-green: #22c55e;
+            --pb-green-hover: #16a34a;
+            --pb-sidebar-bg: #ffffff;
+            --pb-body-bg: #f8fafc;
+            --pb-card-bg: #ffffff;
+            --pb-card-bg-elevated: #f1f5f9;
+            --pb-card-border: #e2e8f0;
+            --pb-input-bg: #ffffff;
+            --pb-input-border: #cbd5e1;
+            --pb-border: #e2e8f0;
+            --pb-item-hover: #f1f5f9;
+            --pb-item-active: #e2e8f0;
+            --pb-text-main: #0f172a;
+            --pb-text-muted: #64748b;
+            --pb-text-dim: #94a3af;
+            --pb-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
+            --pb-shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
+
+            /* Bridging tokens for full style.css cross-compatibility */
+            --bg-primary: #f8fafc;
+            --bg-secondary: #ffffff;
+            --bg-card: #ffffff;
+            --bg-card-hover: #f1f5f9;
+            --bg-input: #ffffff;
+            --border-color: #e2e8f0;
+            --border-hover: #cbd5e1;
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --text-muted: #64748b;
+            --text-dim: #94a3b8;
+        }
+
+        [data-theme="dark"] {
+            /* FeedBridge Modern Design Tokens (Dark Theme) */
+            --pb-green: #22c55e;
+            --pb-green-hover: #16a34a;
+            --pb-sidebar-bg: #0b0f19;
+            --pb-body-bg: #07090e;
+            --pb-card-bg: #0f172a;
+            --pb-card-bg-elevated: #111827;
+            --pb-card-border: rgba(255, 255, 255, 0.08);
+            --pb-input-bg: rgba(255, 255, 255, 0.04);
+            --pb-input-border: rgba(255, 255, 255, 0.12);
+            --pb-border: rgba(255, 255, 255, 0.08);
+            --pb-item-hover: rgba(255, 255, 255, 0.05);
+            --pb-item-active: rgba(255, 255, 255, 0.1);
+            --pb-text-main: #f8fafc;
+            --pb-text-muted: #94a3b8;
+            --pb-text-dim: #64748b;
+            --pb-shadow: 0 20px 45px -10px rgba(0, 0, 0, 0.6);
+            --pb-shadow-sm: 0 2px 4px rgba(0,0,0,0.2);
+
+            /* Bridging tokens for full style.css cross-compatibility */
+            --bg-primary: #07090e;
+            --bg-secondary: #0b0f19;
+            --bg-card: #0f172a;
+            --bg-card-hover: #1e293b;
+            --bg-input: rgba(255, 255, 255, 0.04);
+            --border-color: rgba(255, 255, 255, 0.08);
+            --border-hover: rgba(255, 255, 255, 0.15);
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --text-dim: #475569;
+        }
+
+        /* Reset body to block so fixed sidebar doesn't cause flex overflow */
+        html, body {
+            margin: 0 !important;
+            padding: 0 !important;
+            width: 100% !important;
+            min-height: 100vh !important;
+            background: var(--pb-body-bg) !important;
+            color: var(--pb-text-main) !important;
+            font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+            display: block !important;
+            overflow-x: hidden !important;
+            box-sizing: border-box !important;
+            transition: background 0.2s ease, color 0.2s ease;
+        }
+
+        *, *::before, *::after {
+            box-sizing: border-box !important;
+        }
+
+        /* FeedBridge Rock-Solid Fixed Sidebar (Always visible on desktop) */
+        .pb-sidebar {
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            bottom: 0 !important;
+            width: 250px !important;
+            min-width: 250px !important;
+            max-width: 250px !important;
+            height: 100vh !important;
+            background: var(--pb-sidebar-bg) !important;
+            border-right: 1px solid var(--pb-border) !important;
+            z-index: 9999 !important;
+            display: flex !important;
+            flex-direction: column !important;
+            overflow-y: auto !important;
+            scrollbar-width: thin;
+            transition: transform 0.2s ease !important;
+            transform: none !important;
+        }
+
+        .pb-sidebar-header {
+            padding: 1.25rem 1.25rem 0.75rem;
+        }
+
+        .pb-logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none;
+            color: var(--pb-text-main);
+        }
+
+        .pb-logo-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--pb-text-main);
+        }
+
+        .pb-logo-text {
+            font-size: 1.15rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            color: var(--pb-text-main);
+        }
+
+        /* Workspace selector */
+        .pb-workspace {
+            padding: 0.5rem 1.25rem 0.25rem;
+        }
+
+        .pb-workspace-label {
+            font-size: 0.72rem;
+            color: var(--pb-text-dim);
+            font-weight: 500;
+            margin-bottom: 0.25rem;
+        }
+
+        .pb-workspace-pill {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.4rem 0.65rem;
+            background: rgba(0, 0, 0, 0.02);
+            border: 1px solid var(--pb-border);
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: var(--pb-text-main);
+            cursor: pointer;
+        }
+
+        /* Create Post Green Button */
+        .pb-create-btn {
+            margin: 0.75rem 1.25rem 0.5rem;
+            padding: 0.6rem 1rem;
+            background: var(--pb-green) !important;
+            color: #ffffff !important;
+            font-weight: 600;
+            font-size: 0.88rem;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            text-decoration: none;
+            transition: background 0.15s ease;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }
+
+        .pb-create-btn:hover {
+            background: var(--pb-green-hover) !important;
+            color: #ffffff !important;
+        }
+
+        /* Sidebar Navigation Sections */
+        .pb-nav-menu {
+            flex: 1;
+            padding: 0.5rem 0.75rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.15rem;
+        }
+
+        .pb-section-title {
+            font-size: 0.72rem;
+            font-weight: 600;
+            color: var(--pb-text-dim);
+            padding: 0.85rem 0.65rem 0.25rem;
+            letter-spacing: 0.02em;
+        }
+
+        .pb-nav-item {
+            display: flex;
+            align-items: center;
+            gap: 0.65rem;
+            padding: 0.45rem 0.65rem;
+            border-radius: 6px;
+            font-size: 0.86rem;
+            font-weight: 500;
+            color: var(--pb-text-muted);
+            text-decoration: none;
+            transition: all 0.15s ease;
+        }
+
+        .pb-nav-item svg {
+            width: 17px;
+            height: 17px;
+            stroke-width: 1.8;
+            color: var(--pb-text-muted);
+            flex-shrink: 0;
+        }
+
+        .pb-nav-item:hover {
+            background: var(--pb-item-hover);
+            color: var(--pb-text-main);
+        }
+
+        .pb-nav-item:hover svg {
+            color: var(--pb-text-main);
+        }
+
+        .pb-nav-item.active {
+            background: var(--pb-item-active);
+            color: var(--pb-text-main);
+            font-weight: 600;
+        }
+
+        .pb-nav-item.active svg {
+            color: var(--pb-text-main);
+        }
+
+        /* User Footer */
+        .pb-sidebar-footer {
+            padding: 0.85rem 1.25rem;
+            border-top: 1px solid var(--pb-border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: var(--pb-sidebar-bg);
+            margin-top: auto;
+        }
+
+        .pb-user-profile {
+            display: flex;
+            align-items: center;
+            gap: 0.65rem;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .pb-user-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #e2e8f0;
+            color: #334155;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.8rem;
+        }
+
+        .pb-user-info {
+            display: flex;
+            flex-direction: column;
+            line-height: 1.2;
+        }
+
+        .pb-user-name {
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: var(--pb-text-main);
+        }
+
+        .pb-user-plan {
+            font-size: 0.72rem;
+            color: var(--pb-text-dim);
+        }
+
+        /* Main Content Layout — exactly offset by 250px */
+        .main-content {
+            margin-left: 250px !important;
+            width: calc(100% - 250px) !important;
+            min-height: 100vh !important;
+            background: var(--pb-body-bg) !important;
+            display: flex !important;
+            flex-direction: column !important;
+            position: relative !important;
+            transition: background 0.2s ease;
+        }
+
         .main-content.no-sidebar {
             margin-left: 0 !important;
             width: 100% !important;
         }
-        .user-profile-menu {
+
+        .pb-topbar {
+            height: 56px;
+            padding: 0 2rem;
             display: flex;
             align-items: center;
-            gap: 0.75rem;
-            border-left: 1px solid var(--border-color);
-            padding-left: 1rem;
-            margin-left: 0.5rem;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--pb-border);
+            background: var(--pb-sidebar-bg);
+            position: sticky;
+            top: 0;
+            z-index: 50;
         }
-        .user-avatar {
-            width: 32px;
-            height: 32px;
-            background: linear-gradient(135deg, var(--purple), var(--pink));
-            border-radius: 50%;
-            display: flex;
+
+        .pb-mobile-toggle {
+            display: none;
             align-items: center;
             justify-content: center;
-            font-weight: bold;
-            color: white;
-            font-size: 0.85rem;
+            background: none;
+            border: 1px solid var(--pb-border);
+            border-radius: 6px;
+            padding: 0.4rem;
+            cursor: pointer;
+            color: var(--pb-text-main);
         }
-        .user-details {
-            display: flex;
-            flex-direction: column;
-        }
-        .user-email {
-            font-size: 0.85rem;
-            font-weight: 500;
-            color: var(--text-primary);
-        }
-        .btn-logout {
-            padding: 0.35rem 0.75rem;
-            font-size: 0.8rem;
-            border-radius: var(--radius-sm);
-            border: 1px solid var(--border-color);
-            color: var(--red-light) !important;
-            margin-left: 0.25rem;
-            transition: all var(--transition-fast);
-        }
-        .btn-logout:hover {
-            background: var(--red-glow);
-            border-color: var(--red);
-            color: #ffffff !important;
+
+        /* Mobile Breakpoint (< 640px) */
+        @media (max-width: 640px) {
+            .pb-sidebar {
+                transform: translateX(-100%) !important;
+            }
+            .pb-sidebar.open {
+                transform: translateX(0) !important;
+                box-shadow: 4px 0 25px rgba(0,0,0,0.15) !important;
+            }
+            .main-content {
+                margin-left: 0 !important;
+                width: 100% !important;
+            }
+            .pb-mobile-toggle {
+                display: flex !important;
+            }
+            .pb-topbar {
+                padding: 0 1rem;
+            }
         }
     </style>
     {% block extra_head %}{% endblock %}
 </head>
 <body>
     {% if user.is_authenticated %}
-    <!-- Sidebar Navigation -->
-    <nav class="sidebar" id="sidebar">
-        <div class="sidebar-header">
-            <div class="logo">
-                <div class="logo-icon">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
-                        <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/>
-                        <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/>
+    <!-- FeedBridge Exact Sidebar from YouTube Demo -->
+    <nav class="pb-sidebar" id="sidebar">
+        <!-- Logo -->
+        <div class="pb-sidebar-header">
+            <a href="{% url 'new_post_select' %}" class="pb-logo">
+                <div class="pb-logo-icon">
+                    <!-- Loop / Infinity brand mark -->
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M18.178 8c5.096 0 5.096 8 0 8-5.095 0-7.133-8-12.73-8-4.585 0-4.585 8 0 8 5.6 0 7.635-8 12.73-8z"/>
                     </svg>
                 </div>
-                <span class="logo-text">AutoPost</span>
+                <span class="pb-logo-text">FeedBridge</span>
+            </a>
+        </div>
+
+        <!-- Workspace Selector -->
+        <div class="pb-workspace">
+            <div class="pb-workspace-label">Workspace</div>
+            <div class="pb-workspace-pill">
+                <div style="display: flex; align-items: center; gap: 0.4rem;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                        <polyline points="9 22 9 12 15 12 15 22"/>
+                    </svg>
+                    <span>main</span>
+                </div>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="6 9 12 15 18 9"/>
+                </svg>
             </div>
         </div>
-        
-        <div class="nav-links">
-            <a href="{% url 'dashboard' %}" class="nav-link {% block nav_dashboard %}{% endblock %}" id="nav-dashboard">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <rect x="3" y="3" width="7" height="7" rx="1"/>
-                    <rect x="14" y="3" width="7" height="7" rx="1"/>
-                    <rect x="3" y="14" width="7" height="7" rx="1"/>
-                    <rect x="14" y="14" width="7" height="7" rx="1"/>
-                </svg>
-                <span>Dashboard</span>
-            </a>
-            <a href="{% url 'create_post' %}" class="nav-link {% block nav_create %}{% endblock %}" id="nav-create">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <circle cx="12" cy="12" r="10"/>
-                    <line x1="12" y1="8" x2="12" y2="16"/>
-                    <line x1="8" y1="12" x2="16" y2="12"/>
-                </svg>
-                <span>Create Post</span>
-            </a>
-            <a href="{% url 'post_list' %}" class="nav-link {% block nav_posts %}{% endblock %}" id="nav-posts">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+
+        <!-- [+ Create post] Green CTA -->
+        <a href="{% url 'new_post_select' %}" class="pb-create-btn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                <line x1="12" y1="8" x2="12" y2="16"/>
+                <line x1="8" y1="12" x2="16" y2="12"/>
+            </svg>
+            <span>Create post</span>
+        </a>
+
+        <!-- Navigation Menu -->
+        <div class="pb-nav-menu">
+            
+            <!-- SECTION 1: Create -->
+            <div class="pb-section-title">Create</div>
+            
+            <a href="{% url 'new_post_select' %}" class="pb-nav-item {% block nav_new_post %}{% endblock %}">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
                     <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
                     <polyline points="14 2 14 8 20 8"/>
-                    <line x1="16" y1="13" x2="8" y2="13"/>
-                    <line x1="16" y1="17" x2="8" y2="17"/>
                 </svg>
-                <span>All Posts</span>
+                <span>New post</span>
             </a>
-            <a href="{% url 'account_list' %}" class="nav-link {% block nav_accounts %}{% endblock %}" id="nav-accounts">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-                    <circle cx="12" cy="7" r="4"/>
+
+            <a href="{% url 'studio' %}" class="pb-nav-item {% block nav_create %}{% endblock %}">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/>
                 </svg>
-                <span>Accounts</span>
+                <span>Studio</span>
             </a>
+
+            <a href="{% url 'bulk_tools' %}" class="pb-nav-item {% block nav_bulk_tools %}{% endblock %}">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <polygon points="12 2 2 7 12 12 22 7 12 2"/>
+                    <polyline points="2 17 12 22 22 17"/>
+                    <polyline points="2 12 12 17 22 12"/>
+                </svg>
+                <span>Bulk tools</span>
+            </a>
+
+            <!-- SECTION 2: Posts -->
+            <div class="pb-section-title">Posts</div>
+
+            <a href="{% url 'calendar' %}" class="pb-nav-item {% block nav_calendar %}{% endblock %}">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                    <line x1="16" y1="2" x2="16" y2="6"/>
+                    <line x1="8" y1="2" x2="8" y2="6"/>
+                    <line x1="3" y1="10" x2="21" y2="10"/>
+                </svg>
+                <span>Calendar</span>
+            </a>
+
+            <a href="{% url 'post_list' %}" class="pb-nav-item {% block nav_posts %}{% endblock %}">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <line x1="8" y1="6" x2="21" y2="6"/>
+                    <line x1="8" y1="12" x2="21" y2="12"/>
+                    <line x1="8" y1="18" x2="21" y2="18"/>
+                    <line x1="3" y1="6" x2="3.01" y2="6"/>
+                    <line x1="3" y1="12" x2="3.01" y2="12"/>
+                    <line x1="3" y1="18" x2="3.01" y2="18"/>
+                </svg>
+                <span>All</span>
+            </a>
+
+            <a href="{% url 'post_list' %}?status=pending" class="pb-nav-item {% block nav_scheduled %}{% endblock %}">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <circle cx="12" cy="12" r="10"/>
+                    <polyline points="12 6 12 12 16 14"/>
+                </svg>
+                <span>Scheduled</span>
+            </a>
+
+            <a href="{% url 'post_list' %}?status=published" class="pb-nav-item {% block nav_posted %}{% endblock %}">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                    <polyline points="22 4 12 14.01 9 11.01"/>
+                </svg>
+                <span>Posted</span>
+            </a>
+
+            <a href="{% url 'post_list' %}?status=drafts" class="pb-nav-item {% block nav_drafts %}{% endblock %}">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path d="M12 20h9"/>
+                    <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+                </svg>
+                <span>Drafts</span>
+            </a>
+
+            <!-- SECTION 3: Configuration -->
+            <div class="pb-section-title">Configuration</div>
+
+            <a href="{% url 'account_list' %}" class="pb-nav-item {% block nav_accounts %}{% endblock %}">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+                    <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+                </svg>
+                <span>Connections</span>
+            </a>
+
+            <a href="{% url 'settings' %}" class="pb-nav-item {% block nav_settings %}{% endblock %}">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <circle cx="12" cy="12" r="3"/>
+                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                </svg>
+                <span>Settings</span>
+            </a>
+
+            <a href="{% url 'api_keys' %}" class="pb-nav-item {% block nav_api_keys %}{% endblock %}">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path d="m21 2-2 2m-1.5 1.5L14 9l-3-3 2.5-2.5a4.95 4.95 0 0 1 7 7l-9.5 9.5a2.5 2.5 0 1 1-3.53-3.53L10 14"/>
+                </svg>
+                <span>API Keys</span>
+            </a>
+
+            <!-- SECTION 4: Support -->
+            <div class="pb-section-title">Support</div>
+
+            <a href="mailto:support@feedbridge.io" class="pb-nav-item">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                </svg>
+                <span>Share feedback</span>
+            </a>
+
+            <a href="https://cal.com" target="_blank" rel="noopener noreferrer" class="pb-nav-item">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                    <line x1="16" y1="2" x2="16" y2="6"/>
+                    <line x1="8" y1="2" x2="8" y2="6"/>
+                    <line x1="3" y1="10" x2="21" y2="10"/>
+                </svg>
+                <span>Book consultation</span>
+            </a>
+
+            <a href="{% url 'pricing' %}" class="pb-nav-item">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <polyline points="20 12 20 22 4 22 4 12"/>
+                    <rect x="2" y="7" width="20" height="5"/>
+                    <line x1="12" y1="22" x2="12" y2="7"/>
+                    <path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/>
+                    <path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/>
+                </svg>
+                <span>Earn 30% referral</span>
+            </a>
+
+            <a href="https://x.com/jackfriks" target="_blank" rel="noopener noreferrer" class="pb-nav-item">
+                <span style="font-weight: 900; font-size: 0.95rem; margin-right: 0.15rem;">𝕏</span>
+                <span>Stay updated</span>
+            </a>
+
+            <a href="{% url 'growth_guide' %}" class="pb-nav-item {% block nav_growth %}{% endblock %}">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+                    <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+                </svg>
+                <span>Growth guide & Blog</span>
+            </a>
+
+            <a href="{% url 'api_keys' %}" class="pb-nav-item">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                    <polyline points="14 2 14 8 20 8"/>
+                </svg>
+                <span>Docs</span>
+            </a>
+
         </div>
-        
-        <div class="sidebar-footer">
-            <div class="version-badge">v1.0</div>
+
+        <!-- User Profile Footer -->
+        <div class="pb-sidebar-footer">
+            <div class="pb-user-profile">
+                <div class="pb-user-avatar">
+                    {{ user.username|slice:":1"|upper|default:"U" }}
+                </div>
+                <div class="pb-user-info">
+                    <span class="pb-user-name">{{ user.username|default:"jack ingy" }}</span>
+                    <span class="pb-user-plan">Pro Plan</span>
+                </div>
+            </div>
+            
+            <a href="{% url 'logout' %}" title="Logout" style="color: var(--pb-text-dim); text-decoration: none; padding: 0.25rem;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                    <polyline points="16 17 21 12 16 7"/>
+                    <line x1="21" y1="12" x2="9" y2="12"/>
+                </svg>
+            </a>
         </div>
     </nav>
     {% endif %}
 
-    <!-- Main Content -->
+    <!-- Main Content (Offset by 250px) -->
     <main class="main-content{% if not user.is_authenticated %} no-sidebar{% endif %}">
         {% if user.is_authenticated %}
-        <!-- Top Bar -->
-        <header class="topbar">
-            <button class="menu-toggle" id="menuToggle" onclick="toggleSidebar()">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <line x1="3" y1="12" x2="21" y2="12"/>
-                    <line x1="3" y1="6" x2="21" y2="6"/>
-                    <line x1="3" y1="18" x2="21" y2="18"/>
-                </svg>
-            </button>
-            <h1 class="page-title">{% block page_title %}Dashboard{% endblock %}</h1>
-            <div class="topbar-actions">
-                <button id="themeToggleBtn" class="btn btn-ghost" style="display: inline-flex; align-items: center; justify-content: center; padding: 0.45rem 0.6rem; border-radius: var(--radius-md); border: 1px solid var(--border-color); background: var(--bg-glass); color: var(--text-primary); cursor: pointer;" title="Toggle Light/Dark Mode">
-                    <!-- Sun Icon (shown in dark mode) -->
-                    <svg id="themeIconSun" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: none;">
-                        <circle cx="12" cy="12" r="5"></circle>
-                        <line x1="12" y1="1" x2="12" y2="3"></line>
-                        <line x1="12" y1="21" x2="12" y2="23"></line>
-                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
-                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
-                        <line x1="1" y1="12" x2="3" y2="12"></line>
-                        <line x1="21" y1="12" x2="23" y2="12"></line>
-                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
-                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
-                    </svg>
-                    <!-- Moon Icon (shown in light mode) -->
-                    <svg id="themeIconMoon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: none;">
-                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+        <!-- Topbar for Authenticated Users -->
+        <header class="pb-topbar">
+            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                <button class="pb-mobile-toggle" onclick="document.getElementById('sidebar').classList.toggle('open')" title="Toggle Menu">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/>
                     </svg>
                 </button>
-                <div class="user-profile-menu">
-                    <div class="user-avatar" title="{{ user.email }}">
-                        {{ user.email|slice:":1"|upper }}
-                    </div>
-                    <div class="user-details">
-                        <span class="user-email">{{ user.email }}</span>
-                    </div>
-                    <a href="{% url 'logout' %}" class="btn-logout">
-                        Logout
-                    </a>
+                <div style="font-weight: 700; font-size: 1.05rem; color: var(--pb-text-main); letter-spacing: -0.01em;">
+                    {% block page_title %}Connected Accounts{% endblock %}
                 </div>
-                {% block topbar_actions %}{% endblock %}
+            </div>
+            
+            <div style="display: flex; align-items: center; gap: 1rem;">
+                <button class="themeToggleBtn" style="border: 1px solid var(--pb-border); background: var(--pb-card-bg-elevated); padding: 0.45rem 0.65rem; border-radius: 8px; cursor: pointer; color: var(--pb-text-muted); display: flex; align-items: center;" title="Toggle Light/Dark Theme">
+                    <svg class="themeIconSun" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: none;">
+                        <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
+                    </svg>
+                    <svg class="themeIconMoon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: block;">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+                    </svg>
+                </button>
+                <div style="font-size: 0.85rem; color: var(--pb-text-muted); font-weight: 500;">
+                    {{ user.email }}
+                </div>
+            </div>
+        </header>
+        {% else %}
+        <!-- Topbar for Guests / Unauthenticated Visitors (Login, Signup, Pricing, Guides) -->
+        <header class="pb-topbar" style="justify-content: space-between;">
+            <a href="/" class="pb-logo" style="text-decoration: none; display: flex; align-items: center; gap: 0.5rem; color: var(--pb-text-main); font-weight: 800; font-size: 1.15rem;">
+                <div style="width: 32px; height: 32px; border-radius: 8px; background: linear-gradient(135deg, #22c55e, #10b981); display: flex; align-items: center; justify-content: center; color: #022c22;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+                </div>
+                <span>FeedBridge</span>
+            </a>
+            
+            <div style="display: flex; align-items: center; gap: 0.85rem;">
+                <a href="/pricing/" style="font-size: 0.9rem; font-weight: 600; color: var(--pb-text-muted); text-decoration: none; padding: 0.35rem 0.6rem;">Pricing</a>
+                <a href="/growth-guide/" style="font-size: 0.9rem; font-weight: 600; color: var(--pb-text-muted); text-decoration: none; padding: 0.35rem 0.6rem;">Guide</a>
+                
+                <!-- Guest Theme Switcher Button -->
+                <button class="themeToggleBtn" style="border: 1px solid var(--pb-border); background: var(--pb-card-bg-elevated); padding: 0.45rem 0.65rem; border-radius: 8px; cursor: pointer; color: var(--pb-text-muted); display: flex; align-items: center;" title="Toggle Light/Dark Theme">
+                    <svg class="themeIconSun" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: none;">
+                        <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
+                    </svg>
+                    <svg class="themeIconMoon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: block;">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+                    </svg>
+                </button>
+                <a href="/accounts/login/" style="font-size: 0.88rem; font-weight: 600; color: var(--pb-text-main); text-decoration: none; padding: 0.45rem 0.85rem; border: 1px solid var(--pb-border); border-radius: 8px;">Sign In</a>
+                <a href="/accounts/signup/" style="font-size: 0.88rem; font-weight: 800; background: #22c55e; color: #022c22; text-decoration: none; padding: 0.45rem 0.95rem; border-radius: 8px;">Start Free</a>
             </div>
         </header>
         {% endif %}
 
         <!-- Messages -->
         {% if messages %}
-        <div class="messages-container">
+        <div class="messages-container" style="padding: 1rem 2rem 0;">
             {% for message in messages %}
-            <div class="alert alert-{{ message.tags }}" id="alert-{{ forloop.counter }}">
+            <div class="alert alert-{{ message.tags }}" id="alert-{{ forloop.counter }}" style="padding: 0.75rem 1rem; border-radius: 8px; margin-bottom: 0.5rem; display: flex; align-items: center; justify-content: space-between; background: rgba(34, 197, 94, 0.1); border: 1px solid rgba(34, 197, 94, 0.3); color: #16a34a; font-size: 0.88rem;">
                 <span class="alert-text">{{ message }}</span>
-                <button class="alert-close" onclick="this.parentElement.remove()">×</button>
+                <button class="alert-close" onclick="this.parentElement.remove()" style="background: none; border: none; font-size: 1.1rem; cursor: pointer; color: inherit;">×</button>
             </div>
             {% endfor %}
         </div>
         {% endif %}
 
         <!-- Page Content -->
-        <div class="content-area">
+        <div class="content-area" style="padding: 2rem;">
             {% block content %}{% endblock %}
         </div>
     </main>
 
-    <!-- Overlay for mobile sidebar -->
-    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
-
-    <script src="{% static 'scheduler/js/app.js' %}"></script>
     <script>
-        // Theme Toggle Logic
+        // Universal Theme Toggle Logic (Works on all pages & for all buttons)
         document.addEventListener('DOMContentLoaded', () => {
-            const toggleBtn = document.getElementById('themeToggleBtn');
-            const sunIcon = document.getElementById('themeIconSun');
-            const moonIcon = document.getElementById('themeIconMoon');
+            const toggleBtns = document.querySelectorAll('.themeToggleBtn, #themeToggleBtn');
+            const sunIcons = document.querySelectorAll('.themeIconSun, #themeIconSun');
+            const moonIcons = document.querySelectorAll('.themeIconMoon, #themeIconMoon');
             
             function updateIcons(theme) {
                 if (theme === 'light') {
-                    moonIcon.style.display = 'block';
-                    sunIcon.style.display = 'none';
+                    moonIcons.forEach(icon => icon.style.display = 'block');
+                    sunIcons.forEach(icon => icon.style.display = 'none');
                 } else {
-                    sunIcon.style.display = 'block';
-                    moonIcon.style.display = 'none';
+                    sunIcons.forEach(icon => icon.style.display = 'block');
+                    moonIcons.forEach(icon => icon.style.display = 'none');
                 }
             }
 
-            // Initial icon state
-            const initialTheme = document.documentElement.getAttribute('data-theme') || 'dark';
-            updateIcons(initialTheme);
+            const currentTheme = document.documentElement.getAttribute('data-theme') || localStorage.getItem('theme') || 'dark';
+            document.documentElement.setAttribute('data-theme', currentTheme);
+            updateIcons(currentTheme);
 
-            toggleBtn.addEventListener('click', () => {
-                let currentTheme = document.documentElement.getAttribute('data-theme');
-                let newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-                
-                document.documentElement.setAttribute('data-theme', newTheme);
-                localStorage.setItem('theme', newTheme);
-                updateIcons(newTheme);
+            toggleBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    let active = document.documentElement.getAttribute('data-theme') || 'dark';
+                    let next = active === 'dark' ? 'light' : 'dark';
+                    document.documentElement.setAttribute('data-theme', next);
+                    localStorage.setItem('theme', next);
+                    updateIcons(next);
+                });
             });
         });
     </script>

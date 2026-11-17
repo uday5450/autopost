@@ -1,25 +1,36 @@
 {% extends 'scheduler/base.html' %}
 
-{% block title %}All Posts — AutoPost{% endblock %}
+{% block title %}All Posts & Queue — FeedBridge{% endblock %}
 {% block nav_posts %}active{% endblock %}
-{% block page_title %}All Posts{% endblock %}
+{% block page_title %}Posts & Schedule Queue{% endblock %}
 
 {% block topbar_actions %}
-<a href="{% url 'create_post' %}" class="btn btn-primary btn-sm">
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-    </svg>
-    New Post
-</a>
+<div style="display: flex; gap: 0.5rem;">
+    <a href="{% url 'calendar' %}" class="btn btn-secondary btn-sm" style="display: inline-flex; align-items: center; gap: 0.4rem;">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+            <line x1="16" y1="2" x2="16" y2="6"/>
+            <line x1="8" y1="2" x2="8" y2="6"/>
+            <line x1="3" y1="10" x2="21" y2="10"/>
+        </svg>
+        Calendar
+    </a>
+    <a href="{% url 'create_post' %}" class="btn btn-primary btn-sm" style="display: inline-flex; align-items: center; gap: 0.4rem;">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+        New Post
+    </a>
+</div>
 {% endblock %}
 
 {% load humanize %}
 
 {% block content %}
-<!-- Filters -->
-<div class="filters-bar">
-    <div class="filter-group">
-        <span class="filter-label">Status:</span>
+<!-- Filter Tabs -->
+<div class="filters-bar" style="margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+    <div class="filter-group" style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
+        <span class="filter-label" style="font-size: 0.85rem; color: var(--text-secondary); margin-right: 0.25rem;">Status:</span>
         <a href="{% url 'post_list' %}" class="filter-chip {% if status_filter == 'all' %}active{% endif %}">
             All <span class="chip-count">{{ total_count }}</span>
         </a>
@@ -39,172 +50,226 @@
 </div>
 
 <!-- Posts Table -->
-<div class="card">
-    <div class="card-body no-padding">
+<div class="card" style="border: 1px solid var(--border-color); border-radius: 14px; overflow: hidden; background: var(--bg-card); box-shadow: 0 4px 20px rgba(0,0,0,0.15);">
+    <div class="card-body no-padding" style="padding: 0;">
         {% if posts %}
         <div class="table-responsive">
-            <table class="data-table">
+            <table class="data-table" style="width: 100%; border-collapse: collapse; text-align: left;">
                 <thead>
-                    <tr>
-                        <th>Platform</th>
-                        <th>Account</th>
-                        <th>Caption / Title</th>
-                        <th>Media</th>
-                        <th>Scheduled For</th>
-                        <th>Status</th>
-                        <th>Actions</th>
+                    <tr style="border-bottom: 1px solid var(--border-color); background: rgba(255,255,255,0.02);">
+                        <th style="padding: 1rem 1.25rem; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted);">Platform</th>
+                        <th style="padding: 1rem 1.25rem; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted);">Account</th>
+                        <th style="padding: 1rem 1.25rem; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted);">Content</th>
+                        <th style="padding: 1rem 1.25rem; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted);">Media & Link</th>
+                        <th style="padding: 1rem 1.25rem; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted);">Timing</th>
+                        <th style="padding: 1rem 1.25rem; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted);">Status</th>
+                        <th style="padding: 1rem 1.25rem; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); text-align: right;">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for post in posts %}
-                    <tr class="post-row">
-                        <td>
-                            {% if post.platform == 'YOUTUBE' %}
-                            <span class="badge badge-youtube" style="background: rgba(255, 0, 0, 0.1); color: #ff4444; border: 1px solid rgba(255, 0, 0, 0.2);">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19.13C5.12 19.56 12 19.56 12 19.56s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.43z"/>
-                                    <polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02"/>
-                                </svg>
+                    <tr class="post-row" style="border-bottom: 1px solid var(--border-color); transition: background 0.15s ease;">
+                        <!-- Platform Badge -->
+                        <td style="padding: 1rem 1.25rem; vertical-align: middle;">
+                            {% if post.platform == 'INSTAGRAM' %}
+                            <span class="badge" style="background: linear-gradient(135deg, rgba(245,133,41,0.15), rgba(221,42,123,0.15), rgba(129,52,175,0.15)); color: #f43f5e; border: 1px solid rgba(221,42,123,0.3); display: inline-flex; align-items: center; gap: 0.35rem; font-weight: 600; padding: 0.3rem 0.65rem; border-radius: 999px; font-size: 0.78rem;">
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
+                                Instagram
+                            </span>
+                            {% elif post.platform == 'YOUTUBE' %}
+                            <span class="badge" style="background: rgba(255, 0, 0, 0.12); color: #ff4d4d; border: 1px solid rgba(255, 0, 0, 0.25); display: inline-flex; align-items: center; gap: 0.35rem; font-weight: 600; padding: 0.3rem 0.65rem; border-radius: 999px; font-size: 0.78rem;">
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19.13C5.12 19.56 12 19.56 12 19.56s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.43z"/><polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02"/></svg>
                                 YouTube
                             </span>
                             {% elif post.platform == 'FACEBOOK' %}
-                            <span class="badge badge-facebook" style="background: rgba(24, 119, 242, 0.1); color: #1877f2; border: 1px solid rgba(24, 119, 242, 0.2);">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/>
-                                </svg>
+                            <span class="badge" style="background: rgba(24, 119, 242, 0.12); color: #2e89ff; border: 1px solid rgba(24, 119, 242, 0.25); display: inline-flex; align-items: center; gap: 0.35rem; font-weight: 600; padding: 0.3rem 0.65rem; border-radius: 999px; font-size: 0.78rem;">
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
                                 Facebook
                             </span>
                             {% elif post.platform == 'X' %}
-                            <span class="badge badge-x" style="background: var(--bg-glass); color: var(--text-primary); border: 1px solid var(--border-color);">
-                                <span style="font-weight:900; font-size: 0.8rem; margin-right: 0.2rem;">𝕏</span>
+                            <span class="badge" style="background: rgba(255,255,255,0.06); color: #e2e8f0; border: 1px solid rgba(255,255,255,0.15); display: inline-flex; align-items: center; gap: 0.35rem; font-weight: 600; padding: 0.3rem 0.65rem; border-radius: 999px; font-size: 0.78rem;">
+                                <span style="font-weight:900; font-size: 0.85rem;">𝕏</span>
                                 X
                             </span>
-                            {% elif post.platform == 'PINTEREST' %}
-                            <span class="badge badge-pinterest" style="background: rgba(230, 0, 35, 0.1); color: #e60023; border: 1px solid rgba(230, 0, 35, 0.2);">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <line x1="12" y1="5" x2="12" y2="19"></line>
-                                    <line x1="5" y1="12" x2="19" y2="12"></line>
-                                </svg>
-                                Pinterest
-                            </span>
                             {% elif post.platform == 'TIKTOK' %}
-                            <span class="badge badge-tiktok" style="background: rgba(254, 44, 85, 0.1); color: #fe2c55; border: 1px solid rgba(254, 44, 85, 0.2);">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5"/>
-                                </svg>
+                            <span class="badge" style="background: rgba(254, 44, 85, 0.12); color: #fe2c55; border: 1px solid rgba(254, 44, 85, 0.25); display: inline-flex; align-items: center; gap: 0.35rem; font-weight: 600; padding: 0.3rem 0.65rem; border-radius: 999px; font-size: 0.78rem;">
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5"/></svg>
                                 TikTok
                             </span>
+                            {% elif post.platform == 'LINKEDIN' %}
+                            <span class="badge" style="background: rgba(10, 102, 194, 0.15); color: #38bdf8; border: 1px solid rgba(10, 102, 194, 0.3); display: inline-flex; align-items: center; gap: 0.35rem; font-weight: 600; padding: 0.3rem 0.65rem; border-radius: 999px; font-size: 0.78rem;">
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg>
+                                LinkedIn
+                            </span>
+                            {% elif post.platform == 'PINTEREST' %}
+                            <span class="badge" style="background: rgba(230, 0, 35, 0.12); color: #f43f5e; border: 1px solid rgba(230, 0, 35, 0.25); display: inline-flex; align-items: center; gap: 0.35rem; font-weight: 600; padding: 0.3rem 0.65rem; border-radius: 999px; font-size: 0.78rem;">
+                                📌 Pinterest
+                            </span>
+                            {% elif post.platform == 'REDDIT' %}
+                            <span class="badge" style="background: rgba(255, 69, 0, 0.12); color: #ff5722; border: 1px solid rgba(255, 69, 0, 0.3); display: inline-flex; align-items: center; gap: 0.35rem; font-weight: 600; padding: 0.3rem 0.65rem; border-radius: 999px; font-size: 0.78rem;">
+                                🤖 Reddit
+                            </span>
+                            {% elif post.platform == 'SNAPCHAT' %}
+                            <span class="badge" style="background: rgba(255, 252, 0, 0.15); color: #facc15; border: 1px solid rgba(255, 252, 0, 0.3); display: inline-flex; align-items: center; gap: 0.35rem; font-weight: 600; padding: 0.3rem 0.65rem; border-radius: 999px; font-size: 0.78rem;">
+                                👻 Snapchat
+                            </span>
                             {% else %}
-                            <span class="badge badge-{{ post.post_type|lower }}">
-                                {% if post.post_type == 'IMAGE' %}
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>
-                                </svg>
-                                {% else %}
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/>
-                                </svg>
-                                {% endif %}
-                                {{ post.get_post_type_display }}
+                            <span class="badge" style="background: rgba(255,255,255,0.08); color: var(--text-primary); border-radius: 999px; padding: 0.3rem 0.65rem; font-size: 0.78rem;">
+                                {{ post.platform }}
                             </span>
                             {% endif %}
                         </td>
-                        <td>
-                            <div class="account-cell">
-                                {% if post.platform == 'YOUTUBE' %}
-                                <div class="account-avatar-sm" style="background: linear-gradient(135deg, #ff0000, #cc0000); font-size: 0.55rem;">YT</div>
-                                {{ post.youtube_account.name|default:"—" }}
+
+                        <!-- Account Cell -->
+                        <td style="padding: 1rem 1.25rem; vertical-align: middle;">
+                            <div class="account-cell" style="display: flex; align-items: center; gap: 0.6rem;">
+                                {% if post.platform == 'INSTAGRAM' %}
+                                <div class="account-avatar-sm" style="width: 28px; height: 28px; border-radius: 50%; background: linear-gradient(135deg, #f58529, #dd2a7b, #8134af); display: flex; align-items: center; justify-content: center; font-size: 0.6rem; font-weight: 800; color: #fff;">IG</div>
+                                <span style="font-weight: 500; font-size: 0.9rem;">{{ post.account.name|default:"Instagram" }}</span>
+                                {% elif post.platform == 'YOUTUBE' %}
+                                <div class="account-avatar-sm" style="width: 28px; height: 28px; border-radius: 50%; background: linear-gradient(135deg, #ff0000, #cc0000); display: flex; align-items: center; justify-content: center; font-size: 0.6rem; font-weight: 800; color: #fff;">YT</div>
+                                <span style="font-weight: 500; font-size: 0.9rem;">{{ post.youtube_account.name|default:"YouTube Channel" }}</span>
                                 {% elif post.platform == 'FACEBOOK' %}
-                                <div class="account-avatar-sm" style="background: linear-gradient(135deg, #1877f2, #0d5cb9); font-size: 0.55rem;">FB</div>
-                                {{ post.facebook_account.name|default:"—" }}
+                                <div class="account-avatar-sm" style="width: 28px; height: 28px; border-radius: 50%; background: linear-gradient(135deg, #1877f2, #0d5cb9); display: flex; align-items: center; justify-content: center; font-size: 0.6rem; font-weight: 800; color: #fff;">FB</div>
+                                <span style="font-weight: 500; font-size: 0.9rem;">{{ post.facebook_account.name|default:"Facebook Page" }}</span>
                                 {% elif post.platform == 'X' %}
-                                <div class="account-avatar-sm" style="background: #000; font-size: 0.55rem; border: 1px solid rgba(255,255,255,0.1);">𝕏</div>
-                                {{ post.x_account.name|default:"—" }}
-                                {% elif post.platform == 'PINTEREST' %}
-                                <div class="account-avatar-sm" style="background: linear-gradient(135deg, #e60023, #b8001c); font-size: 0.55rem;">PI</div>
-                                {{ post.pinterest_account.board_name|default:"—" }}
+                                <div class="account-avatar-sm" style="width: 28px; height: 28px; border-radius: 50%; background: #000; border: 1px solid rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; font-size: 0.65rem; font-weight: 800; color: #fff;">𝕏</div>
+                                <span style="font-weight: 500; font-size: 0.9rem;">{{ post.x_account.name|default:"X Account" }}</span>
                                 {% elif post.platform == 'TIKTOK' %}
-                                <div class="account-avatar-sm" style="background: #010101; border: 1px solid #fe2c55; font-size: 0.55rem;">TT</div>
-                                {{ post.tiktok_account.name|default:"—" }}
+                                <div class="account-avatar-sm" style="width: 28px; height: 28px; border-radius: 50%; background: #000; border: 1px solid #fe2c55; display: flex; align-items: center; justify-content: center; font-size: 0.6rem; font-weight: 800; color: #fe2c55;">TT</div>
+                                <span style="font-weight: 500; font-size: 0.9rem;">{{ post.tiktok_account.name|default:"TikTok Account" }}</span>
+                                {% elif post.platform == 'LINKEDIN' %}
+                                <div class="account-avatar-sm" style="width: 28px; height: 28px; border-radius: 50%; background: #0a66c2; display: flex; align-items: center; justify-content: center; font-size: 0.6rem; font-weight: 800; color: #fff;">IN</div>
+                                <span style="font-weight: 500; font-size: 0.9rem;">{{ post.linkedin_account.name|default:"LinkedIn Profile" }}</span>
+                                {% elif post.platform == 'PINTEREST' %}
+                                <div class="account-avatar-sm" style="width: 28px; height: 28px; border-radius: 50%; background: #e60023; display: flex; align-items: center; justify-content: center; font-size: 0.6rem; font-weight: 800; color: #fff;">PI</div>
+                                <span style="font-weight: 500; font-size: 0.9rem;">{{ post.pinterest_account.board_name|default:"Pinterest Board" }}</span>
+                                {% elif post.platform == 'REDDIT' %}
+                                <div class="account-avatar-sm" style="width: 28px; height: 28px; border-radius: 50%; background: #ff4500; display: flex; align-items: center; justify-content: center; font-size: 0.6rem; font-weight: 800; color: #fff;">RD</div>
+                                <span style="font-weight: 500; font-size: 0.9rem;">{{ post.reddit_account.name|default:"Reddit" }}</span>
+                                {% elif post.platform == 'SNAPCHAT' %}
+                                <div class="account-avatar-sm" style="width: 28px; height: 28px; border-radius: 50%; background: #fffc00; display: flex; align-items: center; justify-content: center; font-size: 0.6rem; font-weight: 800; color: #000;">SC</div>
+                                <span style="font-weight: 500; font-size: 0.9rem;">{{ post.snapchat_account.name|default:"Snapchat" }}</span>
                                 {% else %}
-                                <div class="account-avatar-sm">{{ post.account.name|first|upper }}</div>
-                                {{ post.account.name|default:"—" }}
+                                <div class="account-avatar-sm" style="width: 28px; height: 28px; border-radius: 50%; background: var(--brand-primary); display: flex; align-items: center; justify-content: center; font-size: 0.6rem; font-weight: 800; color: #fff;">P</div>
+                                <span style="font-weight: 500; font-size: 0.9rem;">Account</span>
                                 {% endif %}
                             </div>
                         </td>
-                        <td class="caption-cell">
-                            {% if post.platform == 'YOUTUBE' and post.title %}
-                            <span title="{{ post.title }}">{{ post.title|truncatechars:60 }}</span>
-                            {% else %}
-                            <span title="{{ post.caption }}">{{ post.caption|truncatechars:60 }}</span>
+
+                        <!-- Content / Caption -->
+                        <td class="caption-cell" style="padding: 1rem 1.25rem; vertical-align: middle; max-width: 320px;">
+                            {% if post.title %}
+                            <div style="font-weight: 600; color: var(--text-primary); margin-bottom: 0.2rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="{{ post.title }}">
+                                {{ post.title }}
+                            </div>
                             {% endif %}
+                            <div style="font-size: 0.85rem; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="{{ post.caption }}">
+                                {{ post.caption|default:"No caption text" }}
+                            </div>
                         </td>
-                        <td>
-                            {% if post.platform == 'YOUTUBE' and post.yt_video_id %}
-                            <a href="https://youtu.be/{{ post.yt_video_id }}" target="_blank" class="media-link" title="View on YouTube">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
-                                    <polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
-                                </svg>
-                                YT
-                            </a>
-                            {% elif post.media_url %}
-                            <a href="{{ post.media_url }}" target="_blank" class="media-link" title="View media">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
-                                    <polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
-                                </svg>
-                                URL
-                            </a>
-                            {% elif post.media_file %}
-                            <span class="media-link">File</span>
-                            {% else %}
-                            <span class="text-muted">—</span>
-                            {% endif %}
+
+                        <!-- Media & External Live Link -->
+                        <td style="padding: 1rem 1.25rem; vertical-align: middle;">
+                            <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+                                {% if post.external_post_url %}
+                                <a href="{{ post.external_post_url }}" target="_blank" rel="noopener noreferrer" class="btn btn-xs" style="background: rgba(99, 102, 241, 0.15); color: #818cf8; border: 1px solid rgba(99, 102, 241, 0.3); border-radius: 6px; padding: 0.25rem 0.5rem; display: inline-flex; align-items: center; gap: 0.3rem; text-decoration: none; font-weight: 600; font-size: 0.75rem;">
+                                    Live Post
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
+                                </a>
+                                {% elif post.platform == 'YOUTUBE' and post.yt_video_id %}
+                                <a href="https://youtu.be/{{ post.yt_video_id }}" target="_blank" rel="noopener noreferrer" class="btn btn-xs" style="background: rgba(255,0,0,0.12); color: #ff5555; border: 1px solid rgba(255,0,0,0.25); border-radius: 6px; padding: 0.25rem 0.5rem; display: inline-flex; align-items: center; gap: 0.3rem; text-decoration: none; font-weight: 600; font-size: 0.75rem;">
+                                    YouTube
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
+                                </a>
+                                {% endif %}
+
+                                {% if post.media_url %}
+                                <a href="{{ post.media_url }}" target="_blank" rel="noopener noreferrer" style="font-size: 0.75rem; color: var(--text-muted); text-decoration: underline;">
+                                    CDN Media
+                                </a>
+                                {% elif post.media_file %}
+                                <span style="font-size: 0.75rem; color: var(--text-muted); background: rgba(255,255,255,0.05); padding: 0.2rem 0.4rem; border-radius: 4px;">
+                                    📁 File
+                                </span>
+                                {% else %}
+                                <span style="font-size: 0.75rem; color: var(--text-muted);">Text only</span>
+                                {% endif %}
+                            </div>
                         </td>
-                        <td>
-                            <span class="date-cell" title="{{ post.scheduled_time|date:'M d, Y g:i A' }}">
+
+                        <!-- Timing -->
+                        <td style="padding: 1rem 1.25rem; vertical-align: middle;">
+                            <div style="font-size: 0.85rem; font-weight: 500; color: var(--text-primary);">
                                 {{ post.scheduled_time|naturaltime }}
-                            </span>
+                            </div>
+                            <div style="font-size: 0.72rem; color: var(--text-muted);">
+                                {{ post.scheduled_time|date:"M d, Y · H:i" }}
+                            </div>
                         </td>
-                        <td>
-                            <span class="status-pill status-{{ post.status|lower }}">
-                                {{ post.get_status_display }}
+
+                        <!-- Status Pill -->
+                        <td style="padding: 1rem 1.25rem; vertical-align: middle;">
+                            {% if post.status == 'PUBLISHED' %}
+                            <span class="status-pill" style="background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); padding: 0.25rem 0.6rem; border-radius: 999px; font-size: 0.75rem; font-weight: 600; display: inline-flex; align-items: center; gap: 0.35rem;">
+                                <span style="width: 6px; height: 6px; border-radius: 50%; background: #34d399;"></span>
+                                Published
                             </span>
+                            {% elif post.status == 'PROCESSING' %}
+                            <span class="status-pill" style="background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); padding: 0.25rem 0.6rem; border-radius: 999px; font-size: 0.75rem; font-weight: 600; display: inline-flex; align-items: center; gap: 0.35rem;">
+                                <span style="width: 6px; height: 6px; border-radius: 50%; background: #fbbf24; animation: pulse 1.5s infinite;"></span>
+                                Processing
+                            </span>
+                            {% elif post.status == 'FAILED' %}
+                            <span class="status-pill" style="background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); padding: 0.25rem 0.6rem; border-radius: 999px; font-size: 0.75rem; font-weight: 600; display: inline-flex; align-items: center; gap: 0.35rem;">
+                                <span style="width: 6px; height: 6px; border-radius: 50%; background: #f87171;"></span>
+                                Failed
+                            </span>
+                            {% elif post.status == 'CANCELLED' %}
+                            <span class="status-pill" style="background: rgba(148, 163, 184, 0.15); color: #94a3b8; border: 1px solid rgba(148, 163, 184, 0.3); padding: 0.25rem 0.6rem; border-radius: 999px; font-size: 0.75rem; font-weight: 600; display: inline-flex; align-items: center; gap: 0.35rem;">
+                                Cancelled
+                            </span>
+                            {% else %}
+                            <span class="status-pill" style="background: rgba(99, 102, 241, 0.15); color: #a5b4fc; border: 1px solid rgba(99, 102, 241, 0.3); padding: 0.25rem 0.6rem; border-radius: 999px; font-size: 0.75rem; font-weight: 600; display: inline-flex; align-items: center; gap: 0.35rem;">
+                                <span style="width: 6px; height: 6px; border-radius: 50%; background: #a5b4fc;"></span>
+                                Pending
+                            </span>
+                            {% endif %}
+
                             {% if post.error_message %}
-                            <div class="error-tooltip" title="{{ post.error_message }}">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2">
-                                    <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
-                                </svg>
+                            <div style="font-size: 0.7rem; color: #f87171; margin-top: 0.3rem; max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="{{ post.error_message }}">
+                                {{ post.error_message }}
                             </div>
                             {% endif %}
                         </td>
-                        <td>
-                            <div class="action-buttons">
+
+                        <!-- Actions -->
+                        <td style="padding: 1rem 1.25rem; vertical-align: middle; text-align: right;">
+                            <div class="action-buttons" style="display: inline-flex; gap: 0.35rem; align-items: center;">
                                 {% if post.status == 'PENDING' %}
-                                <form method="post" action="{% url 'post_cancel' post.pk %}" class="inline-form">
+                                <form method="post" action="{% url 'post_cancel' post.pk %}" class="inline-form" style="display: inline;">
                                     {% csrf_token %}
-                                    <button type="submit" class="btn btn-ghost btn-xs" title="Cancel">
-                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <button type="submit" class="btn btn-ghost btn-xs" title="Cancel Post" style="padding: 0.35rem; color: var(--text-muted); border-radius: 6px; border: none; background: transparent; cursor: pointer;">
+                                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                             <circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>
                                         </svg>
                                     </button>
                                 </form>
                                 {% endif %}
                                 {% if post.status == 'FAILED' or post.status == 'CANCELLED' %}
-                                <form method="post" action="{% url 'post_retry' post.pk %}" class="inline-form">
+                                <form method="post" action="{% url 'post_retry' post.pk %}" class="inline-form" style="display: inline;">
                                     {% csrf_token %}
-                                    <button type="submit" class="btn btn-ghost btn-xs" title="Retry">
-                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <button type="submit" class="btn btn-ghost btn-xs" title="Retry Post" style="padding: 0.35rem; color: var(--brand-primary); border-radius: 6px; border: none; background: transparent; cursor: pointer;">
+                                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                             <polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
                                         </svg>
                                     </button>
                                 </form>
                                 {% endif %}
-                                <form method="post" action="{% url 'post_delete' post.pk %}" class="inline-form" onsubmit="return confirm('Delete this post?')">
+                                <form method="post" action="{% url 'post_delete' post.pk %}" class="inline-form" style="display: inline;" onsubmit="return confirm('Delete this post from history?')">
                                     {% csrf_token %}
-                                    <button type="submit" class="btn btn-ghost btn-xs btn-danger-hover" title="Delete">
-                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <button type="submit" class="btn btn-ghost btn-xs" title="Delete" style="padding: 0.35rem; color: #ef4444; border-radius: 6px; border: none; background: transparent; cursor: pointer;">
+                                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                             <polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
                                         </svg>
                                     </button>
@@ -217,13 +282,23 @@
             </table>
         </div>
         {% else %}
-        <div class="empty-state" style="padding: 3rem;">
-            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.3">
-                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                <polyline points="14 2 14 8 20 8"/>
-            </svg>
-            <p>You haven't scheduled anything that matches this. Want to create something?</p>
-            <a href="{% url 'create_post' %}" class="btn btn-primary btn-sm">Yes, create a new post</a>
+        <div class="empty-state" style="padding: 4rem 2rem; text-align: center;">
+            <div style="width: 64px; height: 64px; border-radius: 50%; background: rgba(99, 102, 241, 0.1); display: flex; align-items: center; justify-content: center; margin: 0 auto 1.25rem;">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--brand-primary)" stroke-width="2">
+                    <line x1="22" y1="2" x2="11" y2="13"/>
+                    <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+                </svg>
+            </div>
+            <h3 style="font-size: 1.15rem; font-weight: 600; margin-bottom: 0.5rem; color: var(--text-primary);">No scheduled posts yet</h3>
+            <p style="color: var(--text-secondary); max-width: 420px; margin: 0 auto 1.5rem; font-size: 0.9rem;">
+                Create and schedule content across Instagram, YouTube, TikTok, X, LinkedIn, Facebook, Pinterest, and Snapchat all at once.
+            </p>
+            <a href="{% url 'create_post' %}" class="btn btn-primary btn-sm" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.6rem 1.25rem; font-weight: 600;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                </svg>
+                Create Your First Post
+            </a>
         </div>
         {% endif %}
     </div>

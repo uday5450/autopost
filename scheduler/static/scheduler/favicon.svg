@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <defs>
+    <linearGradient id="fbGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#22c55e"/>
+      <stop offset="100%" stop-color="#059669"/>
+    </linearGradient>
+    <filter id="fbShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="1" stdDeviation="0.8" flood-color="#022c22" flood-opacity="0.25"/>
+    </filter>
+  </defs>
+
+  <!-- Squircle Base with Emerald Gradient -->
+  <rect x="1" y="1" width="30" height="30" rx="7" fill="url(#fbGradient)"/>
+  
+  <!-- Subtle inner bevel highlight -->
+  <rect x="1" y="1" width="30" height="30" rx="7" fill="none" stroke="#ffffff" stroke-width="0.75" stroke-opacity="0.22"/>
+
+  <!-- FeedBridge Broadcast Stack -->
+  <g filter="url(#fbShadow)">
+    <!-- Top Layer Fill (Translucent 3D plane) -->
+    <polygon points="16,5 26,10 16,15 6,10" fill="#ffffff" fill-opacity="0.18"/>
+    
+    <!-- Top Layer Stroke -->
+    <polygon points="16,5 26,10 16,15 6,10" fill="none" stroke="#ffffff" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/>
+    
+    <!-- Middle Layer -->
+    <polyline points="6,15.5 16,20.5 26,15.5" fill="none" stroke="#ffffff" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/>
+    
+    <!-- Bottom Layer -->
+    <polyline points="6,21 16,26 26,21" fill="none" stroke="#ffffff" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+</svg>

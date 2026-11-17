@@ -1,7 +1,8 @@
 from django.contrib import admin
 from .models import (
     InstagramAccount, ScheduledPost, YouTubeAccount,
-    FacebookAccount, XAccount, PinterestAccount, TikTokAccount
+    FacebookAccount, XAccount, PinterestAccount, TikTokAccount,
+    PricingPlan, DiscountCoupon, UserSubscription, UserProfile
 )
 
 
@@ -59,3 +60,80 @@ class ScheduledPostAdmin(admin.ModelAdmin):
     list_filter = ['user', 'platform', 'status', 'post_type']
     search_fields = ['caption', 'title', 'account__name', 'youtube_account__name', 'facebook_account__name', 'x_account__name', 'user__email']
     readonly_fields = ['ig_container_id', 'ig_media_id', 'yt_video_id', 'published_at', 'created_at']
+
+
+@admin.register(PricingPlan)
+class PricingPlanAdmin(admin.ModelAdmin):
+    list_display = [
+        'order', 'name', 'plan_code', 'price_inr', 'original_price_inr',
+        'discount_badge', 'max_connected_accounts', 'price_per_additional_account',
+        'is_featured', 'is_custom_calculator', 'is_active'
+    ]
+    list_display_links = ['name', 'plan_code']
+    list_editable = [
+        'order', 'price_inr', 'original_price_inr', 'is_featured',
+        'max_connected_accounts', 'price_per_additional_account', 'is_active'
+    ]
+    list_filter = ['is_active', 'is_featured', 'is_custom_calculator']
+    search_fields = ['name', 'plan_code', 'description']
+    
+    fieldsets = (
+        ('Plan Identification', {
+            'fields': ('name', 'plan_code', 'description', 'order', 'is_active')
+        }),
+        ('Pricing & Discounts (₹ / $)', {
+            'fields': (
+                'price_inr', 'original_price_inr', 'yearly_price_inr',
+                'yearly_discount_percent', 'price_usd', 'billing_period'
+            ),
+            'description': 'Set original_price_inr for strike-through discount. yearly_price_inr: set 0 to auto-calculate annual total with yearly_discount_percent (e.g. 20% off).'
+        }),
+        ('Account & Post Limits', {
+            'fields': (
+                'max_connected_accounts', 'price_per_additional_account',
+                'max_posts_per_month', 'is_custom_calculator'
+            ),
+            'description': 'max_connected_accounts: 0 for unlimited. price_per_additional_account: fee charged per extra account. is_custom_calculator: enables account slider on pricing page.'
+        }),
+        ('Visual Highlights & CTA', {
+            'fields': ('is_featured', 'badge_text', 'cta_text', 'features_list'),
+            'description': 'Features list: one per line. Prefix with ! for bold, or - for strikethrough/disabled.'
+        }),
+    )
+
+    def discount_badge(self, obj):
+        pct = obj.discount_percent
+        if pct > 0:
+            return f"{pct}% OFF"
+        return "Regular"
+    discount_badge.short_description = "Discount"
+
+
+@admin.register(DiscountCoupon)
+class DiscountCouponAdmin(admin.ModelAdmin):
+    list_display = [
+        'code', 'discount_percent', 'discount_amount_inr',
+        'used_count', 'max_uses', 'is_active', 'valid_until', 'created_at'
+    ]
+    list_editable = ['is_active']
+    search_fields = ['code']
+    list_filter = ['is_active']
+
+
+@admin.register(UserSubscription)
+class UserSubscriptionAdmin(admin.ModelAdmin):
+    list_display = [
+        'user', 'plan', 'pricing_plan', 'connected_accounts_limit',
+        'posts_limit_per_month', 'discount_applied_inr', 'is_active', 'updated_at'
+    ]
+    search_fields = ['user__username', 'user__email', 'plan', 'razorpay_order_id', 'razorpay_payment_id']
+    list_filter = ['plan', 'is_active']
+
+
+@admin.register(UserProfile)
+class UserProfileAdmin(admin.ModelAdmin):
+    list_display = ['user', 'full_name', 'phone_number', 'country_code', 'country_name', 'onboarding_completed', 'created_at']
+    search_fields = ['user__username', 'user__email', 'full_name', 'phone_number', 'country_name']
+    list_filter = ['country_name', 'onboarding_completed']
+
+

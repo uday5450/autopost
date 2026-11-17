@@ -1,71 +1,453 @@
 {% extends 'scheduler/base.html' %}
 {% load static %}
 
-{% block title %}Sign In - AutoPost{% endblock %}
+{% block title %}Sign In — FeedBridge{% endblock %}
+
+{% block extra_head %}
+<style>
+    .auth-page-wrapper {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: calc(100vh - 120px);
+        padding: 2.5rem 1.5rem;
+        position: relative;
+        background: var(--pb-body-bg);
+        transition: background-color 0.2s ease;
+    }
+
+    .auth-glow {
+        display: none;
+    }
+    [data-theme="dark"] .auth-glow {
+        display: block;
+        position: absolute;
+        top: 25%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 600px;
+        height: 350px;
+        background: radial-gradient(ellipse 60% 50% at 50% 50%, rgba(34, 197, 94, 0.18), rgba(16, 185, 129, 0.12), transparent 70%);
+        pointer-events: none;
+        z-index: 0;
+        filter: blur(25px);
+    }
+
+    .auth-card {
+        width: 100%;
+        max-width: 450px;
+        background: var(--pb-card-bg);
+        border: 1px solid var(--pb-card-border);
+        border-radius: 20px;
+        padding: 2.75rem 2.25rem;
+        box-shadow: var(--pb-shadow);
+        position: relative;
+        z-index: 1;
+        transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    /* =======================================
+       EXPLICIT LIGHT THEME (Clean, Crisp, White Card)
+       ======================================= */
+    :root, [data-theme="light"] {
+        --auth-card-bg: #ffffff;
+        --auth-card-border: #e2e8f0;
+        --auth-title-color: #0f172a;
+        --auth-sub-color: #64748b;
+        --auth-input-bg: #ffffff;
+        --auth-input-border: #cbd5e1;
+        --auth-input-text: #0f172a;
+        --auth-input-placeholder: #94a3b8;
+        --auth-box-shadow: 0 20px 45px -10px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
+        --auth-trust-border: #e2e8f0;
+        --auth-trust-text: #64748b;
+    }
+
+    [data-theme="light"] .auth-card {
+        background: var(--auth-card-bg) !important;
+        border-color: var(--auth-card-border) !important;
+        box-shadow: var(--auth-box-shadow) !important;
+    }
+    [data-theme="light"] .auth-title {
+        color: var(--auth-title-color) !important;
+    }
+    [data-theme="light"] .auth-subtitle {
+        color: var(--auth-sub-color) !important;
+    }
+    [data-theme="light"] .form-label {
+        color: var(--auth-title-color) !important;
+    }
+    [data-theme="light"] .input-icon {
+        color: #94a3b8 !important;
+    }
+    [data-theme="light"] .auth-input,
+    [data-theme="light"] input.auth-input,
+    [data-theme="light"] .form-input,
+    [data-theme="light"] input.form-input {
+        background: var(--auth-input-bg) !important;
+        border: 1px solid var(--auth-input-border) !important;
+        color: var(--auth-input-text) !important;
+    }
+    [data-theme="light"] .auth-input::placeholder,
+    [data-theme="light"] input.auth-input::placeholder,
+    [data-theme="light"] .form-input::placeholder,
+    [data-theme="light"] input.form-input::placeholder {
+        color: var(--auth-input-placeholder) !important;
+    }
+    [data-theme="light"] .auth-input:focus,
+    [data-theme="light"] input.auth-input:focus,
+    [data-theme="light"] .form-input:focus,
+    [data-theme="light"] input.form-input:focus {
+        background: #ffffff !important;
+        border-color: #22c55e !important;
+        box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.18) !important;
+    }
+    [data-theme="light"] .checkbox-label {
+        color: #475569 !important;
+    }
+    [data-theme="light"] .auth-footer {
+        color: #64748b !important;
+    }
+    [data-theme="light"] .auth-trust-strip {
+        border-top-color: var(--auth-trust-border) !important;
+        color: var(--auth-trust-text) !important;
+    }
+
+    /* =======================================
+       EXPLICIT DARK THEME (Obsidian Navy, Glass)
+       ======================================= */
+    [data-theme="dark"] {
+        --auth-card-bg: #0f172a;
+        --auth-card-border: rgba(255, 255, 255, 0.08);
+        --auth-title-color: #f8fafc;
+        --auth-sub-color: #94a3b8;
+        --auth-input-bg: rgba(255, 255, 255, 0.04);
+        --auth-input-border: rgba(255, 255, 255, 0.12);
+        --auth-input-text: #f8fafc;
+        --auth-input-placeholder: #64748b;
+        --auth-box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+        --auth-trust-border: rgba(255, 255, 255, 0.08);
+        --auth-trust-text: #64748b;
+    }
+
+    [data-theme="dark"] .auth-card {
+        background: var(--auth-card-bg) !important;
+        border-color: var(--auth-card-border) !important;
+        box-shadow: var(--auth-box-shadow) !important;
+        backdrop-filter: blur(16px);
+    }
+    [data-theme="dark"] .auth-title {
+        color: var(--auth-title-color) !important;
+    }
+    [data-theme="dark"] .auth-subtitle {
+        color: var(--auth-sub-color) !important;
+    }
+    [data-theme="dark"] .form-label {
+        color: var(--auth-title-color) !important;
+    }
+    [data-theme="dark"] .input-icon {
+        color: #64748b !important;
+    }
+    [data-theme="dark"] .auth-input,
+    [data-theme="dark"] input.auth-input,
+    [data-theme="dark"] .form-input,
+    [data-theme="dark"] input.form-input {
+        background: var(--auth-input-bg) !important;
+        border: 1px solid var(--auth-input-border) !important;
+        color: var(--auth-input-text) !important;
+    }
+    [data-theme="dark"] .auth-input::placeholder,
+    [data-theme="dark"] input.auth-input::placeholder,
+    [data-theme="dark"] .form-input::placeholder,
+    [data-theme="dark"] input.form-input::placeholder {
+        color: var(--auth-input-placeholder) !important;
+    }
+    [data-theme="dark"] .auth-input:focus,
+    [data-theme="dark"] input.auth-input:focus,
+    [data-theme="dark"] .form-input:focus,
+    [data-theme="dark"] input.form-input:focus {
+        background: rgba(255, 255, 255, 0.08) !important;
+        border-color: #22c55e !important;
+        box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.25) !important;
+    }
+    [data-theme="dark"] .checkbox-label {
+        color: #94a3b8 !important;
+    }
+    [data-theme="dark"] .auth-footer {
+        color: #94a3b8 !important;
+    }
+    [data-theme="dark"] .auth-trust-strip {
+        border-top-color: var(--auth-trust-border) !important;
+        color: var(--auth-trust-text) !important;
+    }
+
+    .auth-header {
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+
+    .auth-logo-badge {
+        width: 52px;
+        height: 52px;
+        background: linear-gradient(135deg, #22c55e, #10b981);
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #022c22;
+        box-shadow: 0 4px 18px rgba(34, 197, 94, 0.35);
+        margin: 0 auto 1.25rem auto;
+    }
+
+    .auth-title {
+        font-size: 1.85rem;
+        font-weight: 800;
+        color: var(--pb-text-main);
+        margin: 0 0 0.5rem 0;
+        letter-spacing: -0.025em;
+    }
+
+    .auth-subtitle {
+        color: var(--pb-text-muted);
+        font-size: 0.92rem;
+        margin: 0;
+        line-height: 1.45;
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.45rem;
+        margin-bottom: 1.15rem;
+    }
+
+    .form-label {
+        font-size: 0.84rem;
+        font-weight: 700;
+        color: var(--pb-text-main);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .input-wrapper {
+        position: relative;
+        display: flex;
+        align-items: center;
+        width: 100%;
+    }
+
+    .input-icon {
+        position: absolute;
+        left: 1.05rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--pb-text-muted);
+        pointer-events: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 20px;
+        height: 20px;
+        z-index: 5;
+    }
+
+    .input-icon svg {
+        width: 18px;
+        height: 18px;
+        display: block;
+    }
+
+    .auth-input,
+    input.auth-input,
+    .form-input,
+    input.form-input {
+        width: 100% !important;
+        padding-top: 0.85rem !important;
+        padding-bottom: 0.85rem !important;
+        padding-right: 1.15rem !important;
+        padding-left: 3.15rem !important; /* Critical: provides 16px clear space between icon and text */
+        background: var(--pb-input-bg);
+        border: 1px solid var(--pb-input-border);
+        border-radius: 12px !important;
+        color: var(--pb-text-main);
+        font-size: 0.95rem !important;
+        outline: none !important;
+        box-sizing: border-box !important;
+        line-height: 1.5 !important;
+        transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+    }
+
+    .auth-input:focus,
+    input.auth-input:focus,
+    .form-input:focus,
+    input.form-input:focus {
+        border-color: #22c55e !important;
+        box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.2) !important;
+    }
+
+    /* Privacy Policy & Terms Checkbox Box */
+    .checkbox-group {
+        display: flex;
+        align-items: center;
+        gap: 0.65rem;
+        margin: 1.1rem 0 1.5rem 0;
+    }
+
+    .checkbox-custom {
+        width: 17px;
+        height: 17px;
+        accent-color: #22c55e;
+        cursor: pointer;
+        flex-shrink: 0;
+    }
+
+    .checkbox-label {
+        font-size: 0.83rem;
+        color: var(--pb-text-muted);
+        line-height: 1.45;
+        cursor: pointer;
+        user-select: none;
+    }
+
+    .checkbox-label a {
+        color: #22c55e;
+        font-weight: 700;
+        text-decoration: underline;
+        text-underline-offset: 3px;
+    }
+
+    .btn-auth-submit {
+        width: 100%;
+        padding: 0.9rem;
+        background: #22c55e;
+        color: #022c22;
+        border: none;
+        border-radius: 10px;
+        font-weight: 800;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        box-shadow: 0 4px 16px rgba(34, 197, 94, 0.35);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+
+    .btn-auth-submit:hover {
+        background: #16a34a;
+        color: #ffffff;
+        transform: translateY(-1px);
+        box-shadow: 0 6px 20px rgba(34, 197, 94, 0.45);
+    }
+
+    .auth-footer {
+        text-align: center;
+        margin-top: 1.75rem;
+        font-size: 0.88rem;
+        color: var(--pb-text-muted);
+    }
+
+    .auth-footer a {
+        color: #22c55e;
+        font-weight: 700;
+        text-decoration: none;
+        margin-left: 0.3rem;
+    }
+
+    .auth-footer a:hover {
+        text-decoration: underline;
+    }
+
+    .auth-trust-strip {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 1.25rem;
+        margin-top: 2rem;
+        padding-top: 1.25rem;
+        border-top: 1px solid var(--pb-border);
+        font-size: 0.76rem;
+        color: var(--pb-text-dim);
+        font-weight: 600;
+        flex-wrap: wrap;
+    }
+</style>
+{% endblock %}
 
 {% block content %}
-<div class="auth-wrapper" style="display: flex; justify-content: center; align-items: center; min-height: 80vh; padding: 2rem;">
-    <div class="auth-card" style="width: 100%; max-width: 440px; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 2.5rem; box-shadow: var(--shadow-lg); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); transition: transform var(--transition);">
-        
-        <div class="auth-header" style="text-align: center; margin-bottom: 2rem;">
-            <div class="logo-icon" style="width: 48px; height: 48px; background: linear-gradient(135deg, var(--purple), var(--pink)); border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; color: white; box-shadow: 0 4px 15px var(--purple-glow); margin: 0 auto 1rem auto;">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                    <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
-                    <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/>
-                    <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/>
+<div class="auth-page-wrapper">
+    <div class="auth-glow"></div>
+
+    <div class="auth-card">
+        <!-- Header -->
+        <div class="auth-header">
+            <div class="auth-logo-badge">
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M15 12H3"/>
                 </svg>
             </div>
-            <h2 style="font-size: 2rem; font-weight: 800; background: linear-gradient(135deg, var(--purple), var(--pink)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 0.5rem; letter-spacing: -0.02em;">Welcome Back</h2>
-            <p style="color: var(--text-muted); font-size: 0.95rem;">Sign in to manage your scheduled posts</p>
+            <h2 class="auth-title">Welcome Back</h2>
+            <p class="auth-subtitle">Sign in to your FeedBridge studio to schedule and broadcast content.</p>
         </div>
 
-        <form method="POST" action="" style="display: flex; flex-direction: column; gap: 1.25rem;">
+        <!-- Login Form -->
+        <form method="POST" action="{% url 'login' %}{% if next %}?next={{ next }}{% endif %}">
             {% csrf_token %}
-            {% if next or request.GET.next %}
-            <input type="hidden" name="next" value="{{ next|default:request.GET.next }}">
+            {% if next %}
+            <input type="hidden" name="next" value="{{ next }}">
             {% endif %}
-            
-            <div class="form-group" style="display: flex; flex-direction: column; gap: 0.5rem;">
-                <label for="email" style="font-size: 0.85rem; font-weight: 600; color: var(--text-secondary);">Gmail Address</label>
-                <input type="email" id="email" name="email" value="{{ email|default:'' }}" required placeholder="email@gmail.com" 
-                       style="width: 100%; padding: 0.85rem 1rem; background: var(--bg-input); border: 1px solid var(--border-color); border-radius: var(--radius-md); color: var(--text-primary); font-size: 0.95rem; transition: border-color var(--transition-fast), box-shadow var(--transition-fast); outline: none;">
-            </div>
 
-            <div class="form-group" style="display: flex; flex-direction: column; gap: 0.5rem;">
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <label for="password" style="font-size: 0.85rem; font-weight: 600; color: var(--text-secondary);">Password</label>
+            <!-- Email Address -->
+            <div class="form-group">
+                <label for="email" class="form-label">Email Address</label>
+                <div class="input-wrapper">
+                    <span class="input-icon">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                    </span>
+                    <input type="email" id="email" name="email" value="{{ email|default:'' }}" required placeholder="you@domain.com" class="auth-input form-input" autocomplete="email" style="padding-left: 3.25rem !important;">
                 </div>
-                <input type="password" id="password" name="password" required placeholder="••••••••" 
-                       style="width: 100%; padding: 0.85rem 1rem; background: var(--bg-input); border: 1px solid var(--border-color); border-radius: var(--radius-md); color: var(--text-primary); font-size: 0.95rem; transition: border-color var(--transition-fast), box-shadow var(--transition-fast); outline: none;">
             </div>
 
-            <button type="submit" class="btn btn-primary" 
-                    style="width: 100%; padding: 0.85rem; background: linear-gradient(135deg, var(--purple), var(--purple-dark)); border: none; border-radius: var(--radius-md); color: white; font-weight: 600; font-size: 1rem; cursor: pointer; transition: all var(--transition-fast); box-shadow: 0 4px 12px var(--purple-glow); margin-top: 0.5rem;">
-                Sign In
+            <!-- Password -->
+            <div class="form-group">
+                <label for="password" class="form-label">Password</label>
+                <div class="input-wrapper">
+                    <span class="input-icon">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                    </span>
+                    <input type="password" id="password" name="password" required placeholder="••••••••" class="auth-input form-input" autocomplete="current-password" style="padding-left: 3.25rem !important;">
+                </div>
+            </div>
+
+            <!-- Terms & Privacy Note Checkbox -->
+            <div class="checkbox-group">
+                <input type="checkbox" id="remember_me" name="remember_me" class="checkbox-custom" checked>
+                <label for="remember_me" class="checkbox-label">
+                    Remember me on this device • <a href="{% url 'privacy_policy' %}" target="_blank">Privacy Policy</a>
+                </label>
+            </div>
+
+            <!-- Submit Button -->
+            <button type="submit" class="btn-auth-submit">
+                <span>Sign In to Studio</span>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
             </button>
         </form>
 
-        <div class="auth-footer" style="text-align: center; margin-top: 2rem; font-size: 0.9rem; color: var(--text-muted);">
-            Don't have an account? 
-            <a href="{% url 'signup' %}" style="color: var(--purple-light); font-weight: 600; text-decoration: none; margin-left: 0.25rem;">Sign Up</a>
+        <!-- Footer Link -->
+        <div class="auth-footer">
+            Don't have an account yet? 
+            <a href="{% url 'signup' %}{% if next %}?next={{ next }}{% endif %}">Sign Up Free</a>
         </div>
-        
+
+        <!-- Trust Badges -->
+        <div class="auth-trust-strip">
+            <div>🔒 256-Bit SSL Secure</div>
+            <div>⚡ Fast Setup</div>
+            <div>🤝 Zero Lock-in</div>
+        </div>
     </div>
 </div>
-
-<script>
-    document.addEventListener('DOMContentLoaded', () => {
-        const inputs = document.querySelectorAll('input');
-        inputs.forEach(input => {
-            input.addEventListener('focus', () => {
-                input.style.borderColor = 'var(--purple)';
-                input.style.boxShadow = '0 0 0 3px var(--purple-glow)';
-            });
-            input.addEventListener('blur', () => {
-                input.style.borderColor = 'var(--border-color)';
-                input.style.boxShadow = 'none';
-            });
-        });
-    });
-</script>
 {% endblock %}

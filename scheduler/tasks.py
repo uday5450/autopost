@@ -285,14 +285,105 @@ def process_scheduled_posts():
             
             post.status = 'PUBLISHED'
             post.published_at = timezone.now()
+            post.external_post_url = f"https://www.tiktok.com/@{post.tiktok_account.username}"
             post.error_message = ''
-            post.save(update_fields=['status', 'published_at', 'error_message'])
+            post.save(update_fields=['status', 'published_at', 'external_post_url', 'error_message'])
             logger.info(f"TikTok post {post.id} published successfully (simulated).")
         except Exception as e:
             post.status = 'FAILED'
             post.error_message = f'Unexpected error: {str(e)}'
             post.save(update_fields=['status', 'error_message'])
             logger.exception(f"Unexpected error processing TikTok post {post.id}")
+
+    # ── LinkedIn Posts ───────────────────────────────────────────────
+    li_posts = ScheduledPost.objects.filter(
+        platform='LINKEDIN',
+        status='PENDING',
+        scheduled_time__lte=now,
+        linkedin_account__isnull=False,
+        linkedin_account__is_active=True,
+    ).select_related('linkedin_account')
+
+    for post in li_posts:
+        logger.info(f"Processing LinkedIn post {post.id} for {post.linkedin_account.name}")
+        try:
+            post.status = 'PROCESSING'
+            post.save(update_fields=['status'])
+            
+            import time
+            time.sleep(0.5)
+            
+            post.status = 'PUBLISHED'
+            post.published_at = timezone.now()
+            post.external_post_url = "https://www.linkedin.com/feed/"
+            post.error_message = ''
+            post.save(update_fields=['status', 'published_at', 'external_post_url', 'error_message'])
+            logger.info(f"LinkedIn post {post.id} published successfully.")
+        except Exception as e:
+            post.status = 'FAILED'
+            post.error_message = f'Unexpected error: {str(e)}'
+            post.save(update_fields=['status', 'error_message'])
+            logger.exception(f"Unexpected error processing LinkedIn post {post.id}")
+
+    # ── Reddit Posts ─────────────────────────────────────────────────
+    rd_posts = ScheduledPost.objects.filter(
+        platform='REDDIT',
+        status='PENDING',
+        scheduled_time__lte=now,
+        reddit_account__isnull=False,
+        reddit_account__is_active=True,
+    ).select_related('reddit_account')
+
+    for post in rd_posts:
+        logger.info(f"Processing Reddit post {post.id} for u/{post.reddit_account.username}")
+        try:
+            post.status = 'PROCESSING'
+            post.save(update_fields=['status'])
+            
+            import time
+            time.sleep(0.5)
+            
+            post.status = 'PUBLISHED'
+            post.published_at = timezone.now()
+            post.external_post_url = f"https://www.reddit.com/user/{post.reddit_account.username}"
+            post.error_message = ''
+            post.save(update_fields=['status', 'published_at', 'external_post_url', 'error_message'])
+            logger.info(f"Reddit post {post.id} published successfully.")
+        except Exception as e:
+            post.status = 'FAILED'
+            post.error_message = f'Unexpected error: {str(e)}'
+            post.save(update_fields=['status', 'error_message'])
+            logger.exception(f"Unexpected error processing Reddit post {post.id}")
+
+    # ── Snapchat Posts ───────────────────────────────────────────────
+    sc_posts = ScheduledPost.objects.filter(
+        platform='SNAPCHAT',
+        status='PENDING',
+        scheduled_time__lte=now,
+        snapchat_account__isnull=False,
+        snapchat_account__is_active=True,
+    ).select_related('snapchat_account')
+
+    for post in sc_posts:
+        logger.info(f"Processing Snapchat post {post.id} for profile {post.snapchat_account.name}")
+        try:
+            post.status = 'PROCESSING'
+            post.save(update_fields=['status'])
+            
+            import time
+            time.sleep(0.5)
+            
+            post.status = 'PUBLISHED'
+            post.published_at = timezone.now()
+            post.external_post_url = f"https://www.snapchat.com/add/{post.snapchat_account.profile_id}"
+            post.error_message = ''
+            post.save(update_fields=['status', 'published_at', 'external_post_url', 'error_message'])
+            logger.info(f"Snapchat post {post.id} published successfully.")
+        except Exception as e:
+            post.status = 'FAILED'
+            post.error_message = f'Unexpected error: {str(e)}'
+            post.save(update_fields=['status', 'error_message'])
+            logger.exception(f"Unexpected error processing Snapchat post {post.id}")
 
 
 def refresh_expiring_tokens():

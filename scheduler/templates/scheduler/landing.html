@@ -3,8 +3,67 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="AutoPost - Automated multi-platform social media scheduler and publisher.">
-    <title>AutoPost — Schedule Once. Publish Everywhere.</title>
+    <meta name="description" content="FeedBridge is the #1 social media scheduler and cross-posting automation platform. Schedule and auto-publish content simultaneously across Instagram, YouTube Shorts, TikTok, X, LinkedIn, Facebook, and Pinterest with built-in AI caption generator and smart calendar.">
+    <meta name="keywords" content="social media scheduler, cross post instagram youtube tiktok, FeedBridge, social media management software, auto post scheduler, social media automation, bulk video scheduler, AI caption generator">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://feedbridge.io/">
+    <title>FeedBridge — Schedule Once. Publish Everywhere.</title>
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://feedbridge.io/">
+    <meta property="og:site_name" content="FeedBridge">
+    <meta property="og:title" content="FeedBridge — The Modern Social Media Scheduler & Automation Platform">
+    <meta property="og:description" content="Schedule once, publish everywhere. Post seamlessly across Instagram, YouTube Shorts, TikTok, X, LinkedIn, Facebook, and Pinterest.">
+    <meta property="og:image" content="https://feedbridge.io/static/scheduler/images/og-feedbridge.png">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://feedbridge.io/">
+    <meta name="twitter:title" content="FeedBridge — #1 Social Media Automation & Cross-Posting Platform">
+    <meta name="twitter:description" content="Schedule once, publish everywhere. One studio for Instagram, YouTube, TikTok, LinkedIn, Facebook, and Pinterest.">
+    <meta name="twitter:image" content="https://feedbridge.io/static/scheduler/images/og-feedbridge.png">
+
+    <!-- Schema.org JSON-LD Structured Data for Google Rich Snippets -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "FeedBridge",
+      "headline": "Modern Social Media Scheduler & Cross-Posting Platform",
+      "applicationCategory": "BusinessApplication",
+      "operatingSystem": "Web, Windows, macOS, Linux, iOS, Android",
+      "url": "https://feedbridge.io/",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD",
+        "category": "Free Plan Available"
+      },
+      "description": "FeedBridge is a multi-platform social media scheduler allowing creators, agencies, and businesses to publish content across Instagram, YouTube, TikTok, X, LinkedIn, Facebook, and Pinterest simultaneously.",
+      "featureList": [
+        "Multi-platform cross-posting",
+        "Direct API publishing for Instagram Reels & YouTube Shorts",
+        "AI caption generator powered by Google Gemini",
+        "Interactive content calendar and scheduling queue",
+        "AI Coding Agent Mode (MCP Integration)"
+      ],
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": "4.9",
+        "reviewCount": "128"
+      }
+    }
+    </script>
+    
+    <!-- Favicon & Touch Icons -->
+    <link rel="icon" type="image/svg+xml" href="{% static 'scheduler/images/favicon.svg' %}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{% static 'scheduler/images/favicon-32x32.png' %}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{% static 'scheduler/images/favicon-16x16.png' %}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{% static 'scheduler/images/apple-touch-icon.png' %}">
+    <link rel="shortcut icon" href="{% static 'scheduler/images/favicon.ico' %}">
+    <link rel="manifest" href="{% static 'scheduler/site.webmanifest' %}">
+    <meta name="theme-color" content="#22c55e">
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -23,9 +82,9 @@
             --text-secondary: #475569;
             --text-muted: #94a3b8;
             
-            --purple: #6d28d9;
-            --purple-light: #8b5cf6;
-            --purple-glow: rgba(109, 40, 217, 0.1);
+            --purple: #22c55e;
+            --purple-light: #4ade80;
+            --purple-glow: rgba(34, 197, 94, 0.15);
             --pink: #db2777;
             --pink-glow: rgba(219, 39, 119, 0.1);
             --blue: #2563eb;
@@ -76,7 +135,7 @@
             left: 15%;
             width: 600px;
             height: 600px;
-            background: radial-gradient(circle, rgba(139, 92, 246, 0.07) 0%, transparent 70%);
+            background: radial-gradient(circle, rgba(34, 197, 94, 0.08) 0%, transparent 70%);
             z-index: 1;
             filter: blur(80px);
             pointer-events: none;
@@ -144,10 +203,10 @@
             justify-content: center;
             width: 36px;
             height: 36px;
-            background: linear-gradient(135deg, var(--purple), var(--pink));
-            color: white;
+            background: linear-gradient(135deg, #22c55e, #10b981);
+            color: #022c22;
             border-radius: var(--radius-sm);
-            box-shadow: 0 4px 12px rgba(109, 40, 217, 0.2);
+            box-shadow: 0 4px 12px rgba(34, 197, 94, 0.25);
         }
 
         .nav-links {
@@ -191,14 +250,15 @@
         }
 
         .btn-primary {
-            background: linear-gradient(135deg, var(--purple), var(--pink));
-            color: white;
-            box-shadow: 0 4px 15px rgba(109, 40, 217, 0.2);
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            color: #ffffff;
+            box-shadow: 0 4px 15px rgba(34, 197, 94, 0.35);
         }
 
         .btn-primary:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(109, 40, 217, 0.35);
+            background: linear-gradient(135deg, #16a34a, #15803d);
+            box-shadow: 0 6px 20px rgba(34, 197, 94, 0.45);
         }
 
         .btn-outline {
@@ -272,7 +332,7 @@
             letter-spacing: -0.03em;
             line-height: 1.15;
             margin-bottom: 1.5rem;
-            background: linear-gradient(135deg, #1e1b4b 20%, #6d28d9 60%, #db2777 100%);
+            background: linear-gradient(135deg, #0f172a 20%, #16a34a 60%, #22c55e 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
@@ -389,9 +449,9 @@
         }
 
         .mockup-acc-card.active {
-            border-color: var(--purple-light);
-            background: rgba(109, 40, 217, 0.05);
-            color: var(--purple);
+            border-color: #22c55e;
+            background: rgba(34, 197, 94, 0.08);
+            color: #16a34a;
         }
 
         .mockup-acc-card.active::after {
@@ -453,7 +513,7 @@
             border: none;
             cursor: pointer;
             width: 100%;
-            box-shadow: 0 4px 10px rgba(109, 40, 217, 0.15);
+            box-shadow: 0 4px 10px rgba(34, 197, 94, 0.25);
         }
 
         /* Mockup Preview Side */
@@ -631,8 +691,8 @@
             justify-content: center;
             width: 52px;
             height: 52px;
-            background-color: rgba(109, 40, 217, 0.08);
-            color: var(--purple);
+            background-color: rgba(34, 197, 94, 0.12);
+            color: #16a34a;
             border-radius: var(--radius-sm);
             margin-bottom: 1.75rem;
         }
@@ -696,23 +756,23 @@
 
         /* Accent Highlight Border for Pro Card */
         .pricing-card.premium {
-            border: 2px solid var(--purple-light);
-            box-shadow: 0 20px 40px -15px rgba(109, 40, 217, 0.15);
+            border: 2px solid #22c55e;
+            box-shadow: 0 20px 40px -15px rgba(34, 197, 94, 0.2);
         }
 
         .pricing-badge {
             position: absolute;
             top: 1.5rem;
             right: 1.5rem;
-            background: linear-gradient(135deg, var(--purple), var(--pink));
-            color: white;
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            color: #ffffff;
             font-size: 0.75rem;
             font-weight: 800;
             padding: 0.35rem 0.85rem;
             border-radius: 99px;
             text-transform: uppercase;
             letter-spacing: 0.05em;
-            box-shadow: 0 4px 10px rgba(109, 40, 217, 0.2);
+            box-shadow: 0 4px 10px rgba(34, 197, 94, 0.3);
         }
 
         .pricing-card h3 {
@@ -912,7 +972,7 @@
                         <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/>
                     </svg>
                 </div>
-                <span>AutoPost</span>
+                <span>FeedBridge</span>
             </a>
             
             <nav class="nav-links">
@@ -951,7 +1011,7 @@
                         <span class="mockup-dot yellow"></span>
                         <span class="mockup-dot green"></span>
                     </div>
-                    <div class="mockup-address">https://autopost.io/dashboard/create/</div>
+                    <div class="mockup-address">https://feedbridge.io/dashboard/create/</div>
                     <div style="width: 48px;"></div>
                 </div>
                 
@@ -998,7 +1058,7 @@
                             <div class="mockup-preview-header">
                                 <div class="mockup-preview-avatar"></div>
                                 <div>
-                                    <div class="mockup-preview-title">AutoPost Brand Account</div>
+                                    <div class="mockup-preview-title">FeedBridge HQ</div>
                                     <div style="font-size: 0.65rem; color: var(--text-muted);">Instagram Reel Preview</div>
                                 </div>
                             </div>
@@ -1006,7 +1066,7 @@
                                 <span>[ Video Preview Container ]</span>
                             </div>
                             <div style="font-size: 0.75rem; color: var(--text-secondary); line-height: 1.4;">
-                                <strong>autopost_brand</strong> This new setup is completely transforming my workflow! Double tap if you need...
+                                <strong>feedbridge_hq</strong> This new setup is completely transforming my workflow! Double tap if you need...
                             </div>
                         </div>
                     </div>
@@ -1225,7 +1285,7 @@
                         <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/>
                     </svg>
                 </div>
-                <span>AutoPost</span>
+                <span>FeedBridge</span>
             </a>
             
             <div class="footer-links">
@@ -1233,7 +1293,7 @@
                 <a href="{% url 'terms_of_service' %}" class="footer-link">Terms of Service</a>
             </div>
             
-            <span class="copyright">&copy; 2026 AutoPost Inc. All rights reserved.</span>
+            <span class="copyright">&copy; 2026 FeedBridge Inc. All rights reserved.</span>
         </div>
     </footer>
 

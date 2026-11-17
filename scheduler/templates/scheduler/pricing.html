@@ -1,0 +1,1349 @@
+{% extends 'scheduler/base.html' %}
+{% load humanize %}
+
+{% block title %}Pricing & Plans — FeedBridge{% endblock %}
+{% block nav_pricing %}active{% endblock %}
+{% block page_title %}Subscription Plans{% endblock %}
+
+{% block extra_head %}
+<!-- Razorpay Checkout JS -->
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<style>
+    /* =========================================================
+       FeedBridge — PostBridge Style Dark Theme Pricing Page
+       ========================================================= */
+
+    :root, [data-theme="light"] {
+        --price-bg-card: #ffffff;
+        --price-border: #e2e8f0;
+        --price-border-hover: #cbd5e1;
+        --price-text-primary: #0f172a;
+        --price-text-secondary: #475569;
+        --price-text-muted: #64748b;
+        --price-accent-card: #f8fafc;
+        --price-card-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.06), 0 4px 6px -2px rgba(0, 0, 0, 0.03);
+        --price-featured-shadow: 0 18px 38px -5px rgba(34, 197, 94, 0.16);
+        --price-table-head: #f1f5f9;
+        --price-table-row: #ffffff;
+        --price-table-row-alt: #f8fafc;
+    }
+
+    [data-theme="dark"] {
+        --price-bg-card: rgba(15, 23, 42, 0.85);
+        --price-border: rgba(255, 255, 255, 0.08);
+        --price-border-hover: rgba(255, 255, 255, 0.22);
+        --price-text-primary: #f8fafc;
+        --price-text-secondary: #cbd5e1;
+        --price-text-muted: #94a3b8;
+        --price-accent-card: #0b0f19;
+        --price-card-shadow: 0 16px 36px -8px rgba(0, 0, 0, 0.6);
+        --price-featured-shadow: 0 0 35px -5px rgba(34, 197, 94, 0.25), 0 20px 45px -10px rgba(0, 0, 0, 0.7);
+        --price-table-head: #111827;
+        --price-table-row: rgba(15, 23, 42, 0.6);
+        --price-table-row-alt: rgba(15, 23, 42, 0.85);
+    }
+
+    .pricing-wrapper {
+        position: relative;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 1.5rem 0 4rem;
+    }
+
+    /* Ambient Glow (Dark mode only) */
+    .pricing-glow {
+        display: none;
+    }
+    [data-theme="dark"] .pricing-glow {
+        display: block;
+        position: absolute;
+        top: -60px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 800px;
+        height: 380px;
+        background: radial-gradient(ellipse 65% 50% at 50% 20%, rgba(34, 197, 94, 0.22), rgba(16, 185, 129, 0.12), transparent 75%);
+        pointer-events: none;
+        z-index: 0;
+        filter: blur(20px);
+    }
+
+    .pricing-header {
+        position: relative;
+        z-index: 1;
+        text-align: center;
+        margin-bottom: 2.25rem;
+    }
+
+    .pricing-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        background: rgba(34, 197, 94, 0.12);
+        color: #22c55e;
+        border: 1px solid rgba(34, 197, 94, 0.25);
+        padding: 0.35rem 0.9rem;
+        border-radius: 999px;
+        font-size: 0.76rem;
+        font-weight: 800;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        margin-bottom: 0.85rem;
+    }
+
+    .pricing-header h2 {
+        font-size: 2.35rem;
+        font-weight: 800;
+        color: var(--price-text-primary);
+        margin: 0 0 0.65rem;
+        letter-spacing: -0.025em;
+    }
+
+    .pricing-header p {
+        color: var(--price-text-muted);
+        font-size: 1.05rem;
+        max-width: 680px;
+        margin: 0 auto;
+        line-height: 1.5;
+    }
+
+    /* Monthly vs Yearly Switcher */
+    .billing-toggle-wrap {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 1.1rem;
+        margin-bottom: 2.5rem;
+    }
+
+    .billing-cycle-btn {
+        background: transparent;
+        border: none;
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: var(--price-text-muted);
+        cursor: pointer;
+        padding: 0.35rem 0.5rem;
+        transition: color 0.15s ease;
+    }
+
+    .billing-cycle-btn.active {
+        color: var(--price-text-primary);
+        font-weight: 800;
+    }
+
+    .switch-toggle {
+        position: relative;
+        display: inline-block;
+        width: 56px;
+        height: 30px;
+    }
+
+    .switch-toggle input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+
+    .switch-slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background-color: rgba(255, 255, 255, 0.15);
+        border: 1px solid var(--price-border);
+        transition: .3s;
+        border-radius: 34px;
+    }
+
+    .switch-slider:before {
+        position: absolute;
+        content: "";
+        height: 22px;
+        width: 22px;
+        left: 3px;
+        bottom: 3px;
+        background-color: #ffffff;
+        transition: .3s;
+        border-radius: 50%;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+    }
+
+    input:checked + .switch-slider {
+        background-color: #22c55e;
+        border-color: #22c55e;
+    }
+
+    input:checked + .switch-slider:before {
+        transform: translateX(26px);
+    }
+
+    .yearly-discount-pill {
+        background: linear-gradient(135deg, rgba(34, 197, 94, 0.18), rgba(16, 185, 129, 0.28));
+        color: #22c55e;
+        border: 1px solid rgba(34, 197, 94, 0.35);
+        font-size: 0.78rem;
+        font-weight: 800;
+        padding: 0.3rem 0.85rem;
+        border-radius: 999px;
+        letter-spacing: 0.4px;
+        box-shadow: 0 2px 10px rgba(34, 197, 94, 0.15);
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
+    }
+
+    /* Coupon Box */
+    .coupon-card {
+        position: relative;
+        z-index: 1;
+        background: var(--price-bg-card);
+        border: 1px dashed rgba(34, 197, 94, 0.45);
+        border-radius: 14px;
+        padding: 1.25rem 1.6rem;
+        margin-bottom: 2.75rem;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1.25rem;
+        backdrop-filter: blur(12px);
+    }
+
+    .coupon-input-group {
+        display: flex;
+        gap: 0.5rem;
+        flex: 1;
+        max-width: 380px;
+    }
+
+    .coupon-input {
+        flex: 1;
+        padding: 0.6rem 0.9rem;
+        background: var(--price-accent-card);
+        border: 1px solid var(--price-border);
+        border-radius: 8px;
+        font-size: 0.88rem;
+        color: var(--price-text-primary);
+        text-transform: uppercase;
+        font-weight: 600;
+        outline: none;
+        transition: border-color 0.15s ease;
+    }
+
+    .coupon-input:focus {
+        border-color: #22c55e;
+    }
+
+    /* Pricing Grid (PostBridge 3-tier style) */
+    .pricing-grid {
+        position: relative;
+        z-index: 1;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+        gap: 1.75rem;
+        align-items: stretch;
+        margin-bottom: 3.5rem;
+    }
+
+    .pricing-card {
+        background: var(--price-bg-card);
+        border: 1px solid var(--price-border);
+        border-radius: 18px;
+        padding: 2.25rem 2rem;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+        position: relative;
+        box-shadow: var(--price-card-shadow);
+        backdrop-filter: blur(16px);
+    }
+
+    .pricing-card:hover {
+        transform: translateY(-4px);
+        border-color: var(--price-border-hover);
+        box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.35);
+    }
+
+    /* Featured Marketer Card Glow */
+    .pricing-card.featured {
+        border: 1px solid rgba(34, 197, 94, 0.6);
+        box-shadow: 0 10px 30px rgba(34, 197, 94, 0.18);
+    }
+
+    [data-theme="dark"] .pricing-card.featured {
+        background: linear-gradient(180deg, rgba(6, 78, 59, 0.3) 0%, rgba(15, 23, 42, 0.95) 100%);
+    }
+
+    /* Operator Plan Highlight */
+    .pricing-card.operator-tier {
+        border: 1px solid rgba(34, 197, 94, 0.35);
+    }
+
+    [data-theme="dark"] .pricing-card.operator-tier {
+        background: linear-gradient(180deg, rgba(6, 78, 59, 0.25) 0%, rgba(15, 23, 42, 0.95) 100%);
+    }
+
+    .featured-badge {
+        position: absolute;
+        top: -13px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: linear-gradient(135deg, #22c55e, #16a34a);
+        color: #ffffff;
+        padding: 0.28rem 1.15rem;
+        border-radius: 999px;
+        font-size: 0.74rem;
+        font-weight: 800;
+        letter-spacing: 0.05em;
+        box-shadow: 0 4px 14px rgba(34, 197, 94, 0.35);
+        white-space: nowrap;
+    }
+
+    .operator-badge {
+        position: absolute;
+        top: -13px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: #22c55e;
+        color: #022c22;
+        padding: 0.28rem 1.15rem;
+        border-radius: 999px;
+        font-size: 0.74rem;
+        font-weight: 800;
+        letter-spacing: 0.05em;
+        box-shadow: 0 4px 14px rgba(34, 197, 94, 0.35);
+        white-space: nowrap;
+    }
+
+    .plan-name {
+        font-size: 1.4rem;
+        font-weight: 800;
+        color: var(--price-text-primary);
+        margin-bottom: 0.4rem;
+    }
+
+    .plan-desc {
+        font-size: 0.88rem;
+        color: var(--price-text-muted);
+        margin-bottom: 1.35rem;
+        min-height: 40px;
+        line-height: 1.45;
+    }
+
+    .plan-price-wrap {
+        margin-bottom: 1.5rem;
+    }
+
+    .plan-original-price {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 0.3rem;
+    }
+
+    .plan-strike {
+        font-size: 1.05rem;
+        color: var(--price-text-muted);
+        text-decoration: line-through;
+        font-weight: 600;
+    }
+
+    .plan-discount-badge {
+        background: rgba(34, 197, 94, 0.15);
+        color: #22c55e;
+        font-size: 0.72rem;
+        font-weight: 800;
+        padding: 0.18rem 0.55rem;
+        border-radius: 999px;
+    }
+
+    .plan-price {
+        font-size: 2.35rem;
+        font-weight: 800;
+        color: var(--price-text-primary);
+        display: flex;
+        align-items: baseline;
+        gap: 0.35rem;
+    }
+
+    .plan-price span.period-val {
+        font-size: 0.9rem;
+        font-weight: 500;
+        color: var(--price-text-muted);
+    }
+
+    .billed-note {
+        font-size: 0.82rem;
+        color: #22c55e;
+        font-weight: 700;
+        margin-top: 0.35rem;
+        min-height: 18px;
+    }
+
+    .plan-features {
+        list-style: none;
+        padding: 0;
+        margin: 0 0 2rem 0;
+    }
+
+    .plan-features li {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.65rem;
+        font-size: 0.88rem;
+        color: var(--price-text-secondary);
+        margin-bottom: 0.85rem;
+        line-height: 1.4;
+    }
+
+    .plan-features li svg {
+        color: #22c55e;
+        flex-shrink: 0;
+        margin-top: 2px;
+    }
+
+    .trial-guarantee-note {
+        text-align: center;
+        font-size: 0.78rem;
+        color: var(--price-text-muted);
+        margin-top: 0.6rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.35rem;
+    }
+
+    /* Buttons */
+    .btn-checkout-primary {
+        background: linear-gradient(135deg, #22c55e, #16a34a);
+        color: #ffffff;
+        font-weight: 700;
+        padding: 0.85rem 1.25rem;
+        border-radius: 10px;
+        border: none;
+        cursor: pointer;
+        width: 100%;
+        font-size: 0.95rem;
+        box-shadow: 0 4px 14px rgba(34, 197, 94, 0.35);
+        transition: all 0.2s ease;
+    }
+    .btn-checkout-primary:hover {
+        background: linear-gradient(135deg, #16a34a, #15803d);
+        transform: translateY(-1px);
+        box-shadow: 0 6px 18px rgba(34, 197, 94, 0.45);
+    }
+
+    .btn-checkout-green {
+        background: #22c55e;
+        color: #022c22;
+        font-weight: 800;
+        padding: 0.85rem 1.25rem;
+        border-radius: 10px;
+        border: none;
+        cursor: pointer;
+        width: 100%;
+        font-size: 0.95rem;
+        box-shadow: 0 4px 14px rgba(34, 197, 94, 0.3);
+        transition: all 0.2s ease;
+    }
+    .btn-checkout-green:hover {
+        background: #16a34a;
+        color: #ffffff;
+        transform: translateY(-1px);
+    }
+
+    .btn-checkout-ghost {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid var(--price-border);
+        color: var(--price-text-muted);
+        font-weight: 700;
+        padding: 0.85rem 1.25rem;
+        border-radius: 10px;
+        width: 100%;
+        font-size: 0.95rem;
+        transition: all 0.2s ease;
+    }
+
+    [data-theme="light"] .btn-checkout-ghost {
+        background: #f8fafc;
+        border-color: #e2e8f0;
+        color: #64748b;
+    }
+    [data-theme="light"] .btn-checkout-ghost:hover {
+        background: #f1f5f9;
+        color: #0f172a;
+        border-color: #cbd5e1;
+    }
+    [data-theme="dark"] .btn-checkout-ghost {
+        background: rgba(255, 255, 255, 0.04);
+        border-color: rgba(255, 255, 255, 0.1);
+        color: #94a3b8;
+    }
+
+    [data-theme="light"] .switch-slider {
+        background-color: #e2e8f0;
+        border-color: #cbd5e1;
+    }
+    [data-theme="light"] .switch-slider:before {
+        background-color: #ffffff;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+    }
+
+    /* Custom Calculator Card (PostBridge Army of Accounts Scaler) */
+    .custom-calc-card {
+        background: var(--price-bg-card);
+        border: 1px solid var(--price-border);
+        border-radius: 18px;
+        padding: 2.25rem 2.5rem;
+        box-shadow: var(--price-card-shadow);
+        margin-bottom: 3.5rem;
+        backdrop-filter: blur(16px);
+    }
+
+    .range-slider {
+        -webkit-appearance: none;
+        width: 100%;
+        height: 8px;
+        border-radius: 5px;
+        background: rgba(255, 255, 255, 0.12);
+        outline: none;
+        transition: background 0.2s;
+    }
+    [data-theme="light"] .range-slider {
+        background: #e2e8f0;
+    }
+
+    .range-slider::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        background: #22c55e;
+        cursor: pointer;
+        box-shadow: 0 2px 10px rgba(34, 197, 94, 0.5);
+        border: 2px solid #ffffff;
+    }
+
+    /* Head-to-Head Comparison Table */
+    .comparison-section {
+        margin-bottom: 4rem;
+    }
+
+    .comparison-title {
+        text-align: center;
+        margin-bottom: 1.75rem;
+    }
+
+    .comparison-title h3 {
+        font-size: 1.85rem;
+        font-weight: 800;
+        color: var(--price-text-primary);
+        margin: 0 0 0.5rem;
+    }
+
+    .comparison-title p {
+        color: var(--price-text-muted);
+        font-size: 0.95rem;
+        margin: 0;
+    }
+
+    .comparison-table-wrap {
+        overflow-x: auto;
+        border-radius: 16px;
+        border: 1px solid var(--price-border);
+        background: var(--price-bg-card);
+        box-shadow: var(--price-card-shadow);
+    }
+
+    .comp-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.88rem;
+        text-align: left;
+    }
+
+    .comp-table th {
+        background: var(--price-table-head);
+        color: var(--price-text-primary);
+        padding: 1.1rem 1.25rem;
+        font-weight: 700;
+        border-bottom: 1px solid var(--price-border);
+    }
+
+    .comp-table th.highlight-col {
+        background: rgba(34, 197, 94, 0.15);
+        color: #16a34a;
+        font-weight: 800;
+    }
+
+    .comp-table td {
+        padding: 1rem 1.25rem;
+        border-bottom: 1px solid var(--price-border);
+        color: var(--price-text-secondary);
+    }
+
+    .comp-table td.highlight-col {
+        background: rgba(34, 197, 94, 0.05);
+        font-weight: 700;
+        color: var(--price-text-primary);
+    }
+
+    .comp-table tr:last-child td {
+        border-bottom: none;
+    }
+
+    /* FAQ Section */
+    .faq-section {
+        max-width: 850px;
+        margin: 0 auto 3.5rem;
+    }
+
+    .faq-title {
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+
+    .faq-title h3 {
+        font-size: 1.85rem;
+        font-weight: 800;
+        color: var(--price-text-primary);
+        margin: 0 0 0.4rem;
+    }
+
+    .faq-title p {
+        color: var(--price-text-muted);
+        font-size: 0.95rem;
+        margin: 0;
+    }
+
+    .faq-item {
+        background: var(--price-bg-card);
+        border: 1px solid var(--price-border);
+        border-radius: 12px;
+        margin-bottom: 0.85rem;
+        overflow: hidden;
+        transition: border-color 0.2s ease;
+    }
+
+    .faq-question {
+        padding: 1.15rem 1.4rem;
+        font-size: 0.98rem;
+        font-weight: 700;
+        color: var(--price-text-primary);
+        cursor: pointer;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        user-select: none;
+    }
+
+    .faq-question:hover {
+        color: #22c55e;
+    }
+
+    .faq-chevron {
+        transition: transform 0.25s ease;
+        font-size: 1.1rem;
+        color: var(--price-text-muted);
+    }
+
+    .faq-item.active .faq-chevron {
+        transform: rotate(180deg);
+        color: #22c55e;
+    }
+
+    .faq-answer {
+        display: none;
+        padding: 0 1.4rem 1.25rem;
+        font-size: 0.88rem;
+        color: var(--price-text-muted);
+        line-height: 1.6;
+        border-top: 1px solid rgba(255, 255, 255, 0.04);
+        padding-top: 0.75rem;
+    }
+
+    .faq-item.active .faq-answer {
+        display: block;
+    }
+
+    /* Trust & Security Bar */
+    .trust-bar {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 2rem;
+        flex-wrap: wrap;
+        padding: 1.5rem 0;
+        border-top: 1px solid var(--price-border);
+        color: var(--price-text-muted);
+        font-size: 0.82rem;
+        font-weight: 600;
+    }
+
+    .trust-item {
+        display: flex;
+        align-items: center;
+        gap: 0.45rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="pricing-wrapper">
+    <!-- Ambient Glow Effect for Dark Mode -->
+    <div class="pricing-glow"></div>
+
+    <!-- Superuser Admin Quick Bar -->
+    {% if is_superuser %}
+    <div style="position: relative; z-index: 2; background: linear-gradient(135deg, #0f172a, #1e1b4b); color: #fff; padding: 1rem 1.5rem; border-radius: 14px; margin-bottom: 2.25rem; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem; box-shadow: 0 6px 20px rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.12);">
+        <div style="display: flex; align-items: center; gap: 0.85rem;">
+            <div style="width: 38px; height: 38px; border-radius: 8px; background: rgba(34, 197, 94, 0.2); display: flex; align-items: center; justify-content: center; font-size: 1.25rem;">
+                ⚡
+            </div>
+            <div>
+                <div style="font-weight: 700; font-size: 0.98rem; display: flex; align-items: center; gap: 0.5rem;">
+                    Superuser Mode Active
+                    <span style="font-size: 0.72rem; background: #22c55e; color: #022c22; padding: 0.15rem 0.5rem; border-radius: 999px; font-weight: 800;">ADMIN</span>
+                </div>
+                <div style="font-size: 0.82rem; color: #94a3b8;">
+                    You can dynamically edit monthly/yearly prices, accounts limits, and discount coupons in the Django Admin.
+                </div>
+            </div>
+        </div>
+        <div style="display: flex; gap: 0.6rem; align-items: center;">
+            <a href="/admin/scheduler/pricingplan/" target="_blank" class="btn btn-sm" style="background: #22c55e; color: #022c22; font-weight: 800; text-decoration: none; padding: 0.5rem 1rem; border-radius: 8px; display: inline-flex; align-items: center; gap: 0.4rem; border: none;">
+                ✏️ Edit Plans in Admin
+            </a>
+            <a href="/admin/scheduler/discountcoupon/" target="_blank" class="btn btn-sm" style="background: rgba(255,255,255,0.12); color: #fff; font-weight: 600; text-decoration: none; padding: 0.5rem 1rem; border-radius: 8px; display: inline-flex; align-items: center; gap: 0.4rem; border: none;">
+                🏷️ Manage Coupons
+            </a>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Pricing Header (PostBridge Style) -->
+    <div class="pricing-header">
+        <div class="pricing-pill">
+            <span>⚡</span> No Per-Channel Fees • Flat-Rate Pricing
+        </div>
+        <h2>Simple, Flat Pricing for Unlimited Growth</h2>
+        <p>Post to all social platforms simultaneously without limits or per-channel gouging. Connect 15 to 99 accounts for one flat price.</p>
+    </div>
+
+    <!-- Monthly vs Yearly Switch Toggle -->
+    <div class="billing-toggle-wrap">
+        <button type="button" class="billing-cycle-btn active" id="btnCycleMonthly" onclick="setBillingCycle(false)">Monthly</button>
+        <label class="switch-toggle">
+            <input type="checkbox" id="billingCycleToggle" onchange="toggleBilling(this.checked)">
+            <span class="switch-slider"></span>
+        </label>
+        <button type="button" class="billing-cycle-btn" id="btnCycleYearly" onclick="setBillingCycle(true)">Yearly</button>
+        <span class="yearly-discount-pill">
+            <span>🎉</span> SAVE 20% (2 MONTHS FREE)
+        </span>
+    </div>
+
+    <!-- Promo Discount Coupon Card -->
+    <div class="coupon-card">
+        <div>
+            <div style="font-weight: 700; font-size: 0.95rem; color: var(--price-text-primary); display: flex; align-items: center; gap: 0.45rem;">
+                <span>🎟️</span> Have a Discount Promo Code?
+            </div>
+            <div style="font-size: 0.82rem; color: var(--price-text-muted); margin-top: 2px;">
+                Use code <code style="background: rgba(34, 197, 94, 0.12); padding: 2px 7px; border-radius: 5px; font-weight: 800; color: #16a34a; border: 1px solid rgba(34, 197, 94, 0.3);">WELCOME20</code> for an instant 20% discount on checkout.
+            </div>
+        </div>
+        <div class="coupon-input-group">
+            <input type="text" id="couponInput" class="coupon-input" placeholder="ENTER COUPON...">
+            <button type="button" onclick="applyCoupon()" class="btn btn-sm" style="background: #22c55e; color: #022c22; font-weight: 800; padding: 0.6rem 1.25rem; border-radius: 8px; border: none; cursor: pointer;">
+                Apply
+            </button>
+        </div>
+    </div>
+    <div id="couponNotice" style="display: none; margin-top: -2rem; margin-bottom: 2.25rem; padding: 0.75rem 1.25rem; border-radius: 10px; font-size: 0.88rem; font-weight: 600;"></div>
+
+    <!-- 3-Tier PostBridge Grid -->
+    <div class="pricing-grid">
+        {% for plan in plans %}
+        <div class="pricing-card {% if plan.is_featured %}featured{% elif plan.plan_code == 'PRO' or plan.plan_code == 'OPERATOR' %}operator-tier{% endif %}"
+             data-plan="{{ plan.plan_code }}"
+             data-monthly-price="{{ plan.price_inr }}"
+             data-monthly-paise="{{ plan.amount_in_paise }}"
+             data-yearly-price="{{ plan.get_yearly_price_inr }}"
+             data-yearly-monthly="{{ plan.get_yearly_monthly_equivalent }}"
+             data-yearly-savings="{{ plan.yearly_savings_inr }}"
+             data-yearly-paise="{{ plan.get_yearly_amount_in_paise }}"
+             data-usd="{{ plan.price_usd }}">
+            
+            {% if plan.badge_text %}
+                {% if plan.is_featured %}
+                <span class="featured-badge">{{ plan.badge_text }}</span>
+                {% else %}
+                <span class="operator-badge">{{ plan.badge_text }}</span>
+                {% endif %}
+            {% endif %}
+
+            <div>
+                <div class="plan-name">{{ plan.name }}</div>
+                <div class="plan-desc">{{ plan.description|default:"All-in-one cross-posting and automation." }}</div>
+                
+                <div class="plan-price-wrap">
+                    {% if plan.original_price_inr and plan.original_price_inr > plan.price_inr %}
+                    <div class="plan-original-price" id="original-wrap-{{ plan.plan_code }}">
+                        <span class="plan-strike">₹{{ plan.original_price_inr|intcomma }}</span>
+                        <span class="plan-discount-badge">{{ plan.discount_percent }}% OFF</span>
+                    </div>
+                    {% endif %}
+
+                    <div class="plan-price" id="price-display-{{ plan.plan_code }}">
+                        <span class="price-val">₹{{ plan.price_inr|intcomma }}</span>
+                        <span class="period-val">/ month {% if plan.price_usd %}{{ plan.price_usd }}{% endif %}</span>
+                    </div>
+                    
+                    <div class="billed-note" id="note-{{ plan.plan_code }}" style="display: none;"></div>
+                </div>
+
+                <ul class="plan-features">
+                    {% for feat in plan.parsed_features %}
+                    {% if feat.is_disabled %}
+                    <li style="color: var(--price-text-muted); text-decoration: line-through; opacity: 0.6;">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                        <span>{{ feat.text }}</span>
+                    </li>
+                    {% else %}
+                    <li>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                        <span>{% if feat.is_bold %}<strong>{{ feat.text }}</strong>{% else %}{{ feat.text }}{% endif %}</span>
+                    </li>
+                    {% endif %}
+                    {% endfor %}
+                </ul>
+            </div>
+
+            <!-- Action Button -->
+            <div>
+                {% if plan.price_inr == 0 %}
+                    {% if subscription and subscription.plan == plan.plan_code %}
+                    <button class="btn-checkout-ghost" disabled>✓ Current Active Plan</button>
+                    {% else %}
+                    <a href="{% if not request.user.is_authenticated %}/accounts/signup/?next=/pricing/{% else %}/studio/{% endif %}" class="btn-checkout-ghost" style="display: block; text-align: center; text-decoration: none;">
+                        {{ plan.cta_text|default:"Start Free" }}
+                    </a>
+                    {% endif %}
+                {% else %}
+                    {% if subscription and subscription.plan == plan.plan_code %}
+                    <button class="btn-checkout-ghost" style="border-color: #22c55e; color: #22c55e;" disabled>
+                        ✓ Current Active Plan
+                    </button>
+                    {% else %}
+                    <button type="button" class="{% if plan.is_featured %}btn-checkout-primary{% else %}btn-checkout-green{% endif %}" id="btn-{{ plan.plan_code }}" onclick="triggerPlanCheckout('{{ plan.plan_code }}')">
+                        {{ plan.cta_text|default:"Start 7-Day Free Trial" }}
+                    </button>
+                    <div class="trial-guarantee-note">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                        <span>7-Day Free Trial • $0 Due Today</span>
+                    </div>
+                    {% endif %}
+                {% endif %}
+            </div>
+
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- PostBridge "Army of Accounts" / Custom Scaler Slider -->
+    {% if custom_plan %}
+    <div class="custom-calc-card">
+        <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; margin-bottom: 1.75rem; gap: 1.25rem;">
+            <div>
+                <div style="display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.35rem;">
+                    <span style="font-size: 1.35rem;">🎛️</span>
+                    <h3 style="font-size: 1.45rem; font-weight: 800; color: var(--price-text-primary); margin: 0;">
+                        {{ custom_plan.name }}
+                    </h3>
+                    <span style="background: rgba(34, 197, 94, 0.15); color: #22c55e; font-size: 0.74rem; font-weight: 800; padding: 0.2rem 0.65rem; border-radius: 999px; border: 1px solid rgba(34, 197, 94, 0.3);">
+                        POSTBRIDGE SCALER
+                    </span>
+                </div>
+                <p style="color: var(--price-text-muted); font-size: 0.92rem; margin: 0; max-width: 650px;">
+                    Running an agency or multiple brands? Drag the slider below to dynamically scale from 15 up to 250+ connected accounts without per-channel surcharges.
+                </p>
+            </div>
+
+            <!-- Price Output Box -->
+            <div style="text-align: right; background: var(--price-accent-card); border: 1px solid var(--price-border); padding: 0.85rem 1.4rem; border-radius: 14px;">
+                <div style="font-size: 0.76rem; color: var(--price-text-muted); font-weight: 700; letter-spacing: 0.05em;" id="customBillingLabel">CALCULATED MONTHLY PRICE</div>
+                <div style="font-size: 2.1rem; font-weight: 800; color: var(--price-text-primary);">
+                    <span id="customPriceCalculated">₹{{ custom_plan.price_inr|intcomma }}</span>
+                    <span style="font-size: 0.9rem; font-weight: 500; color: var(--price-text-muted);" id="customPeriodCalculated">/ month</span>
+                </div>
+                <div id="customAnnualNote" style="font-size: 0.8rem; color: #22c55e; font-weight: 800; display: none; margin-top: 2px;"></div>
+            </div>
+        </div>
+
+        <!-- Slider Controls -->
+        <div style="margin-bottom: 2rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+                <span style="font-weight: 700; font-size: 0.98rem; color: var(--price-text-primary);">Total Connected Social Accounts:</span>
+                <span id="sliderAccountDisplay" style="font-size: 1.15rem; font-weight: 800; color: #22c55e; background: rgba(34, 197, 94, 0.12); padding: 0.3rem 0.95rem; border-radius: 8px; border: 1px solid rgba(34, 197, 94, 0.25);">
+                    15 Accounts
+                </span>
+            </div>
+            <input type="range" min="15" max="250" value="15" step="5" id="accountsRangeSlider" class="range-slider" oninput="updateCustomCalculator(this.value)">
+            <div style="display: flex; justify-content: space-between; font-size: 0.78rem; color: var(--price-text-muted); margin-top: 0.5rem; font-weight: 600;">
+                <span>15 Accounts (Marketer Base)</span>
+                <span>50 Accounts</span>
+                <span>99 Accounts (Operator)</span>
+                <span>150 Accounts</span>
+                <span>250+ Accounts (Mega Agency)</span>
+            </div>
+        </div>
+
+        <!-- Details Grid & Checkout Action -->
+        <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; border-top: 1px solid var(--price-border); padding-top: 1.5rem; gap: 1.25rem;">
+            <div style="display: flex; gap: 1.75rem; flex-wrap: wrap; font-size: 0.88rem; color: var(--price-text-secondary);">
+                <div>✓ <strong>Unlimited Posts &amp; Reels</strong></div>
+                <div>✓ <strong>Base:</strong> 15 accounts included</div>
+                <div>✓ <strong>Extra accounts:</strong> +₹99/acc ($1/mo)</div>
+                <div>✓ <strong>Full REST API &amp; MCP Access</strong></div>
+            </div>
+            <button type="button" id="customCheckoutBtn" onclick="checkoutCustomPlan()" class="btn-checkout-primary" style="width: auto; padding: 0.85rem 2rem;">
+                Subscribe with <span id="btnAccCount">15</span> Accounts
+            </button>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Head-to-Head Comparison: FeedBridge vs Buffer vs Hootsuite -->
+    <div class="comparison-section">
+        <div class="comparison-title">
+            <h3>Why FeedBridge Beats Per-Channel Pricing</h3>
+            <p>Traditional tools charge $6 to $15 for every single channel. See how much you save with FeedBridge's flat-rate model (1 USD = 99 INR).</p>
+        </div>
+
+        <div class="comparison-table-wrap">
+            <table class="comp-table">
+                <thead>
+                    <tr>
+                        <th>Feature / Capacity</th>
+                        <th class="highlight-col">⚡ FeedBridge</th>
+                        <th>Buffer</th>
+                        <th>Hootsuite</th>
+                        <th>Sprout Social</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>15 Social Accounts</strong></td>
+                        <td class="highlight-col"><strong style="color: #22c55e;">₹3,861 / mo ($39)</strong> flat</td>
+                        <td>$90 - $180 / mo ($6/channel)</td>
+                        <td>$249+ / mo</td>
+                        <td>$399+ / mo</td>
+                    </tr>
+                    <tr>
+                        <td><strong>99 Social Accounts</strong></td>
+                        <td class="highlight-col"><strong style="color: #22c55e;">₹9,801 / mo ($99)</strong> flat</td>
+                        <td>$594+ / mo</td>
+                        <td>$999+ / mo</td>
+                        <td>$1,500+ / mo</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Same-Platform Mix (e.g. 5 TikToks)</strong></td>
+                        <td class="highlight-col">✅ Unlimited mix</td>
+                        <td>⚠️ Pay extra per profile</td>
+                        <td>⚠️ Strict tier limits</td>
+                        <td>⚠️ User seat limits</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Model Context Protocol (MCP) Server</strong></td>
+                        <td class="highlight-col">✅ Native Included</td>
+                        <td>❌ No</td>
+                        <td>❌ No</td>
+                        <td>❌ No</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Developer REST API &amp; Webhooks</strong></td>
+                        <td class="highlight-col">✅ Full Access Included</td>
+                        <td>⚠️ Agency Plan only</td>
+                        <td>⚠️ Custom Enterprise only</td>
+                        <td>⚠️ Custom Enterprise only</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Scheduled Posts Limit</strong></td>
+                        <td class="highlight-col">✅ Unlimited Posts</td>
+                        <td>⚠️ Capped queue</td>
+                        <td>⚠️ Throttled queues</td>
+                        <td>⚠️ Throttled queues</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Free Trial Guarantee</strong></td>
+                        <td class="highlight-col">✅ 7-Day Free Trial ($0 due)</td>
+                        <td>⚠️ 14 days (Credit Card)</td>
+                        <td>⚠️ Auto-rebill trap</td>
+                        <td>⚠️ Demo call required</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- PostBridge FAQ Accordion -->
+    <div class="faq-section">
+        <div class="faq-title">
+            <h3>Frequently Asked Questions</h3>
+            <p>Everything you need to know about plans, billing, and the 7-day trial.</p>
+        </div>
+
+        <div class="faq-item">
+            <div class="faq-question" onclick="toggleFaq(this)">
+                <span>Why flat-rate pricing instead of charging per channel like Buffer?</span>
+                <span class="faq-chevron">▼</span>
+            </div>
+            <div class="faq-answer">
+                Buffer and Hootsuite charge \$6 to \$15 for every single social media account you connect. If you manage 3 Instagrams, 2 YouTubes, 4 TikToks, and a LinkedIn company page, you easily pay \$100+ to \$300/mo. FeedBridge offers a predictable flat rate: you get 15 or 99 accounts included with unlimited posts for one flat subscription.
+            </div>
+        </div>
+
+        <div class="faq-item">
+            <div class="faq-question" onclick="toggleFaq(this)">
+                <span>Can I connect multiple accounts on the same platform?</span>
+                <span class="faq-chevron">▼</span>
+            </div>
+            <div class="faq-answer">
+                Yes! You can connect any mix of platforms you want. For example, on the 15-account Marketer plan, you could connect 8 Instagram accounts, 4 TikTok accounts, and 3 YouTube channels. There are no restrictions on how you allocate your accounts.
+            </div>
+        </div>
+
+        <div class="faq-item">
+            <div class="faq-question" onclick="toggleFaq(this)">
+                <span>How does the 7-day free trial work?</span>
+                <span class="faq-chevron">▼</span>
+            </div>
+            <div class="faq-answer">
+                When you choose Marketer or Operator, you start with a 7-day free trial. Exactly \$0 is due today. You get immediate full access to auto-scheduling, universal composer, previews, and API/MCP. If you cancel within 7 days, you will never be charged.
+            </div>
+        </div>
+
+        <div class="faq-item">
+            <div class="faq-question" onclick="toggleFaq(this)">
+                <span>What is Model Context Protocol (MCP) and how do AI agents post?</span>
+                <span class="faq-chevron">▼</span>
+            </div>
+            <div class="faq-answer">
+                Model Context Protocol (MCP) is the open standard that connects AI systems (like Claude Desktop, Gemini, Cursor, and custom AI agents) directly to tools. FeedBridge provides a native MCP server at <code>/api/mcp/</code> that allows autonomous agents to fetch scheduled queues, draft captions, and trigger immediate cross-platform posts automatically.
+            </div>
+        </div>
+
+        <div class="faq-item">
+            <div class="faq-question" onclick="toggleFaq(this)">
+                <span>What if I need more than 99 accounts?</span>
+                <span class="faq-chevron">▼</span>
+            </div>
+            <div class="faq-answer">
+                On the Operator plan, additional accounts cost just +₹99/mo (\$1/mo) each with no ceiling! You can also use our interactive <strong>Army of Accounts Scaler</strong> slider above to configure a custom tier with up to 250+ accounts.
+            </div>
+        </div>
+
+        <div class="faq-item">
+            <div class="faq-question" onclick="toggleFaq(this)">
+                <span>Can I cancel or change plans anytime?</span>
+                <span class="faq-chevron">▼</span>
+            </div>
+            <div class="faq-answer">
+                Absolutely. There are no long-term contracts. You can upgrade, downgrade, or cancel anytime with a single click from your account dashboard.
+            </div>
+        </div>
+    </div>
+
+    <!-- Trust & Security Strip -->
+    <div class="trust-bar">
+        <div class="trust-item">
+            <span>🔒</span> 256-Bit Bank-Grade Razorpay Encryption
+        </div>
+        <div class="trust-item">
+            <span>⚡</span> Instant 30-Second Setup &amp; Token Exchange
+        </div>
+        <div class="trust-item">
+            <span>🛡️</span> Cancel Anytime in 1-Click • Zero Lock-in
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let currentBillingCycle = 'monthly'; // 'monthly' or 'yearly'
+let activeCouponCode = '';
+let activeDiscountInr = 0;
+
+// Base values for custom plan
+const customBasePrice = {{ custom_plan.price_inr|default:3861 }};
+const customPerExtraPrice = {{ custom_plan.price_per_additional_account|default:99 }};
+let currentSelectedAccounts = 15;
+
+// Billing Toggle Logic
+function setBillingCycle(isYearly) {
+    document.getElementById('billingCycleToggle').checked = isYearly;
+    toggleBilling(isYearly);
+}
+
+function toggleBilling(isYearly) {
+    currentBillingCycle = isYearly ? 'yearly' : 'monthly';
+
+    document.getElementById('btnCycleMonthly').classList.toggle('active', !isYearly);
+    document.getElementById('btnCycleYearly').classList.toggle('active', isYearly);
+
+    // Update standard plan cards
+    document.querySelectorAll('.pricing-card[data-plan]').forEach(card => {
+        const planCode = card.getAttribute('data-plan');
+        const monthlyPrice = parseInt(card.getAttribute('data-monthly-price') || 0);
+        const yearlyPrice = parseInt(card.getAttribute('data-yearly-price') || 0);
+        const yearlyMonthly = parseInt(card.getAttribute('data-yearly-monthly') || 0);
+        const yearlySavings = parseInt(card.getAttribute('data-yearly-savings') || 0);
+        const usd = card.getAttribute('data-usd') || '';
+
+        const priceDisplay = card.querySelector('.price-val');
+        const periodDisplay = card.querySelector('.period-val');
+        const noteDisplay = card.querySelector('.billed-note');
+        const origWrap = card.querySelector('.plan-original-price');
+
+        if (monthlyPrice === 0) {
+            return;
+        }
+
+        if (isYearly) {
+            priceDisplay.innerText = '₹' + yearlyMonthly.toLocaleString('en-IN');
+            periodDisplay.innerText = '/ month (billed yearly)';
+            noteDisplay.style.display = 'block';
+            noteDisplay.innerText = `Billed annually at ₹${yearlyPrice.toLocaleString('en-IN')} (Save ₹${yearlySavings.toLocaleString('en-IN')}!)`;
+            if (origWrap) origWrap.style.display = 'none';
+        } else {
+            priceDisplay.innerText = '₹' + monthlyPrice.toLocaleString('en-IN');
+            periodDisplay.innerText = `/ month ${usd}`;
+            noteDisplay.style.display = 'none';
+            if (origWrap) origWrap.style.display = 'flex';
+        }
+    });
+
+    // Update custom calculator
+    if (document.getElementById('accountsRangeSlider')) {
+        updateCustomCalculator(currentSelectedAccounts);
+    }
+}
+
+// Custom Scaler Calculator Logic
+function updateCustomCalculator(accounts) {
+    currentSelectedAccounts = parseInt(accounts);
+    document.getElementById('sliderAccountDisplay').innerText = `${currentSelectedAccounts} Accounts`;
+    document.getElementById('btnAccCount').innerText = currentSelectedAccounts;
+
+    let baseMonthly = customBasePrice;
+    if (currentSelectedAccounts > 15) {
+        baseMonthly += (currentSelectedAccounts - 15) * customPerExtraPrice;
+    }
+
+    const calcLabel = document.getElementById('customBillingLabel');
+    const calcOutput = document.getElementById('customPriceCalculated');
+    const periodOutput = document.getElementById('customPeriodCalculated');
+    const annualNote = document.getElementById('customAnnualNote');
+
+    if (currentBillingCycle === 'yearly') {
+        const fullAnnual = baseMonthly * 12;
+        const discountedAnnual = Math.round(fullAnnual * 0.8); // 20% off
+        const monthlyEquivalent = Math.round(discountedAnnual / 12);
+        const savings = fullAnnual - discountedAnnual;
+
+        let finalPrice = Math.max(1, discountedAnnual - activeDiscountInr);
+        calcLabel.innerText = 'CALCULATED YEARLY PRICE (20% OFF)';
+        calcOutput.innerText = '₹' + finalPrice.toLocaleString('en-IN');
+        periodOutput.innerText = `/ year (₹${monthlyEquivalent}/mo)`;
+        annualNote.style.display = 'block';
+        annualNote.innerText = `You save ₹${savings.toLocaleString('en-IN')} per year!`;
+    } else {
+        let finalPrice = Math.max(1, baseMonthly - activeDiscountInr);
+        calcLabel.innerText = 'CALCULATED MONTHLY PRICE';
+        calcOutput.innerText = '₹' + finalPrice.toLocaleString('en-IN');
+        periodOutput.innerText = '/ month';
+        annualNote.style.display = 'none';
+    }
+}
+
+function triggerPlanCheckout(planCode) {
+    startCheckout(planCode, null, 0);
+}
+
+function checkoutCustomPlan() {
+    startCheckout('CUSTOM', null, currentSelectedAccounts);
+}
+
+// Coupon validation
+function applyCoupon() {
+    const code = document.getElementById('couponInput').value.trim().toUpperCase();
+    const notice = document.getElementById('couponNotice');
+    
+    if (!code) {
+        notice.style.display = 'block';
+        notice.style.background = '#fee2e2';
+        notice.style.color = '#b91c1c';
+        notice.innerText = 'Please enter a coupon code first.';
+        return;
+    }
+
+    fetch('/pricing/validate-coupon/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken'),
+        },
+        body: JSON.stringify({
+            code: code,
+            plan: 'CREATOR',
+            custom_accounts: currentSelectedAccounts,
+            billing_cycle: currentBillingCycle
+        })
+    })
+    .then(r => r.json())
+    .then(data => {
+        notice.style.display = 'block';
+        if (data.valid) {
+            activeCouponCode = data.code;
+            activeDiscountInr = data.discount_inr;
+            notice.style.background = 'rgba(34, 197, 94, 0.15)';
+            notice.style.color = '#22c55e';
+            notice.style.border = '1px solid rgba(34, 197, 94, 0.3)';
+            notice.innerText = data.message;
+            if (document.getElementById('accountsRangeSlider')) {
+                updateCustomCalculator(currentSelectedAccounts);
+            }
+        } else {
+            activeCouponCode = '';
+            activeDiscountInr = 0;
+            notice.style.background = 'rgba(239, 68, 68, 0.15)';
+            notice.style.color = '#f87171';
+            notice.style.border = '1px solid rgba(239, 68, 68, 0.3)';
+            notice.innerText = data.message || 'Invalid coupon code.';
+        }
+    })
+    .catch(err => {
+        notice.style.display = 'block';
+        notice.style.background = 'rgba(239, 68, 68, 0.15)';
+        notice.style.color = '#f87171';
+        notice.innerText = 'Error validating coupon: ' + err.message;
+    });
+}
+
+// Razorpay Checkout Launcher
+function startCheckout(plan, amountPaise, customAccounts = 0) {
+    const isAuthenticated = {% if request.user.is_authenticated %}true{% else %}false{% endif %};
+    if (!isAuthenticated) {
+        window.location.href = '/accounts/signup/?next=/pricing/';
+        return;
+    }
+
+    const payload = {
+        plan: plan,
+        coupon: activeCouponCode,
+        custom_accounts: customAccounts,
+        billing_cycle: currentBillingCycle
+    };
+
+    fetch('/pricing/create-order/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken'),
+        },
+        body: JSON.stringify(payload)
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (!data.success) {
+            alert('Failed to initialize order: ' + (data.error || 'Unknown error'));
+            return;
+        }
+
+        const cycleLabel = currentBillingCycle === 'yearly' ? 'Annual' : 'Monthly';
+        const options = {
+            key: data.key,
+            amount: data.amount,
+            currency: data.currency,
+            name: "FeedBridge",
+            description: (data.plan_name || plan) + ` (${cycleLabel}` + (customAccounts > 0 ? `, ${customAccounts} Accounts` : '') + ")",
+            order_id: data.order_id,
+            handler: function (response) {
+                fetch('/pricing/verify/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken'),
+                    },
+                    body: JSON.stringify({
+                        razorpay_payment_id: response.razorpay_payment_id || ('pay_' + Math.floor(Math.random() * 1000000)),
+                        razorpay_order_id: response.razorpay_order_id || data.order_id,
+                        razorpay_signature: response.razorpay_signature || 'simulated_sig',
+                        plan: plan,
+                        custom_accounts: customAccounts,
+                        billing_cycle: currentBillingCycle
+                    })
+                })
+                .then(r => r.json())
+                .then(resData => {
+                    if (resData.success) {
+                        alert('🎉 Subscription activated successfully!');
+                        location.reload();
+                    } else {
+                        alert('Verification error: ' + resData.error);
+                    }
+                });
+            },
+            prefill: {
+                email: "{{ user.email|default:'' }}"
+            },
+            theme: {
+                color: "#22c55e"
+            }
+        };
+
+        const rzp = new Razorpay(options);
+        rzp.open();
+    })
+    .catch(err => {
+        console.error(err);
+        alert('Error starting Razorpay checkout: ' + err.message);
+    });
+}
+
+// FAQ Accordion Toggle
+function toggleFaq(el) {
+    const item = el.closest('.faq-item');
+    const wasActive = item.classList.contains('active');
+    
+    // Close others
+    document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('active'));
+    
+    if (!wasActive) {
+        item.classList.add('active');
+    }
+}
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+</script>
+{% endblock %}

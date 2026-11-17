@@ -1,7 +1,7 @@
 {% extends 'scheduler/base.html' %}
 {% load static %}
 
-{% block title %}Authorize {{ platform_name }} - AutoPost{% endblock %}
+{% block title %}Authorize {{ platform_name }} — FeedBridge{% endblock %}
 
 {% block extra_head %}
 <style>
@@ -170,9 +170,9 @@
     .spinner {
         width: 50px;
         height: 50px;
-        border: 3px solid rgba(124, 58, 237, 0.1);
+        border: 3px solid rgba(34, 197, 94, 0.15);
         border-radius: 50%;
-        border-top-color: var(--purple-light);
+        border-top-color: #22c55e;
         animation: spin 1s ease-in-out infinite;
         margin-bottom: 1.5rem;
     }
@@ -194,7 +194,7 @@
         </div>
         
         <div class="oauth-logo-flow">
-            <div class="app-logo-circle" title="AutoPost">
+            <div class="app-logo-circle" title="FeedBridge">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                     <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
                     <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/>
@@ -222,9 +222,9 @@
             </div>
         </div>
         
-        <h2 style="font-size: 1.6rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.5rem;">Authorize AutoPost</h2>
+        <h2 style="font-size: 1.6rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.5rem;">Authorize FeedBridge</h2>
         <p style="color: var(--text-secondary); font-size: 0.95rem;">
-            <strong>AutoPost</strong> requests permission to access and publish on your <strong>{{ platform_name }}</strong> account.
+            <strong>FeedBridge</strong> requests permission to access and publish on your <strong>{{ platform_name }}</strong> account.
         </p>
         
         <div class="permissions-box">

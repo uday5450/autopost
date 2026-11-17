@@ -1,0 +1,244 @@
+{% extends 'scheduler/base.html' %}
+
+{% block title %}Content Calendar — FeedBridge{% endblock %}
+{% block nav_calendar %}active{% endblock %}
+{% block page_title %}Content Calendar{% endblock %}
+
+{% block topbar_actions %}
+<a href="{% url 'create_post' %}" class="btn btn-primary btn-sm">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+    </svg>
+    Create Post
+</a>
+{% endblock %}
+
+{% block extra_head %}
+<!-- FullCalendar 6 CDN -->
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
+<style>
+    .calendar-card {
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-lg);
+        padding: 1.5rem;
+        box-shadow: var(--shadow-sm);
+    }
+    .calendar-toolbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+    .fc {
+        font-family: 'Inter', sans-serif;
+    }
+    .fc-theme-standard td, .fc-theme-standard th {
+        border-color: var(--border-color);
+    }
+    .fc-toolbar-title {
+        font-size: 1.25rem !important;
+        font-weight: 700;
+        color: var(--text-primary);
+    }
+    .fc-button {
+        background: var(--bg-card) !important;
+        border: 1px solid var(--border-color) !important;
+        color: var(--text-primary) !important;
+        font-size: 0.85rem !important;
+        font-weight: 500 !important;
+        padding: 0.4rem 0.8rem !important;
+        border-radius: var(--radius-sm) !important;
+        box-shadow: none !important;
+        text-transform: capitalize !important;
+    }
+    .fc-button-active {
+        background: var(--purple-light) !important;
+        color: #fff !important;
+        border-color: var(--purple-light) !important;
+    }
+    .fc-event {
+        cursor: pointer;
+        border-radius: 4px;
+        padding: 2px 6px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        transition: transform 0.15s ease;
+    }
+    .fc-event:hover {
+        transform: translateY(-1px);
+        filter: brightness(1.1);
+    }
+    .platform-filter-select {
+        padding: 0.45rem 1rem;
+        border-radius: var(--radius-sm);
+        border: 1px solid var(--border-color);
+        background: var(--bg-card);
+        color: var(--text-primary);
+        font-size: 0.85rem;
+    }
+    /* Event Modal */
+    .event-modal-media {
+        max-width: 100%;
+        max-height: 250px;
+        border-radius: var(--radius-md);
+        margin: 1rem 0;
+        object-fit: cover;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="calendar-card">
+    <div class="calendar-toolbar">
+        <div style="display: flex; align-items: center; gap: 0.75rem;">
+            <label for="platformFilter" style="font-size: 0.85rem; font-weight: 600; color: var(--text-muted);">Filter Platform:</label>
+            <select id="platformFilter" class="platform-filter-select">
+                <option value="ALL">All Platforms</option>
+                <option value="INSTAGRAM">Instagram</option>
+                <option value="YOUTUBE">YouTube</option>
+                <option value="X">X (Twitter)</option>
+                <option value="TIKTOK">TikTok</option>
+                <option value="FACEBOOK">Facebook</option>
+                <option value="LINKEDIN">LinkedIn</option>
+                <option value="PINTEREST">Pinterest</option>
+                <option value="SNAPCHAT">Snapchat</option>
+            </select>
+        </div>
+        <div style="display: flex; gap: 0.5rem; align-items: center; font-size: 0.8rem; color: var(--text-muted);">
+            <span style="display: flex; align-items: center; gap: 0.25rem;"><span style="width: 8px; height: 8px; background: #e1306c; border-radius: 50%;"></span> IG</span>
+            <span style="display: flex; align-items: center; gap: 0.25rem;"><span style="width: 8px; height: 8px; background: #ff0000; border-radius: 50%;"></span> YT</span>
+            <span style="display: flex; align-items: center; gap: 0.25rem;"><span style="width: 8px; height: 8px; background: #1da1f2; border-radius: 50%;"></span> X</span>
+            <span style="display: flex; align-items: center; gap: 0.25rem;"><span style="width: 8px; height: 8px; background: #fe2c55; border-radius: 50%;"></span> TT</span>
+            <span style="display: flex; align-items: center; gap: 0.25rem;"><span style="width: 8px; height: 8px; background: #0077b5; border-radius: 50%;"></span> IN</span>
+        </div>
+    </div>
+
+    <!-- Calendar Container -->
+    <div id="calendar"></div>
+</div>
+
+<!-- Post Detail Modal -->
+<div class="modal-overlay" id="postModal" style="display: none;">
+    <div class="modal" style="max-width: 500px;">
+        <div class="modal-header">
+            <h3 id="modalTitle">Post Details</h3>
+            <button class="modal-close" onclick="closePostModal()">×</button>
+        </div>
+        <div class="modal-body">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+                <span id="modalPlatform" class="badge" style="font-size: 0.8rem; font-weight: 700; padding: 0.25rem 0.6rem; border-radius: 6px; background: var(--bg-hover);"></span>
+                <span id="modalStatus" style="font-size: 0.8rem; color: var(--text-muted);"></span>
+            </div>
+            <div id="modalTime" style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem;"></div>
+            
+            <div id="modalMediaContainer" style="display: none; text-align: center;">
+                <img id="modalImage" class="event-modal-media" src="" alt="Post Media">
+            </div>
+
+            <div style="margin-top: 1rem;">
+                <label style="font-size: 0.8rem; font-weight: 600; color: var(--text-muted);">Caption / Description</label>
+                <p id="modalCaption" style="font-size: 0.9rem; line-height: 1.5; color: var(--text-primary); background: var(--bg-body); padding: 0.75rem; border-radius: 6px; white-space: pre-wrap; margin-top: 0.25rem;"></p>
+            </div>
+            
+            <div id="modalLiveLinkContainer" style="display: none; margin-top: 1rem;">
+                <a id="modalLiveLink" href="#" target="_blank" class="btn btn-sm btn-ghost" style="color: var(--purple-light);">
+                    🔗 View Live Post on Platform
+                </a>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-ghost" onclick="closePostModal()">Close</button>
+            <a id="modalEditBtn" href="{% url 'post_list' %}" class="btn btn-primary">Go to All Posts</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    let allEvents = [];
+    const calendarEl = document.getElementById('calendar');
+    const platformFilter = document.getElementById('platformFilter');
+
+    const calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: 'dayGridMonth',
+        headerToolbar: {
+            left: 'prev,next today',
+            center: 'title',
+            right: 'dayGridMonth,timeGridWeek,listMonth'
+        },
+        editable: false,
+        selectable: true,
+        events: function(fetchInfo, successCallback, failureCallback) {
+            fetch('/api/calendar/events/')
+                .then(res => res.json())
+                .then(events => {
+                    allEvents = events;
+                    applyFilter();
+                })
+                .catch(err => failureCallback(err));
+        },
+        eventClick: function(info) {
+            showPostModal(info.event);
+        }
+    });
+
+    calendar.render();
+
+    function applyFilter() {
+        const val = platformFilter.value;
+        calendar.removeAllEvents();
+        if (val === 'ALL') {
+            calendar.addEventSource(allEvents);
+        } else {
+            const filtered = allEvents.filter(e => {
+                const titleLower = e.title.toUpperCase();
+                return titleLower.includes(`[${val}]`) || (e.extendedProps && e.extendedProps.platform && e.extendedProps.platform.toUpperCase().includes(val));
+            });
+            calendar.addEventSource(filtered);
+        }
+    }
+
+    platformFilter.addEventListener('change', applyFilter);
+});
+
+function showPostModal(event) {
+    document.getElementById('modalTitle').textContent = event.title;
+    document.getElementById('modalPlatform').textContent = event.extendedProps.platform || 'Social Post';
+    document.getElementById('modalStatus').textContent = 'Status: ' + (event.extendedProps.status || 'Pending');
+    document.getElementById('modalTime').textContent = '📅 ' + new Date(event.start).toLocaleString();
+    document.getElementById('modalCaption').textContent = event.extendedProps.caption || '(No caption)';
+
+    const mediaUrl = event.extendedProps.media_url;
+    const imgContainer = document.getElementById('modalMediaContainer');
+    const modalImg = document.getElementById('modalImage');
+    if (mediaUrl && (mediaUrl.endsWith('.jpg') || mediaUrl.endsWith('.png') || mediaUrl.endsWith('.jpeg') || mediaUrl.includes('image'))) {
+        modalImg.src = mediaUrl;
+        imgContainer.style.display = 'block';
+    } else {
+        imgContainer.style.display = 'none';
+    }
+
+    const liveUrl = event.extendedProps.external_url;
+    const liveContainer = document.getElementById('modalLiveLinkContainer');
+    const liveLink = document.getElementById('modalLiveLink');
+    if (liveUrl) {
+        liveLink.href = liveUrl;
+        liveContainer.style.display = 'block';
+    } else {
+        liveContainer.style.display = 'none';
+    }
+
+    document.getElementById('postModal').style.display = 'flex';
+}
+
+function closePostModal() {
+    document.getElementById('postModal').style.display = 'none';
+}
+</script>
+{% endblock %}
+
