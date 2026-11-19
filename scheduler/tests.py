@@ -5,7 +5,7 @@ from django.utils import timezone
 from scheduler.models import (
     ScheduledPost, InstagramAccount, YouTubeAccount,
     LinkedInAccount, RedditAccount, SnapchatAccount, UserSubscription,
-    UserProfile
+    UserProfile, Workspace, WorkspaceMember
 )
 
 class PostBridgeFeatureTests(TestCase):
@@ -287,6 +287,154 @@ class PostBridgeFeatureTests(TestCase):
         })
         self.assertEqual(login_resp.status_code, 302)
         self.assertEqual(login_resp.url, '/dashboard/')
+
+    def test_workspace_creation_and_member_role_assignment(self):
+        """Test workspace management, inviting team members, and role assignment."""
+        # 1. Setup subscription with member capacity to test role assignments
+        sub, _ = UserSubscription.objects.get_or_create(user=self.user)
+        sub.plan = 'CREATOR'
+        sub.members_per_workspace_limit = 5
+        sub.save()
+
+        # 2. Create colleague users to invite
+        colleague_admin = User.objects.create_user(
+            username='admin_colleague',
+            email='colleague_admin@example.com',
+            password='password123'
+        )
+        colleague_editor = User.objects.create_user(
+            username='editor_colleague',
+            email='colleague_editor@example.com',
+            password='password123'
+        )
+
+        # 3. Get settings page (triggers auto-creation of personal workspace via context processor)
+        resp = self.client.get('/settings/')
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "Team Members &amp; Role Permissions")
+        
+        ws = Workspace.objects.filter(owner=self.user).first()
+        self.assertIsNotNone(ws)
+        self.assertEqual(ws.get_user_role(self.user), 'OWNER')
+        self.assertTrue(ws.is_admin_or_owner(self.user))
+        self.assertTrue(ws.can_manage_content(self.user))
+
+        # 3. Owner adds a colleague with ADMIN role
+        add_admin_resp = self.client.post('/settings/', {
+            'action': 'add_member',
+            'username_or_email': 'colleague_admin@example.com',
+            'role': 'ADMIN',
+        })
+        self.assertEqual(add_admin_resp.status_code, 302)
+        self.assertTrue(ws.memberships.filter(user=colleague_admin, role='ADMIN').exists())
+        self.assertTrue(ws.is_admin_or_owner(colleague_admin))
+
+        # 4. Owner adds another colleague with VIEWER role
+        add_editor_resp = self.client.post('/settings/', {
+            'action': 'add_member',
+            'username_or_email': 'editor_colleague',
+            'role': 'VIEWER',
+        })
+        self.assertEqual(add_editor_resp.status_code, 302)
+        member_rec = ws.memberships.get(user=colleague_editor)
+        self.assertEqual(member_rec.role, 'VIEWER')
+        self.assertFalse(ws.can_manage_content(colleague_editor))
+
+        # 5. Update role from VIEWER to EDITOR
+        update_role_resp = self.client.post('/settings/', {
+            'action': 'update_member_role',
+            'member_id': member_rec.id,
+            'role': 'EDITOR',
+        })
+        self.assertEqual(update_role_resp.status_code, 302)
+        member_rec.refresh_from_db()
+        self.assertEqual(member_rec.role, 'EDITOR')
+        self.assertTrue(ws.can_manage_content(colleague_editor))
+
+        # 6. Switch workspace test
+        new_ws = Workspace.objects.create(name="Second Team", owner=self.user)
+        switch_resp = self.client.get(f'/workspace/switch/{new_ws.id}/')
+        self.assertEqual(switch_resp.status_code, 302)
+        self.assertEqual(self.client.session.get('active_workspace_id'), new_ws.id)
+
+    def test_workspace_and_member_plan_limits(self):
+        """Test strict plan-based enforcement of workspace limits and team member limits."""
+        # 1. Start with Free plan (1 workspace max, 2 members per workspace max)
+        sub, _ = UserSubscription.objects.get_or_create(user=self.user)
+        sub.plan = 'FREE'
+        sub.workspaces_limit = 1
+        sub.members_per_workspace_limit = 2
+        sub.save()
+
+        # Trigger settings GET to ensure default workspace exists
+        resp = self.client.get('/settings/')
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.context['workspace_limit'], 1)
+        self.assertEqual(resp.context['member_limit'], 2)
+        self.assertEqual(Workspace.objects.filter(owner=self.user).count(), 1)
+
+        # 2. Free user attempts to create a 2nd workspace -> BLOCKED
+        create_resp = self.client.post('/settings/', {
+            'action': 'create_workspace',
+            'name': 'Second Unauthorized Workspace',
+            'timezone': 'Asia/Kolkata',
+        }, follow=True)
+        self.assertEqual(create_resp.status_code, 200)
+        self.assertEqual(Workspace.objects.filter(owner=self.user).count(), 1)
+        messages_text = [m.message for m in create_resp.context['messages']]
+        self.assertTrue(any('Workspace limit reached' in m for m in messages_text))
+
+        # 3. Add 1 team member to reach max members limit (Owner + 1 member = 2 members)
+        u2 = User.objects.create_user(username='member_one', email='m1@test.com', password='pw')
+        add_resp = self.client.post('/settings/', {
+            'action': 'add_member',
+            'username_or_email': 'member_one',
+            'role': 'EDITOR',
+        }, follow=True)
+        self.assertEqual(add_resp.status_code, 200)
+        ws = Workspace.objects.filter(owner=self.user).first()
+        self.assertEqual(ws.memberships.count(), 2) # Owner + 1 member
+
+        # 4. Attempt to add a 3rd member (exceeding limit of 2) -> BLOCKED
+        u3 = User.objects.create_user(username='member_two', email='m2@test.com', password='pw')
+        add_blocked_resp = self.client.post('/settings/', {
+            'action': 'add_member',
+            'username_or_email': 'member_two',
+            'role': 'VIEWER',
+        }, follow=True)
+        self.assertEqual(add_blocked_resp.status_code, 200)
+        self.assertEqual(ws.memberships.count(), 2) # Still 2, not 3
+        messages_text = [m.message for m in add_blocked_resp.context['messages']]
+        self.assertTrue(any('Team member limit reached' in m for m in messages_text))
+
+        # 5. Upgrade user to CREATOR / Marketer plan (3 workspaces, 5 members)
+        sub.plan = 'CREATOR'
+        sub.workspaces_limit = 3
+        sub.members_per_workspace_limit = 5
+        sub.save()
+
+        # 6. Now create 2nd workspace -> ALLOWED
+        create_ok_resp = self.client.post('/settings/', {
+            'action': 'create_workspace',
+            'name': 'Client 2 Growth Studio',
+            'timezone': 'Asia/Kolkata',
+        }, follow=True)
+        self.assertEqual(create_ok_resp.status_code, 200)
+        self.assertEqual(Workspace.objects.filter(owner=self.user).count(), 2)
+
+        # Switch active session back to the first workspace to test adding member to it
+        self.client.get(f'/workspace/switch/{ws.id}/')
+
+        # 7. Add member_two to the first workspace -> ALLOWED now that limit is 5
+        add_ok_resp = self.client.post('/settings/', {
+            'action': 'add_member',
+            'username_or_email': 'member_two',
+            'role': 'VIEWER',
+        }, follow=True)
+        self.assertEqual(add_ok_resp.status_code, 200)
+        self.assertEqual(ws.memberships.count(), 3)
+
+
 
 
 

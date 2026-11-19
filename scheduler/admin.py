@@ -2,7 +2,8 @@ from django.contrib import admin
 from .models import (
     InstagramAccount, ScheduledPost, YouTubeAccount,
     FacebookAccount, XAccount, PinterestAccount, TikTokAccount,
-    PricingPlan, DiscountCoupon, UserSubscription, UserProfile
+    PricingPlan, DiscountCoupon, UserSubscription, UserProfile,
+    Workspace, WorkspaceMember
 )
 
 
@@ -88,12 +89,13 @@ class PricingPlanAdmin(admin.ModelAdmin):
             ),
             'description': 'Set original_price_inr for strike-through discount. yearly_price_inr: set 0 to auto-calculate annual total with yearly_discount_percent (e.g. 20% off).'
         }),
-        ('Account & Post Limits', {
+        ('Account, Post & Workspace Limits', {
             'fields': (
                 'max_connected_accounts', 'price_per_additional_account',
-                'max_posts_per_month', 'is_custom_calculator'
+                'max_posts_per_month', 'max_workspaces', 'max_members_per_workspace',
+                'is_custom_calculator'
             ),
-            'description': 'max_connected_accounts: 0 for unlimited. price_per_additional_account: fee charged per extra account. is_custom_calculator: enables account slider on pricing page.'
+            'description': 'max_connected_accounts: 0 for unlimited. max_workspaces: 0 for unlimited workspaces. max_members_per_workspace: 0 for unlimited members.'
         }),
         ('Visual Highlights & CTA', {
             'fields': ('is_featured', 'badge_text', 'cta_text', 'features_list'),
@@ -124,7 +126,8 @@ class DiscountCouponAdmin(admin.ModelAdmin):
 class UserSubscriptionAdmin(admin.ModelAdmin):
     list_display = [
         'user', 'plan', 'pricing_plan', 'connected_accounts_limit',
-        'posts_limit_per_month', 'discount_applied_inr', 'is_active', 'updated_at'
+        'posts_limit_per_month', 'workspaces_limit', 'members_per_workspace_limit',
+        'discount_applied_inr', 'is_active', 'updated_at'
     ]
     search_fields = ['user__username', 'user__email', 'plan', 'razorpay_order_id', 'razorpay_payment_id']
     list_filter = ['plan', 'is_active']
@@ -135,5 +138,29 @@ class UserProfileAdmin(admin.ModelAdmin):
     list_display = ['user', 'full_name', 'phone_number', 'country_code', 'country_name', 'onboarding_completed', 'created_at']
     search_fields = ['user__username', 'user__email', 'full_name', 'phone_number', 'country_name']
     list_filter = ['country_name', 'onboarding_completed']
+
+
+class WorkspaceMemberInline(admin.TabularInline):
+    model = WorkspaceMember
+    extra = 1
+    fields = ['user', 'role', 'invited_by', 'joined_at']
+    readonly_fields = ['joined_at']
+
+
+@admin.register(Workspace)
+class WorkspaceAdmin(admin.ModelAdmin):
+    list_display = ['name', 'slug', 'owner', 'timezone', 'created_at']
+    search_fields = ['name', 'slug', 'owner__username', 'owner__email']
+    list_filter = ['timezone', 'created_at']
+    prepopulated_fields = {'slug': ('name',)}
+    inlines = [WorkspaceMemberInline]
+
+
+@admin.register(WorkspaceMember)
+class WorkspaceMemberAdmin(admin.ModelAdmin):
+    list_display = ['user', 'workspace', 'role', 'invited_by', 'joined_at']
+    search_fields = ['user__username', 'user__email', 'workspace__name']
+    list_filter = ['role', 'joined_at']
+
 
 

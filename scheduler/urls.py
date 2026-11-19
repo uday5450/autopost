@@ -22,6 +22,7 @@ urlpatterns = [
     path('studio/', views.create_post, name='studio'),
     path('bulk-tools/', views.bulk_tools, name='bulk_tools'),
     path('settings/', views.settings_view, name='settings'),
+    path('workspace/switch/<int:workspace_id>/', views.workspace_switch, name='workspace_switch'),
     path('api-keys/', views.api_keys_view, name='api_keys'),
     
     # Posts

@@ -1,43 +1,666 @@
 {% extends 'scheduler/base.html' %}
+{% load static %}
 
-{% block title %}Settings — FeedBridge{% endblock %}
+{% block title %}{{ workspace.name }} — Workspace & Team Settings{% endblock %}
 {% block nav_settings %}active{% endblock %}
-{% block page_title %}Workspace & Account Settings{% endblock %}
+{% block page_title %}Workspace & Team Settings{% endblock %}
 
-{% block content %}
-<div style="max-width: 800px; margin: 0 auto; padding: 2rem 1rem;">
-    <h1 style="font-size: 1.75rem; font-weight: 700; color: var(--text-primary); margin-bottom: 2rem; letter-spacing: -0.02em;">
-        Settings
-    </h1>
+{% block extra_head %}
+<style>
+    .settings-container {
+        max-width: 1050px;
+        margin: 0 auto;
+        padding: 2rem 1.5rem 5rem;
+    }
 
-    <div class="card" style="padding: 2rem; border-radius: 14px; margin-bottom: 2rem;">
-        <h3 style="font-size: 1.15rem; font-weight: 600; margin-bottom: 1.5rem; color: var(--text-primary);">Workspace Information</h3>
-        <div style="display: flex; flex-direction: column; gap: 1.25rem;">
-            <div>
-                <label style="display: block; font-size: 0.85rem; font-weight: 600; color: var(--text-primary); margin-bottom: 0.4rem;">Workspace Name</label>
-                <input type="text" value="main" style="width: 100%; padding: 0.75rem 1rem; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-input);">
-            </div>
-            <div>
-                <label style="display: block; font-size: 0.85rem; font-weight: 600; color: var(--text-primary); margin-bottom: 0.4rem;">Timezone</label>
-                <select style="width: 100%; padding: 0.75rem 1rem; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-input);">
-                    <option selected>Asia/Kolkata (GMT+5:30)</option>
-                    <option>UTC</option>
-                    <option>America/New_York (EST)</option>
-                    <option>Europe/London (GMT)</option>
-                </select>
-            </div>
-            <div>
-                <label style="display: block; font-size: 0.85rem; font-weight: 600; color: var(--text-primary); margin-bottom: 0.4rem;">Current Subscription</label>
-                <div style="display: flex; align-items: center; justify-content: space-between; padding: 1rem 1.25rem; background: rgba(34, 197, 94, 0.08); border: 1px solid rgba(34, 197, 94, 0.25); border-radius: 10px;">
-                    <div>
-                        <div style="font-weight: 700; color: #16a34a; font-size: 1rem;">{{ subscription.plan|default:"Pro Plan" }}</div>
-                        <div style="font-size: 0.8rem; color: var(--text-secondary);">Unlimited social accounts & scheduled posts</div>
-                    </div>
-                    <a href="{% url 'pricing' %}" class="btn btn-sm" style="background: #22c55e; color: #fff; font-weight: 600; border-radius: 6px; padding: 0.4rem 0.85rem;">Manage Plan</a>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+    .settings-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 2.5rem;
+        flex-wrap: wrap;
+        gap: 1.25rem;
+    }
+
+    .settings-title-group h1 {
+        font-size: 2rem;
+        font-weight: 800;
+        color: var(--pb-text-main);
+        margin: 0 0 0.35rem 0;
+        letter-spacing: -0.03em;
+    }
+
+    .settings-subtitle {
+        color: var(--pb-text-muted);
+        font-size: 0.95rem;
+        margin: 0;
+    }
+
+    /* Role Badges */
+    .role-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        padding: 0.28rem 0.75rem;
+        border-radius: 999px;
+        font-size: 0.78rem;
+        font-weight: 800;
+        letter-spacing: 0.02em;
+        text-transform: uppercase;
+    }
+
+    .badge-owner {
+        background: rgba(245, 158, 11, 0.15);
+        color: #d97706;
+        border: 1px solid rgba(245, 158, 11, 0.3);
+    }
+    .badge-admin {
+        background: rgba(34, 197, 94, 0.15);
+        color: #16a34a;
+        border: 1px solid rgba(34, 197, 94, 0.3);
+    }
+    .badge-editor {
+        background: rgba(59, 130, 246, 0.15);
+        color: #2563eb;
+        border: 1px solid rgba(59, 130, 246, 0.3);
+    }
+    .badge-viewer {
+        background: rgba(148, 163, 184, 0.15);
+        color: #64748b;
+        border: 1px solid rgba(148, 163, 184, 0.3);
+    }
+
+    /* Card Panels */
+    .settings-card {
+        background: var(--pb-card-bg);
+        border: 1px solid var(--pb-card-border);
+        border-radius: 18px;
+        box-shadow: var(--pb-shadow);
+        padding: 2rem;
+        margin-bottom: 2rem;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .card-title-bar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid var(--pb-border);
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .card-title-bar h2 {
+        font-size: 1.25rem;
+        font-weight: 800;
+        color: var(--pb-text-main);
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    /* Permissions Matrix Strip */
+    .permissions-matrix {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 0.85rem;
+        background: var(--pb-card-bg-elevated);
+        border: 1px solid var(--pb-card-border);
+        border-radius: 12px;
+        padding: 1rem;
+        margin-bottom: 1.75rem;
+    }
+
+    .perm-item {
+        font-size: 0.82rem;
+        line-height: 1.4;
+        color: var(--pb-text-muted);
+    }
+
+    .perm-item strong {
+        color: var(--pb-text-main);
+        display: block;
+        margin-bottom: 0.15rem;
+        font-size: 0.85rem;
+    }
+
+    /* Add Member Box */
+    .add-member-box {
+        background: var(--pb-card-bg-elevated);
+        border: 1px solid var(--pb-border);
+        border-radius: 14px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .add-member-form {
+        display: grid;
+        grid-template-columns: 2fr 1.6fr auto;
+        gap: 1rem;
+        align-items: flex-end;
+    }
+
+    @media (max-width: 768px) {
+        .add-member-form {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    /* Members Table */
+    .members-table-wrap {
+        overflow-x: auto;
+    }
+
+    .members-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.9rem;
+    }
+
+    .members-table th {
+        text-align: left;
+        padding: 0.85rem 1rem;
+        color: var(--pb-text-dim);
+        font-weight: 700;
+        font-size: 0.78rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        border-bottom: 1px solid var(--pb-border);
+    }
+
+    .members-table td {
+        padding: 1rem;
+        border-bottom: 1px solid var(--pb-border);
+        color: var(--pb-text-main);
+        vertical-align: middle;
+    }
+
+    .member-user-cell {
+        display: flex;
+        align-items: center;
+        gap: 0.85rem;
+    }
+
+    .member-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #22c55e, #16a34a);
+        color: #ffffff;
+        font-weight: 800;
+        font-size: 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    .member-name {
+        font-weight: 700;
+        color: var(--pb-text-main);
+        line-height: 1.2;
+    }
+
+    .member-email {
+        font-size: 0.8rem;
+        color: var(--pb-text-muted);
+    }
+
+    /* Workspaces Roster list */
+    .workspace-pill-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0.9rem 1.2rem;
+        background: var(--pb-card-bg-elevated);
+        border: 1px solid var(--pb-card-border);
+        border-radius: 12px;
+        margin-bottom: 0.75rem;
+        transition: all 0.2s ease;
+    }
+
+    .workspace-pill-item.active {
+        border-color: #22c55e;
+        background: rgba(34, 197, 94, 0.08);
+    }
+
+    /* Danger zone */
+    .danger-zone {
+        border: 1px solid rgba(239, 68, 68, 0.35);
+        background: rgba(239, 68, 68, 0.03);
+    }
+</style>
 {% endblock %}
 
+{% block content %}
+<div class="settings-container">
+
+    <!-- Top Header -->
+    <div class="settings-header">
+        <div class="settings-title-group">
+            <div style="display: flex; align-items: center; gap: 0.65rem; margin-bottom: 0.35rem;">
+                <h1>{{ workspace.name }}</h1>
+                {% if user_role == 'OWNER' %}
+                    <span class="role-badge badge-owner">👑 Owner</span>
+                {% elif user_role == 'ADMIN' %}
+                    <span class="role-badge badge-admin">🛡️ Admin</span>
+                {% elif user_role == 'EDITOR' %}
+                    <span class="role-badge badge-editor">✏️ Editor</span>
+                {% else %}
+                    <span class="role-badge badge-viewer">👁️ Viewer</span>
+                {% endif %}
+            </div>
+            <p class="settings-subtitle">Manage workspace settings, assign team member roles, and control access permissions.</p>
+        </div>
+
+        <!-- Quick Switch or Create Workspace button & Usage pill -->
+        <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
+            <span class="plan-usage-pill" style="display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.45rem 0.9rem; border-radius: 999px; font-size: 0.82rem; font-weight: 700; background: {% if not can_create_workspace %}rgba(239, 68, 68, 0.12){% else %}rgba(34, 197, 94, 0.12){% endif %}; color: {% if not can_create_workspace %}#ef4444{% else %}#22c55e{% endif %}; border: 1px solid {% if not can_create_workspace %}rgba(239, 68, 68, 0.25){% else %}rgba(34, 197, 94, 0.25){% endif %};">
+                <span>🏢 Workspaces:</span>
+                <strong>{{ owned_workspaces_count }} / {% if workspace_limit == 0 %}Unlimited{% else %}{{ workspace_limit }}{% endif %}</strong>
+            </span>
+            <button type="button" onclick="document.getElementById('createWorkspaceModal').style.display='flex'" class="btn btn-outline" style="border-radius: 10px; font-weight: 700;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                <span>+ New Workspace</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- ======================================================== -->
+    <!-- SECTION 1: Team Members & Role Management               -->
+    <!-- ======================================================== -->
+    <div class="settings-card">
+        <div class="card-title-bar">
+            <h2>
+                <span>👥</span> Team Members &amp; Role Permissions
+            </h2>
+            <span style="display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.82rem; font-weight: 700; padding: 0.35rem 0.8rem; border-radius: 999px; background: {% if not can_add_member %}rgba(239, 68, 68, 0.12){% else %}rgba(34, 197, 94, 0.12){% endif %}; color: {% if not can_add_member %}#ef4444{% else %}#22c55e{% endif %}; border: 1px solid {% if not can_add_member %}rgba(239, 68, 68, 0.25){% else %}rgba(34, 197, 94, 0.25){% endif %};">
+                <span>Team Members:</span>
+                <strong>{{ current_members_count }} / {% if member_limit == 0 %}Unlimited{% else %}{{ member_limit }}{% endif %}</strong>
+            </span>
+        </div>
+
+        <!-- Permissions Reference Matrix -->
+        <div class="permissions-matrix">
+            <div class="perm-item">
+                <strong>👑 Owner</strong>
+                Full ownership, billing, delete workspace, manage all members &amp; roles.
+            </div>
+            <div class="perm-item">
+                <strong>🛡️ Admin</strong>
+                Can invite team members, assign roles, and manage all social accounts/posts.
+            </div>
+            <div class="perm-item">
+                <strong>✏️ Editor</strong>
+                Can create, edit, schedule, and publish posts to connected accounts.
+            </div>
+            <div class="perm-item">
+                <strong>👁️ Viewer</strong>
+                Read-only access to view calendar, scheduled queue, and accounts.
+            </div>
+        </div>
+
+        <!-- Invite / Add Member Box (Only for Owner and Admin) -->
+        {% if is_admin_or_owner %}
+        <div class="add-member-box">
+            {% if not can_add_member %}
+            <div style="background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.25); border-radius: 12px; padding: 1.15rem 1.25rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap;">
+                <div>
+                    <div style="font-weight: 800; color: #ef4444; font-size: 0.95rem; margin-bottom: 0.25rem; display: flex; align-items: center; gap: 0.4rem;">
+                        <span>⚠️</span> Team Member Limit Reached ({{ current_members_count }} of {{ member_limit }} used)
+                    </div>
+                    <div style="font-size: 0.82rem; color: var(--pb-text-muted);">
+                        This workspace has reached the maximum allowed team members on the current plan. The workspace owner can upgrade to add more team members.
+                    </div>
+                </div>
+                <a href="{% url 'pricing' %}" class="btn btn-primary" style="font-size: 0.85rem; padding: 0.55rem 1.15rem; text-decoration: none; border-radius: 8px; font-weight: 700; white-space: nowrap;">
+                    ⚡ Upgrade Plan →
+                </a>
+            </div>
+            {% else %}
+            <div style="font-weight: 800; font-size: 1rem; color: var(--pb-text-main); margin-bottom: 0.35rem;">
+                + Add or Invite Team Member
+            </div>
+            <p style="font-size: 0.82rem; color: var(--pb-text-muted); margin-bottom: 1.25rem;">
+                Enter a registered colleague's username or email and select the permission level you want to assign them.
+            </p>
+
+            <form method="POST" action="{% url 'settings' %}" class="add-member-form">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="add_member">
+                
+                <div>
+                    <label style="display: block; font-size: 0.82rem; font-weight: 700; color: var(--pb-text-main); margin-bottom: 0.35rem;">
+                        Username or Email
+                    </label>
+                    <input type="text" name="username_or_email" required placeholder="e.g. colleague@agency.com or username" class="form-input" style="width: 100%; padding: 0.75rem 1rem; border-radius: 10px;">
+                </div>
+
+                <div>
+                    <label style="display: block; font-size: 0.82rem; font-weight: 700; color: var(--pb-text-main); margin-bottom: 0.35rem;">
+                        Assign Role
+                    </label>
+                    <select name="role" class="form-input" style="width: 100%; padding: 0.75rem 1rem; border-radius: 10px;">
+                        <option value="ADMIN">🛡️ Admin (Invite members &amp; full publishing)</option>
+                        <option value="EDITOR" selected>✏️ Editor (Create, schedule &amp; publish posts)</option>
+                        <option value="VIEWER">👁️ Viewer (Read-only view of queue &amp; calendar)</option>
+                    </select>
+                </div>
+
+                <div>
+                    <button type="submit" class="btn btn-primary" style="padding: 0.75rem 1.4rem; border-radius: 10px; font-weight: 800; width: 100%;">
+                        Add Member
+                    </button>
+                </div>
+            </form>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        <!-- Members Table -->
+        <div class="members-table-wrap">
+            <table class="members-table">
+                <thead>
+                    <tr>
+                        <th>Member</th>
+                        <th>Assigned Role</th>
+                        <th>Joined Date</th>
+                        {% if is_admin_or_owner %}
+                        <th style="text-align: right;">Actions</th>
+                        {% endif %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for m in members %}
+                    <tr>
+                        <!-- Member Info -->
+                        <td>
+                            <div class="member-user-cell">
+                                <div class="member-avatar">
+                                    {{ m.user.username|slice:":1"|upper }}
+                                </div>
+                                <div>
+                                    <div class="member-name">
+                                        {{ m.user.first_name|default:m.user.username }}
+                                        {% if m.user == request.user %}
+                                            <span style="font-size: 0.75rem; color: #22c55e; font-weight: 800; margin-left: 0.35rem;">(You)</span>
+                                        {% endif %}
+                                    </div>
+                                    <div class="member-email">{{ m.user.email|default:m.user.username }}</div>
+                                </div>
+                            </div>
+                        </td>
+
+                        <!-- Role Badge & Role Update Form -->
+                        <td>
+                            {% if m.is_owner %}
+                                <span class="role-badge badge-owner">👑 Workspace Owner</span>
+                            {% elif is_admin_or_owner and m.can_edit %}
+                                <!-- Inline Role Switcher Form -->
+                                <form method="POST" action="{% url 'settings' %}" style="display: flex; align-items: center; gap: 0.5rem;">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="action" value="update_member_role">
+                                    <input type="hidden" name="member_id" value="{{ m.id }}">
+                                    
+                                    <select name="role" onchange="this.form.submit()" class="form-input" style="padding: 0.35rem 0.65rem; font-size: 0.82rem; border-radius: 8px; font-weight: 700; width: auto;">
+                                        <option value="ADMIN" {% if m.role == 'ADMIN' %}selected{% endif %}>🛡️ Admin</option>
+                                        <option value="EDITOR" {% if m.role == 'EDITOR' %}selected{% endif %}>✏️ Editor</option>
+                                        <option value="VIEWER" {% if m.role == 'VIEWER' %}selected{% endif %}>👁️ Viewer</option>
+                                    </select>
+                                </form>
+                            {% else %}
+                                <span class="role-badge {{ m.role_badge_class }}">
+                                    {{ m.role_display }}
+                                </span>
+                            {% endif %}
+                        </td>
+
+                        <!-- Joined Date -->
+                        <td style="color: var(--pb-text-muted); font-size: 0.85rem;">
+                            {{ m.joined_at|date:"M d, Y" }}
+                        </td>
+
+                        <!-- Actions -->
+                        {% if is_admin_or_owner %}
+                        <td style="text-align: right;">
+                            {% if not m.is_owner and m.can_edit %}
+                            <form method="POST" action="{% url 'settings' %}" style="display: inline-block;" onsubmit="return confirm('Are you sure you want to remove {{ m.user.username }} from this workspace?');">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="remove_member">
+                                <input type="hidden" name="member_id" value="{{ m.id }}">
+                                <button type="submit" class="btn btn-outline btn-sm" style="color: #ef4444; border-color: rgba(239, 68, 68, 0.3); padding: 0.35rem 0.75rem; border-radius: 8px;" title="Remove from Workspace">
+                                    Remove
+                                </button>
+                            </form>
+                            {% else %}
+                            <span style="font-size: 0.78rem; color: var(--pb-text-dim);">Protected</span>
+                            {% endif %}
+                        </td>
+                        {% endif %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- ======================================================== -->
+    <!-- SECTION 2: Workspace General Information                -->
+    <!-- ======================================================== -->
+    <div class="settings-card">
+        <div class="card-title-bar">
+            <h2>
+                <span>⚙️</span> Workspace Details &amp; Timezone
+            </h2>
+            {% if not is_admin_or_owner %}
+            <span style="font-size: 0.78rem; color: var(--pb-text-dim);">Read-Only (Requires Admin/Owner)</span>
+            {% endif %}
+        </div>
+
+        <form method="POST" action="{% url 'settings' %}">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="update_workspace">
+            
+            <div style="display: flex; flex-direction: column; gap: 1.25rem;">
+                <div>
+                    <label style="display: block; font-size: 0.85rem; font-weight: 700; color: var(--pb-text-main); margin-bottom: 0.4rem;">
+                        Workspace Name
+                    </label>
+                    <input type="text" name="name" value="{{ workspace.name }}" required {% if not is_admin_or_owner %}disabled{% endif %} class="form-input" style="width: 100%; padding: 0.75rem 1rem; border-radius: 10px;">
+                </div>
+
+                <div>
+                    <label style="display: block; font-size: 0.85rem; font-weight: 700; color: var(--pb-text-main); margin-bottom: 0.4rem;">
+                        Workspace Timezone
+                    </label>
+                    <select name="timezone" {% if not is_admin_or_owner %}disabled{% endif %} class="form-input" style="width: 100%; padding: 0.75rem 1rem; border-radius: 10px;">
+                        <option value="Asia/Kolkata" {% if workspace.timezone == 'Asia/Kolkata' %}selected{% endif %}>🇮🇳 India (IST - GMT+5:30)</option>
+                        <option value="UTC" {% if workspace.timezone == 'UTC' %}selected{% endif %}>🌐 Universal Time (UTC)</option>
+                        <option value="America/New_York" {% if workspace.timezone == 'America/New_York' %}selected{% endif %}>🇺🇸 Eastern Time (EST/EDT)</option>
+                        <option value="America/Los_Angeles" {% if workspace.timezone == 'America/Los_Angeles' %}selected{% endif %}>🇺🇸 Pacific Time (PST/PDT)</option>
+                        <option value="Europe/London" {% if workspace.timezone == 'Europe/London' %}selected{% endif %}>🇬🇧 London (GMT/BST)</option>
+                        <option value="Europe/Paris" {% if workspace.timezone == 'Europe/Paris' %}selected{% endif %}>🇪🇺 Central Europe (CET)</option>
+                        <option value="Asia/Dubai" {% if workspace.timezone == 'Asia/Dubai' %}selected{% endif %}>🇦🇪 Gulf Standard Time (Dubai)</option>
+                        <option value="Asia/Singapore" {% if workspace.timezone == 'Asia/Singapore' %}selected{% endif %}>🇸🇬 Singapore Time (SGT)</option>
+                        <option value="Australia/Sydney" {% if workspace.timezone == 'Australia/Sydney' %}selected{% endif %}>🇦🇺 Sydney (AEST)</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label style="display: block; font-size: 0.85rem; font-weight: 700; color: var(--pb-text-main); margin-bottom: 0.4rem;">
+                        Description
+                    </label>
+                    <textarea name="description" rows="2" {% if not is_admin_or_owner %}disabled{% endif %} class="form-input" style="width: 100%; padding: 0.75rem 1rem; border-radius: 10px;" placeholder="Optional workspace summary...">{{ workspace.description }}</textarea>
+                </div>
+
+                {% if is_admin_or_owner %}
+                <div style="margin-top: 0.5rem;">
+                    <button type="submit" class="btn btn-primary" style="padding: 0.75rem 1.75rem; border-radius: 10px; font-weight: 800;">
+                        Save Workspace Settings
+                    </button>
+                </div>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+
+    <!-- ======================================================== -->
+    <!-- SECTION 3: Your Workspaces Switcher                     -->
+    <!-- ======================================================== -->
+    <div class="settings-card">
+        <div class="card-title-bar">
+            <h2>
+                <span>🏢</span> All Your Workspaces
+            </h2>
+            <span style="font-size: 0.85rem; color: var(--pb-text-muted);">
+                Switch between teams and client accounts seamlessly
+            </span>
+        </div>
+
+        <div>
+            {% for ws in user_workspaces %}
+            <div class="workspace-pill-item {% if ws.id == workspace.id %}active{% endif %}">
+                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                    <div style="width: 36px; height: 36px; border-radius: 8px; background: {% if ws.id == workspace.id %}#22c55e{% else %}var(--pb-border){% endif %}; color: #ffffff; display: flex; align-items: center; justify-content: center; font-weight: 800;">
+                        {{ ws.name|slice:":1"|upper }}
+                    </div>
+                    <div>
+                        <div style="font-weight: 700; color: var(--pb-text-main); font-size: 0.95rem;">
+                            {{ ws.name }}
+                            {% if ws.id == workspace.id %}
+                                <span style="font-size: 0.74rem; background: rgba(34, 197, 94, 0.2); color: #16a34a; padding: 0.15rem 0.5rem; border-radius: 6px; font-weight: 800; margin-left: 0.35rem;">Active</span>
+                            {% endif %}
+                        </div>
+                        <div style="font-size: 0.78rem; color: var(--pb-text-muted);">
+                            Owner: {{ ws.owner.username }} • {{ ws.get_members_count }} member{{ ws.get_members_count|pluralize }}
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    {% if ws.id == workspace.id %}
+                        <span style="font-size: 0.85rem; font-weight: 700; color: #22c55e;">✓ Current</span>
+                    {% else %}
+                        <a href="{% url 'workspace_switch' ws.id %}" class="btn btn-outline btn-sm" style="border-radius: 8px; font-weight: 700;">
+                            Switch to Workspace →
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- ======================================================== -->
+    <!-- SECTION 4: Danger Zone (Owner Only)                     -->
+    <!-- ======================================================== -->
+    {% if is_owner %}
+    <div class="settings-card danger-zone">
+        <div class="card-title-bar" style="border-bottom-color: rgba(239, 68, 68, 0.2);">
+            <h2 style="color: #ef4444;">
+                <span>⚠️</span> Danger Zone
+            </h2>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+            <div>
+                <div style="font-weight: 800; color: #ef4444; font-size: 0.95rem;">Delete this Workspace</div>
+                <div style="font-size: 0.82rem; color: var(--pb-text-muted); max-width: 550px;">
+                    Once deleted, all scheduled posts and member permissions associated with <strong>{{ workspace.name }}</strong> will be permanently removed. This action cannot be undone.
+                </div>
+            </div>
+
+            <form method="POST" action="{% url 'settings' %}" onsubmit="return confirm('DANGER: Are you completely sure you want to permanently delete \'{{ workspace.name }}\'?');">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="delete_workspace">
+                <button type="submit" class="btn btn-sm" style="background: #ef4444; color: #fff; font-weight: 800; padding: 0.6rem 1.25rem; border-radius: 8px; border: none; cursor: pointer;">
+                    Delete Workspace
+                </button>
+            </form>
+        </div>
+    </div>
+    {% endif %}
+
+</div>
+
+<!-- Modal: Create New Workspace -->
+<div id="createWorkspaceModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 99999; align-items: center; justify-content: center; backdrop-filter: blur(8px);">
+    <div style="background: var(--pb-card-bg); border: 1px solid var(--pb-card-border); border-radius: 18px; width: 100%; max-width: 520px; padding: 2rem; box-shadow: var(--pb-shadow); margin: 1rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+            <h3 style="font-size: 1.25rem; font-weight: 800; color: var(--pb-text-main); margin: 0;">Create New Workspace</h3>
+            <button type="button" onclick="document.getElementById('createWorkspaceModal').style.display='none'" style="background: none; border: none; font-size: 1.5rem; color: var(--pb-text-muted); cursor: pointer;">&times;</button>
+        </div>
+
+        {% if not can_create_workspace %}
+        <div style="background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.25); border-radius: 14px; padding: 1.75rem 1.5rem; text-align: center; margin-bottom: 1.25rem;">
+            <div style="font-size: 2.25rem; margin-bottom: 0.65rem;">🏢⚠️</div>
+            <h4 style="font-size: 1.15rem; font-weight: 800; color: #ef4444; margin: 0 0 0.5rem 0;">
+                Workspace Limit Reached ({{ owned_workspaces_count }} / {{ workspace_limit }})
+            </h4>
+            <p style="font-size: 0.88rem; color: var(--pb-text-muted); line-height: 1.5; margin: 0 0 1.25rem 0;">
+                Your current plan allows creating up to <strong>{{ workspace_limit }}</strong> workspace{{ workspace_limit|pluralize }}. Upgrade your subscription to unlock additional workspaces for multi-client or multi-brand workflows.
+            </p>
+            <div style="display: flex; justify-content: center; gap: 0.75rem;">
+                <button type="button" onclick="document.getElementById('createWorkspaceModal').style.display='none'" class="btn btn-outline" style="border-radius: 8px; font-weight: 700;">Close</button>
+                <a href="{% url 'pricing' %}" class="btn btn-primary" style="display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.65rem 1.5rem; border-radius: 8px; font-weight: 800; text-decoration: none;">
+                    ⚡ Upgrade Plan →
+                </a>
+            </div>
+        </div>
+        {% else %}
+        <form method="POST" action="{% url 'settings' %}">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="create_workspace">
+            
+            <div style="display: flex; flex-direction: column; gap: 1rem; margin-bottom: 1.5rem;">
+                <div>
+                    <label style="display: block; font-size: 0.82rem; font-weight: 700; color: var(--pb-text-main); margin-bottom: 0.35rem;">
+                        Workspace Name
+                    </label>
+                    <input type="text" name="name" required placeholder="e.g. Acme Agency or Creator Studio" class="form-input" style="width: 100%; padding: 0.75rem 1rem; border-radius: 10px;">
+                </div>
+
+                <div>
+                    <label style="display: block; font-size: 0.82rem; font-weight: 700; color: var(--pb-text-main); margin-bottom: 0.35rem;">
+                        Timezone
+                    </label>
+                    <select name="timezone" class="form-input" style="width: 100%; padding: 0.75rem 1rem; border-radius: 10px;">
+                        <option value="Asia/Kolkata" selected>🇮🇳 India (IST - GMT+5:30)</option>
+                        <option value="UTC">🌐 Universal Time (UTC)</option>
+                        <option value="America/New_York">🇺🇸 Eastern Time (EST/EDT)</option>
+                        <option value="America/Los_Angeles">🇺🇸 Pacific Time (PST/PDT)</option>
+                        <option value="Europe/London">🇬🇧 London (GMT/BST)</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label style="display: block; font-size: 0.82rem; font-weight: 700; color: var(--pb-text-main); margin-bottom: 0.35rem;">
+                        Description
+                    </label>
+                    <textarea name="description" rows="2" class="form-input" style="width: 100%; padding: 0.75rem 1rem; border-radius: 10px;" placeholder="Optional purpose of this workspace..."></textarea>
+                </div>
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; gap: 0.75rem;">
+                <button type="button" onclick="document.getElementById('createWorkspaceModal').style.display='none'" class="btn btn-outline" style="border-radius: 8px;">Cancel</button>
+                <button type="submit" class="btn btn-primary" style="padding: 0.65rem 1.5rem; border-radius: 8px; font-weight: 800;">Create Workspace</button>
+            </div>
+        </form>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+    // Close modal when clicking outside
+    window.onclick = function(event) {
+        const modal = document.getElementById('createWorkspaceModal');
+        if (event.target === modal) {
+            modal.style.display = 'none';
+        }
+    }
+</script>
+{% endblock %}

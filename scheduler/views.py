@@ -14,12 +14,16 @@ from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 
-from .forms import InstagramAccountForm, ScheduledPostForm, TokenExchangeForm
+from .forms import (
+    InstagramAccountForm, ScheduledPostForm, TokenExchangeForm,
+    WorkspaceForm, WorkspaceMemberInviteForm, WorkspaceMemberRoleUpdateForm
+)
 from .models import (
     InstagramAccount, ScheduledPost, YouTubeAccount,
     FacebookAccount, XAccount, PinterestAccount, TikTokAccount,
     LinkedInAccount, RedditAccount, SnapchatAccount, UserSubscription,
-    PricingPlan, DiscountCoupon, UserProfile
+    PricingPlan, DiscountCoupon, UserProfile,
+    Workspace, WorkspaceMember
 )
 from .services import token_manager
 
@@ -1606,32 +1610,61 @@ def pricing_view(request):
     if not plans:
         PricingPlan.objects.get_or_create(plan_code='FREE', defaults={
             'name': 'Free Starter', 'price_inr': 0, 'max_connected_accounts': 2, 'max_posts_per_month': 5,
-            'features_list': 'Up to 5 scheduled posts / mo\nConnect up to 2 social accounts\nStandard Multi-Platform Composer\nDirect Photo & Video Uploads\nReal-time Preview Mockup\n-Visual Content Calendar\n-Per-platform custom overrides',
+            'max_workspaces': 1, 'max_members_per_workspace': 2,
+            'features_list': 'Up to 5 scheduled posts / mo\nConnect up to 2 social accounts\n1 Workspace & Up to 2 Team Members\nStandard Multi-Platform Composer\nDirect Photo & Video Uploads\nReal-time Preview Mockup\n-Visual Content Calendar\n-Per-platform custom overrides',
             'order': 1, 'is_active': True
         })
         PricingPlan.objects.get_or_create(plan_code='CREATOR', defaults={
             'name': 'Marketer', 'price_inr': 2499, 'original_price_inr': 3499, 'price_usd': '($39)',
             'yearly_price_inr': 23988, 'yearly_discount_percent': 20,
             'max_connected_accounts': 15, 'price_per_additional_account': 149, 'max_posts_per_month': 0,
+            'max_workspaces': 3, 'max_members_per_workspace': 5,
             'is_featured': True, 'badge_text': 'MOST POPULAR • 7-DAY FREE TRIAL', 'cta_text': 'Start 7-Day Free Trial',
-            'features_list': '!15 Connected Social Accounts (mix any platforms)\n!Unlimited Scheduled Posts & Reels\n!7-Day Free Trial ($0 due today)\nCarousel & Multi-Image Posts\nVisual Content Calendar & Auto-Queue\nModel Context Protocol (MCP) Server for AI\nDeveloper REST API Access\nBeta Analytics & Post Status\nPriority Founder Support',
+            'features_list': '!15 Connected Social Accounts (mix any platforms)\n!Up to 3 Workspaces & 5 Members / Workspace\n!Unlimited Scheduled Posts & Reels\n!7-Day Free Trial ($0 due today)\nCarousel & Multi-Image Posts\nVisual Content Calendar & Auto-Queue\nModel Context Protocol (MCP) Server for AI\nDeveloper REST API Access\nBeta Analytics & Post Status\nPriority Founder Support',
             'order': 2, 'is_active': True
         })
         PricingPlan.objects.get_or_create(plan_code='PRO', defaults={
             'name': 'Operator', 'price_inr': 7999, 'original_price_inr': 9999, 'price_usd': '($99)',
             'yearly_price_inr': 76788, 'yearly_discount_percent': 20,
             'max_connected_accounts': 99, 'price_per_additional_account': 80, 'max_posts_per_month': 0,
+            'max_workspaces': 10, 'max_members_per_workspace': 25,
             'is_featured': False, 'badge_text': 'FOR AGENCIES & TEAMS • 7-DAY FREE TRIAL',
             'cta_text': 'Start 7-Day Free Trial',
-            'features_list': '!99 Connected Social Accounts Included\n!+$1 / ₹80 per extra account past 99 (no limits)\n!Team Member Invites (up to 10 users across 5 teams)\n!Unlimited Posts, Reels, & Shorts\n!7-Day Free Trial ($0 due today)\nDedicated High-Throughput Queue\nFull Developer REST API & Webhooks\nNative MCP Server for AI Agent Swarms\nAI Smart Caption Generator\nDedicated 24/7 Priority Support & Slack',
+            'features_list': '!99 Connected Social Accounts Included\n!Up to 10 Workspaces & 25 Members / Workspace\n!+$1 / ₹80 per extra account past 99 (no limits)\n!Unlimited Posts, Reels, & Shorts\n!7-Day Free Trial ($0 due today)\nDedicated High-Throughput Queue\nFull Developer REST API & Webhooks\nNative MCP Server for AI Agent Swarms\nAI Smart Caption Generator\nDedicated 24/7 Priority Support & Slack',
             'order': 3, 'is_active': True
         })
         PricingPlan.objects.get_or_create(plan_code='CUSTOM', defaults={
             'name': 'Army of Accounts (Agency Scaler)', 'price_inr': 2499, 'price_per_additional_account': 80,
-            'max_connected_accounts': 15, 'is_custom_calculator': True, 'badge_text': 'AGENCY SCALER',
+            'max_connected_accounts': 15, 'max_workspaces': 0, 'max_members_per_workspace': 0,
+            'is_custom_calculator': True, 'badge_text': 'AGENCY SCALER',
             'cta_text': 'Start Custom Subscription', 'order': 4, 'is_active': True
         })
         plans = list(PricingPlan.objects.filter(is_active=True).order_by('order', 'price_inr'))
+
+    # Update existing plans in DB if workspace limits are not yet populated
+    free_plan = PricingPlan.objects.filter(plan_code='FREE').first()
+    if free_plan and ('Workspace' not in free_plan.features_list or free_plan.max_members_per_workspace != 2):
+        free_plan.max_workspaces = 1
+        free_plan.max_members_per_workspace = 2
+        if 'Workspace' not in free_plan.features_list:
+            free_plan.features_list = 'Up to 5 scheduled posts / mo\nConnect up to 2 social accounts\n1 Workspace & Up to 2 Team Members\nStandard Multi-Platform Composer\nDirect Photo & Video Uploads\nReal-time Preview Mockup\n-Visual Content Calendar\n-Per-platform custom overrides'
+        free_plan.save(update_fields=['max_workspaces', 'max_members_per_workspace', 'features_list'])
+
+    creator_plan = PricingPlan.objects.filter(plan_code='CREATOR').first()
+    if creator_plan and ('Workspaces' not in creator_plan.features_list or creator_plan.max_workspaces != 3):
+        creator_plan.max_workspaces = 3
+        creator_plan.max_members_per_workspace = 5
+        if 'Workspaces' not in creator_plan.features_list:
+            creator_plan.features_list = '!15 Connected Social Accounts (mix any platforms)\n!Up to 3 Workspaces & 5 Members / Workspace\n!Unlimited Scheduled Posts & Reels\n!7-Day Free Trial ($0 due today)\nCarousel & Multi-Image Posts\nVisual Content Calendar & Auto-Queue\nModel Context Protocol (MCP) Server for AI\nDeveloper REST API Access\nBeta Analytics & Post Status\nPriority Founder Support'
+        creator_plan.save(update_fields=['max_workspaces', 'max_members_per_workspace', 'features_list'])
+
+    pro_plan = PricingPlan.objects.filter(plan_code='PRO').first()
+    if pro_plan and ('Workspaces' not in pro_plan.features_list or pro_plan.max_workspaces != 10):
+        pro_plan.max_workspaces = 10
+        pro_plan.max_members_per_workspace = 25
+        if 'Workspaces' not in pro_plan.features_list:
+            pro_plan.features_list = '!99 Connected Social Accounts Included\n!Up to 10 Workspaces & 25 Members / Workspace\n!+$1 / ₹80 per extra account past 99 (no limits)\n!Unlimited Posts, Reels, & Shorts\n!7-Day Free Trial ($0 due today)\nDedicated High-Throughput Queue\nFull Developer REST API & Webhooks\nNative MCP Server for AI Agent Swarms\nAI Smart Caption Generator\nDedicated 24/7 Priority Support & Slack'
+        pro_plan.save(update_fields=['max_workspaces', 'max_members_per_workspace', 'features_list'])
 
     # Separate standard tier cards from custom calculator plan
     standard_plans = [p for p in plans if not p.is_custom_calculator]
@@ -1876,9 +1909,20 @@ def verify_razorpay_payment(request):
         else:
             sub.connected_accounts_limit = plan_obj.max_connected_accounts
         sub.posts_limit_per_month = plan_obj.max_posts_per_month
+        sub.workspaces_limit = plan_obj.max_workspaces
+        sub.members_per_workspace_limit = plan_obj.max_members_per_workspace
     else:
         sub.connected_accounts_limit = 15 if plan_code == 'CREATOR' else 0
         sub.posts_limit_per_month = 0
+        if plan_code in ('PRO', 'OPERATOR', 'CUSTOM'):
+            sub.workspaces_limit = 10 if plan_code != 'CUSTOM' else 0
+            sub.members_per_workspace_limit = 25 if plan_code != 'CUSTOM' else 0
+        elif plan_code in ('CREATOR', 'MARKETER'):
+            sub.workspaces_limit = 3
+            sub.members_per_workspace_limit = 5
+        else:
+            sub.workspaces_limit = 1
+            sub.members_per_workspace_limit = 2
 
     # Increment coupon redemption count
     if sub.coupon_used:
@@ -2216,12 +2260,245 @@ def bulk_tools(request):
 
 @login_required
 def settings_view(request):
-    """Post Bridge settings & account overview."""
-    subscription = UserSubscription.objects.filter(user=request.user).first()
+    """FeedBridge Workspace Settings, Team Members & Role Permissions."""
+    user = request.user
+    
+    # Resolve active workspace
+    active_ws_id = request.session.get('active_workspace_id')
+    active_ws = None
+    if active_ws_id:
+        active_ws = Workspace.objects.filter(
+            id=active_ws_id
+        ).filter(
+            Q(owner=user) | Q(memberships__user=user)
+        ).first()
+
+    if not active_ws:
+        active_ws = Workspace.objects.filter(owner=user).first()
+        if not active_ws:
+            active_ws = Workspace.objects.filter(memberships__user=user).first()
+
+    if not active_ws:
+        display_name = user.first_name.strip() if user.first_name else user.username
+        active_ws = Workspace.objects.create(
+            name=f"{display_name}'s Workspace",
+            owner=user,
+            timezone='Asia/Kolkata'
+        )
+        WorkspaceMember.objects.get_or_create(
+            workspace=active_ws,
+            user=user,
+            defaults={'role': 'OWNER'}
+        )
+
+    request.session['active_workspace_id'] = active_ws.id
+    user_role = active_ws.get_user_role(user)
+    is_admin_or_owner = active_ws.is_admin_or_owner(user)
+    is_owner = (active_ws.owner_id == user.id)
+
+    # Compute Plan Limits for Workspaces & Team Members
+    sub = UserSubscription.objects.filter(user=user).first()
+    workspace_limit = sub.get_workspaces_limit() if sub else 1
+    owned_workspaces_count = Workspace.objects.filter(owner=user).count()
+    can_create_workspace = (workspace_limit == 0) or (owned_workspaces_count < workspace_limit)
+
+    owner_sub = UserSubscription.objects.filter(user=active_ws.owner).first()
+    member_limit = owner_sub.get_members_limit() if owner_sub else 2
+    current_members_count = 1 + active_ws.memberships.exclude(user=active_ws.owner).count()
+    can_add_member = (member_limit == 0) or (current_members_count < member_limit)
+
+    # Handle POST Actions
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        
+        # 1. Update Workspace Details (Admin/Owner only)
+        if action == 'update_workspace':
+            if not is_admin_or_owner:
+                messages.error(request, "Permission denied. Only Workspace Admins or Owners can update workspace settings.")
+            else:
+                ws_form = WorkspaceForm(request.POST, instance=active_ws)
+                if ws_form.is_valid():
+                    ws_form.save()
+                    messages.success(request, f"Workspace '{active_ws.name}' updated successfully!")
+                else:
+                    for err in ws_form.errors.values():
+                        messages.error(request, err)
+            return redirect('settings')
+
+        # 2. Add / Invite Member (Admin/Owner only)
+        elif action == 'add_member':
+            if not is_admin_or_owner:
+                messages.error(request, "Permission denied. Only Workspace Admins or Owners can invite or assign roles.")
+            elif not can_add_member:
+                messages.error(
+                    request,
+                    f"Team member limit reached for this workspace ({current_members_count} of {member_limit} members used). The workspace owner must upgrade their plan to invite more team members."
+                )
+            else:
+                invite_form = WorkspaceMemberInviteForm(
+                    request.POST, workspace=active_ws, inviting_user=user
+                )
+                if invite_form.is_valid():
+                    target_user = invite_form.target_user
+                    assigned_role = invite_form.cleaned_data['role']
+                    member, created = WorkspaceMember.objects.get_or_create(
+                        workspace=active_ws,
+                        user=target_user,
+                        defaults={'role': assigned_role, 'invited_by': user}
+                    )
+                    if not created:
+                        member.role = assigned_role
+                        member.save()
+                    role_display = dict(WorkspaceMember.ROLE_CHOICES).get(assigned_role, assigned_role)
+                    messages.success(
+                        request,
+                        f"🎉 Successfully added '{target_user.username}' as {role_display} to '{active_ws.name}'!"
+                    )
+                else:
+                    for err in invite_form.errors.values():
+                        messages.error(request, err)
+            return redirect('settings')
+
+        # 3. Update Existing Member Role (Admin/Owner only)
+        elif action == 'update_member_role':
+            if not is_admin_or_owner:
+                messages.error(request, "Permission denied. Only Admins or Owners can change member roles.")
+            else:
+                member_id = request.POST.get('member_id')
+                new_role = request.POST.get('role')
+                member = get_object_or_404(WorkspaceMember, id=member_id, workspace=active_ws)
+                
+                # Security rules:
+                # Cannot change Owner's role
+                if member.user_id == active_ws.owner_id:
+                    messages.error(request, "The Workspace Owner's role cannot be modified.")
+                elif new_role not in ('ADMIN', 'EDITOR', 'VIEWER'):
+                    messages.error(request, "Invalid role selected.")
+                elif not is_owner and member.role == 'ADMIN':
+                    messages.error(request, "Only the Workspace Owner can modify another Admin's role.")
+                else:
+                    member.role = new_role
+                    member.save()
+                    messages.success(request, f"Updated role for {member.user.username} to {member.get_role_display()}.")
+            return redirect('settings')
+
+        # 4. Remove Member from Workspace
+        elif action == 'remove_member':
+            if not is_admin_or_owner:
+                messages.error(request, "Permission denied. Only Admins or Owners can remove members.")
+            else:
+                member_id = request.POST.get('member_id')
+                member = get_object_or_404(WorkspaceMember, id=member_id, workspace=active_ws)
+                
+                if member.user_id == active_ws.owner_id:
+                    messages.error(request, "The Workspace Owner cannot be removed from their own workspace.")
+                elif not is_owner and member.role == 'ADMIN':
+                    messages.error(request, "Only the Workspace Owner can remove an Admin.")
+                else:
+                    username_removed = member.user.username
+                    member.delete()
+                    messages.success(request, f"Removed {username_removed} from workspace '{active_ws.name}'.")
+            return redirect('settings')
+
+        # 5. Create a New Workspace
+        elif action == 'create_workspace':
+            if not can_create_workspace:
+                messages.error(
+                    request,
+                    f"Workspace limit reached ({owned_workspaces_count} of {workspace_limit} used). Upgrade your plan to create more workspaces."
+                )
+                return redirect('settings')
+            create_form = WorkspaceForm(request.POST)
+            if create_form.is_valid():
+                new_ws = create_form.save(commit=False)
+                new_ws.owner = user
+                new_ws.save()
+                WorkspaceMember.objects.create(workspace=new_ws, user=user, role='OWNER')
+                request.session['active_workspace_id'] = new_ws.id
+                messages.success(request, f"New workspace '{new_ws.name}' created and set as active!")
+            else:
+                for err in create_form.errors.values():
+                    messages.error(request, err)
+            return redirect('settings')
+
+        # 6. Delete Workspace (Owner only)
+        elif action == 'delete_workspace':
+            if not is_owner:
+                messages.error(request, "Only the Workspace Owner can delete this workspace.")
+            else:
+                ws_name = active_ws.name
+                active_ws.delete()
+                request.session.pop('active_workspace_id', None)
+                messages.success(request, f"Workspace '{ws_name}' has been permanently deleted.")
+            return redirect('settings')
+
+    # Prepare Member Roster
+    members = []
+    # 1. Owner always first
+    members.append({
+        'id': 'owner',
+        'user': active_ws.owner,
+        'role': 'OWNER',
+        'role_display': 'Owner',
+        'role_badge_class': 'badge-owner',
+        'is_owner': True,
+        'can_edit': False,
+        'joined_at': active_ws.created_at,
+    })
+    
+    # 2. Workspace Members
+    for m in active_ws.memberships.select_related('user', 'invited_by').exclude(user=active_ws.owner):
+        can_edit = is_owner or (is_admin_or_owner and m.role != 'ADMIN')
+        members.append({
+            'id': m.id,
+            'user': m.user,
+            'role': m.role,
+            'role_display': m.get_role_display(),
+            'role_badge_class': f"badge-{m.role.lower()}",
+            'is_owner': False,
+            'can_edit': can_edit,
+            'invited_by': m.invited_by,
+            'joined_at': m.joined_at,
+        })
+
+    subscription = UserSubscription.objects.filter(user=user).first()
+    user_workspaces = Workspace.objects.filter(
+        Q(owner=user) | Q(memberships__user=user)
+    ).distinct().order_by('-created_at')
+
     return render(request, 'scheduler/settings.html', {
         'active_section': 'settings',
+        'workspace': active_ws,
+        'workspace_form': WorkspaceForm(instance=active_ws),
+        'invite_form': WorkspaceMemberInviteForm(workspace=active_ws, inviting_user=user),
+        'create_workspace_form': WorkspaceForm(),
+        'members': members,
+        'is_admin_or_owner': is_admin_or_owner,
+        'is_owner': is_owner,
+        'user_role': user_role,
         'subscription': subscription,
+        'user_workspaces': user_workspaces,
+        'workspace_limit': workspace_limit,
+        'owned_workspaces_count': owned_workspaces_count,
+        'can_create_workspace': can_create_workspace,
+        'member_limit': member_limit,
+        'current_members_count': current_members_count,
+        'can_add_member': can_add_member,
     })
+
+
+@login_required
+def workspace_switch(request, workspace_id):
+    """Switch active workspace in session."""
+    ws = get_object_or_404(
+        Workspace.objects.filter(Q(owner=request.user) | Q(memberships__user=request.user)).distinct(),
+        pk=workspace_id
+    )
+    request.session['active_workspace_id'] = ws.id
+    messages.success(request, f"Switched to workspace: {ws.name}")
+    next_url = request.GET.get('next') or request.META.get('HTTP_REFERER') or '/settings/'
+    return redirect(next_url)
+
 
 
 @login_required

@@ -634,6 +634,8 @@ class PricingPlan(models.Model):
     max_connected_accounts = models.PositiveIntegerField(default=2, help_text="Maximum total social accounts user can connect (0 = unlimited)")
     price_per_additional_account = models.PositiveIntegerField(default=0, help_text="Price in ₹ per extra account connect beyond base limit (0 if disabled or unlimited)")
     max_posts_per_month = models.PositiveIntegerField(default=5, help_text="Maximum scheduled posts per month (0 = unlimited)")
+    max_workspaces = models.PositiveIntegerField(default=1, help_text="Maximum workspaces user can create/own (0 = unlimited)")
+    max_members_per_workspace = models.PositiveIntegerField(default=3, help_text="Maximum team members allowed per workspace (0 = unlimited)")
     
     # Badging & CTA
     is_featured = models.BooleanField(default=False, help_text="Highlight card with special border & purple glow")
@@ -774,6 +776,8 @@ class UserSubscription(models.Model):
     pricing_plan = models.ForeignKey(PricingPlan, on_delete=models.SET_NULL, null=True, blank=True, related_name='subscriptions')
     connected_accounts_limit = models.PositiveIntegerField(default=2, help_text="0 = unlimited")
     posts_limit_per_month = models.PositiveIntegerField(default=5, help_text="0 = unlimited")
+    workspaces_limit = models.PositiveIntegerField(default=1, help_text="Maximum workspaces user can create/own (0 = unlimited)")
+    members_per_workspace_limit = models.PositiveIntegerField(default=3, help_text="Maximum members per workspace (0 = unlimited)")
     custom_accounts_purchased = models.PositiveIntegerField(default=0)
     discount_applied_inr = models.PositiveIntegerField(default=0)
     coupon_used = models.ForeignKey(DiscountCoupon, on_delete=models.SET_NULL, null=True, blank=True)
@@ -783,6 +787,28 @@ class UserSubscription(models.Model):
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    def get_workspaces_limit(self):
+        """Returns maximum workspaces user can create/own (0 = unlimited)."""
+        if self.pricing_plan and self.pricing_plan.max_workspaces is not None:
+            return self.pricing_plan.max_workspaces
+        plan_code = (self.plan or 'FREE').upper()
+        if plan_code in ('PRO', 'OPERATOR', 'CUSTOM', 'AGENCY'):
+            return 10
+        elif plan_code in ('CREATOR', 'MARKETER'):
+            return 3
+        return self.workspaces_limit or 1
+
+    def get_members_limit(self):
+        """Returns maximum team members allowed per workspace (0 = unlimited)."""
+        if self.pricing_plan and self.pricing_plan.max_members_per_workspace is not None:
+            return self.pricing_plan.max_members_per_workspace
+        plan_code = (self.plan or 'FREE').upper()
+        if plan_code in ('PRO', 'OPERATOR', 'CUSTOM', 'AGENCY'):
+            return 25
+        elif plan_code in ('CREATOR', 'MARKETER'):
+            return 5
+        return self.members_per_workspace_limit or 3
 
     def __str__(self):
         if self.pricing_plan:
@@ -803,4 +829,85 @@ class UserProfile(models.Model):
 
     def __str__(self):
         return f"{self.full_name or self.user.username} ({self.country_code} {self.phone_number})"
+
+
+class Workspace(models.Model):
+    """Collaborative multi-user workspace for managing social accounts and scheduled posts."""
+    name = models.CharField(max_length=100, help_text="Workspace display name")
+    slug = models.SlugField(max_length=120, unique=True, blank=True)
+    owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='owned_workspaces')
+    description = models.TextField(blank=True, default='', help_text="Optional workspace description")
+    timezone = models.CharField(max_length=60, default='Asia/Kolkata', help_text="Workspace primary timezone")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = 'Workspace'
+        verbose_name_plural = 'Workspaces'
+
+    def __str__(self):
+        return f"{self.name} (Owner: {self.owner.username})"
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            from django.utils.text import slugify
+            import uuid
+            base_slug = slugify(self.name) or f"ws-{self.owner_id or 'team'}"
+            unique_slug = base_slug
+            counter = 1
+            while Workspace.objects.filter(slug=unique_slug).exclude(pk=self.pk).exists():
+                unique_slug = f"{base_slug}-{counter}"
+                counter += 1
+            self.slug = unique_slug
+        super().save(*args, **kwargs)
+
+    def get_user_role(self, user):
+        """Returns the role string ('OWNER', 'ADMIN', 'EDITOR', 'VIEWER') or None."""
+        if not user or not user.is_authenticated:
+            return None
+        if self.owner_id == user.id:
+            return 'OWNER'
+        membership = self.memberships.filter(user=user).first()
+        return membership.role if membership else None
+
+    def is_admin_or_owner(self, user):
+        """True if user has administrative rights (Owner or Admin)."""
+        role = self.get_user_role(user)
+        return role in ('OWNER', 'ADMIN')
+
+    def can_manage_content(self, user):
+        """True if user can create, schedule, edit, or delete posts."""
+        role = self.get_user_role(user)
+        return role in ('OWNER', 'ADMIN', 'EDITOR')
+
+    def get_members_count(self):
+        # 1 for owner + total memberships (excluding owner if duplicate)
+        return 1 + self.memberships.exclude(user=self.owner).count()
+
+
+class WorkspaceMember(models.Model):
+    """Team members assigned to a workspace with granular role-based permissions."""
+    ROLE_CHOICES = [
+        ('OWNER', 'Owner (Full ownership, billing & workspace deletion)'),
+        ('ADMIN', 'Admin (Manage team, assign roles & all social publishing)'),
+        ('EDITOR', 'Editor (Create, schedule & edit posts)'),
+        ('VIEWER', 'Viewer (Read-only view of calendar, accounts & analytics)'),
+    ]
+
+    workspace = models.ForeignKey(Workspace, on_delete=models.CASCADE, related_name='memberships')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='workspace_memberships')
+    role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='EDITOR')
+    invited_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='sent_workspace_invitations')
+    joined_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('workspace', 'user')
+        ordering = ['joined_at']
+        verbose_name = 'Workspace Member'
+        verbose_name_plural = 'Workspace Members'
+
+    def __str__(self):
+        return f"{self.user.username} ({self.role}) in {self.workspace.name}"
+
 
